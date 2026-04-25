@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const siteUrl = 'https://thiagaoai.io';
+const siteUrl = 'https://thiagao.io';
 
 export default function robots(): MetadataRoute.Robots {
   return {
