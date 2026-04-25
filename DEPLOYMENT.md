@@ -36,8 +36,8 @@ The workflow in `.github/workflows/ci.yml` runs:
 
 ## Production Domain
 
-Point `thiagaoai.io` to the hosting provider and keep:
+Point `thiagao.io` to the hosting provider and keep:
 
-- canonical: `https://thiagaoai.io`
-- sitemap: `https://thiagaoai.io/sitemap.xml`
-- robots: `https://thiagaoai.io/robots.txt`
+- canonical: `https://thiagao.io`
+- sitemap: `https://thiagao.io/sitemap.xml`
+- robots: `https://thiagao.io/robots.txt`
