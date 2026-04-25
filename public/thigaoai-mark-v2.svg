@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="ThigaoA.i logo option 2">
+  <defs>
+    <linearGradient id="v2-stroke" x1="46" y1="36" x2="216" y2="222" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fbbf24"/>
+      <stop offset="0.48" stop-color="#67e8f9"/>
+      <stop offset="1" stop-color="#60a5fa"/>
+    </linearGradient>
+    <radialGradient id="v2-glow" cx="0" cy="0" r="1" gradientTransform="matrix(102 116 -116 102 152 92)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#030712" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="18" y="18" width="220" height="220" rx="66" fill="#020617"/>
+  <rect x="18" y="18" width="220" height="220" rx="66" fill="url(#v2-glow)"/>
+  <rect x="23" y="23" width="210" height="210" rx="61" fill="none" stroke="url(#v2-stroke)" stroke-width="3.5" opacity="0.7"/>
+  <path d="M64 72h80M104 72v116" fill="none" stroke="#f8fafc" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M104 129h36c23 0 42-18 42-41" fill="none" stroke="url(#v2-stroke)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M104 129h40c25 0 45 20 45 45v14" fill="none" stroke="url(#v2-stroke)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M153 188 190 72l36 116" fill="none" stroke="url(#v2-stroke)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M168 147h43" fill="none" stroke="#f8fafc" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="190" cy="72" r="8" fill="#fde68a"/>
+  <circle cx="226" cy="188" r="8" fill="#93c5fd"/>
+  <circle cx="213" cy="57" r="8.5" fill="#ecfeff"/>
+  <circle cx="213" cy="57" r="21" fill="#22d3ee" opacity="0.13"/>
+</svg>

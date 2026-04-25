@@ -1,0 +1,35 @@
+{
+  "name": "thiagodocarmo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3002 --hostname localhost",
+    "build": "next build",
+    "postbuild": "mkdir -p .next/standalone/.next && cp -R public .next/standalone/public && cp -R .next/static .next/standalone/.next/static",
+    "start": "PORT=${PORT:-3002} HOSTNAME=${HOSTNAME:-localhost} node .next/standalone/server.js",
+    "start:next": "next start -p 3002 --hostname localhost",
+    "lint": "eslint",
+    "check": "npm run lint && npm run build",
+    "clean": "rm -rf .next node_modules/.cache",
+    "docker:build": "docker build -t thigaoai-site .",
+    "docker:run": "docker run --rm -p 3000:3000 thigaoai-site"
+  },
+  "dependencies": {
+    "lucide-react": "^1.9.0",
+    "motion": "^12.38.0",
+    "next": "16.1.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "babel-plugin-react-compiler": "1.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
