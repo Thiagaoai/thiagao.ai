@@ -13,6 +13,7 @@ import {
   Wrench,
 } from 'lucide-react';
 import { BrandMark, BrandWordmark } from '../components/BrandMark';
+import AiRadioPlayer from './AiRadioPlayer';
 import SubscribeForm from './SubscribeForm';
 import ToolBriefingCards from './ToolBriefingCards';
 import { BRIEFING_TAGS } from '@/lib/briefing/types';
@@ -248,6 +249,8 @@ export default async function BriefingPage({ searchParams }: PageProps) {
                 );
               })}
             </div>
+
+            <AiRadioPlayer />
           </div>
         </section>
       </header>
