@@ -12,6 +12,7 @@ export default function SubscribeForm() {
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const submittedEmail = email.trim().toLowerCase();
     setState('loading');
     setMessage('Conectando com o briefing...');
 
@@ -19,7 +20,7 @@ export default function SubscribeForm() {
       const response = await fetch('/api/newsletter/subscribe', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email, source: 'briefing-page' }),
+        body: JSON.stringify({ email: submittedEmail, source: 'briefing-page' }),
       });
       const data = (await response.json()) as { ok?: boolean; stored?: boolean; message?: string };
 
@@ -34,6 +35,7 @@ export default function SubscribeForm() {
           : 'Preview ativo. Configure o Supabase para gravar assinantes em producao.',
       );
       setEmail('');
+      window.location.assign(`/newsletter/obrigado?email=${encodeURIComponent(submittedEmail)}`);
     } catch (error) {
       setState('error');
       setMessage(error instanceof Error ? error.message : 'Nao foi possivel assinar agora.');

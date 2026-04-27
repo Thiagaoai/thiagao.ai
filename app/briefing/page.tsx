@@ -130,6 +130,12 @@ const newsletterBenefits = [
   'Versao curta pronta para o Solocodando no WhatsApp quando houver destaque.',
 ];
 
+const fallbackTodayHighlights = [
+  'O sinal mais importante do dia em IA, big tech e ferramentas novas.',
+  'O que muda na pratica para curiosos, criadores, devs e empreendedores.',
+  'Um proximo passo simples para testar sem depender do hype.',
+];
+
 export const metadata = {
   title: 'ThigaoA.i Briefing - AI Operator Newsletter',
   description:
@@ -139,9 +145,22 @@ export const metadata = {
 export default async function BriefingPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const selectedTag = params?.tag;
-  const { posts, source } = await getPublishedBriefings({ tag: selectedTag, limit: 12 });
+  const { posts } = await getPublishedBriefings({ tag: selectedTag, limit: 12 });
   const featured = posts[0];
   const remainingPosts = posts.slice(1);
+  const todayLabel = new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    timeZone: 'America/New_York',
+    weekday: 'long',
+  }).format(new Date());
+  const todayHighlights = featured
+    ? [
+        `Tema principal: ${featured.category}.`,
+        `Por que importa: ${featured.takeaway}`,
+        `Leitura rapida: ${featured.readingMinutes} min com fontes e contexto.`,
+      ]
+    : fallbackTodayHighlights;
 
   return (
     <main className="min-h-screen overflow-hidden bg-black text-white selection:bg-amber-500/30">
@@ -174,10 +193,10 @@ export default async function BriefingPage({ searchParams }: PageProps) {
           <div className="hidden items-center gap-8 md:flex">
             {[
               ['Home', '/'],
-              ['Briefings', '#briefings'],
+              ['Hoje', '#hoje'],
+              ['Arquivo', '#briefings'],
               ['Modalidades', '#modalidades'],
-              ['Videos', '#videos'],
-              ['Stack', '#stack'],
+              ['Música', '#musica'],
               ['Social', '#social'],
             ].map(([label, href], index) => (
               <a
@@ -281,25 +300,67 @@ export default async function BriefingPage({ searchParams }: PageProps) {
         </section>
       </header>
 
-      <section id="musica" className="relative z-10 border-y border-zinc-900 bg-black py-16 sm:py-20">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 px-6 lg:grid-cols-[0.82fr_1.18fr]">
+      <section id="hoje" className="relative z-10 border-y border-zinc-900 bg-black py-20">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,rgba(34,211,238,0.12),transparent_30%),radial-gradient(circle_at_86%_44%,rgba(245,158,11,0.09),transparent_34%)]" />
+        <div className="relative mx-auto grid max-w-7xl grid-cols-1 gap-8 px-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
           <div>
             <p className="mb-5 inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-cyan-200">
-              Trilha do briefing
+              Hoje no briefing
             </p>
             <h2
-              className="text-render-premium max-w-2xl text-[42px] font-normal leading-[1.04] text-white sm:text-[62px]"
+              className="text-render-premium max-w-2xl text-[42px] font-normal leading-[1.04] text-white sm:text-[66px]"
               style={{ fontFamily: 'var(--font-display)' }}
             >
-              Música real para ler sem atrapalhar a página.
+              A edição do dia antes do barulho virar tendência.
             </h2>
             <p className="mt-6 max-w-xl text-sm leading-relaxed text-zinc-400 sm:text-base">
-              Jazz, pop, instrumental e christian em players oficiais. Para tocar a faixa inteira,
-              use o Spotify logado ou abra direto no app.
+              {todayLabel}. Um resumo curto para entender o que merece sua atenção, o que é só
+              hype e qual teste vale fazer agora.
             </p>
           </div>
 
-          <AiRadioPlayer />
+          <div className="rounded-[34px] border border-white/10 bg-zinc-950/70 p-6 shadow-[0_30px_90px_rgba(0,0,0,0.45)] sm:p-8">
+            <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">
+                  {featured ? 'Edição destacada' : 'Radar preparado'}
+                </p>
+                <h3 className="mt-3 text-2xl font-semibold leading-tight tracking-tight text-white sm:text-3xl">
+                  {featured?.title ?? 'IA, big tech e ferramentas novas em linguagem simples.'}
+                </h3>
+              </div>
+              <span className="inline-flex shrink-0 rounded-full border border-cyan-300/25 bg-cyan-300/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-cyan-100">
+                5 PM NY
+              </span>
+            </div>
+
+            <div className="grid gap-3">
+              {todayHighlights.map((item) => (
+                <div
+                  key={item}
+                  className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-3 text-sm leading-relaxed text-zinc-300"
+                >
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-200" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <a
+                href="#assinar"
+                className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-extrabold text-black transition-transform hover:scale-[1.03]"
+              >
+                Receber as próximas
+              </a>
+              <a
+                href="#briefings"
+                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-6 py-3 text-sm font-bold text-white transition-colors hover:border-cyan-300/40"
+              >
+                Ver arquivo
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -366,20 +427,20 @@ export default async function BriefingPage({ searchParams }: PageProps) {
           <div className="mb-12 flex flex-col justify-between gap-7 lg:flex-row lg:items-end">
             <div>
               <p className="mb-5 inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-cyan-200">
-                Novidades publicadas
+                Arquivo de edições
               </p>
               <h2
                 className="text-render-premium text-[44px] font-normal leading-[1.04] text-white sm:text-[70px]"
                 style={{ fontFamily: 'var(--font-display)' }}
               >
-                Briefings para
+                Últimas edições
                 <br />
-                usar no mundo real.
+                para consultar depois.
               </h2>
             </div>
             <p className="max-w-xl text-sm leading-relaxed text-zinc-500">
-              Fonte atual: <span className="font-bold text-zinc-300">{source}</span>. Enquanto o Supabase nao estiver configurado,
-              esta pagina mostra dados fallback para validar design, copy e conversao.
+              O histórico deixa a newsletter viva: quem chegar depois consegue entender a linha
+              editorial, rever tendências e encontrar ferramentas que já apareceram no briefing.
             </p>
           </div>
 
@@ -436,7 +497,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
             </article>
           ) : (
             <div className="rounded-[34px] border border-zinc-800 bg-zinc-950/70 p-10 text-zinc-400">
-              Nenhum briefing publicado ainda para esse filtro.
+              Nenhuma edição encontrada para esse filtro ainda.
             </div>
           )}
 
@@ -457,6 +518,28 @@ export default async function BriefingPage({ searchParams }: PageProps) {
               </article>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section id="musica" className="relative z-10 border-b border-zinc-900 bg-black py-16 sm:py-20">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 px-6 lg:grid-cols-[0.82fr_1.18fr]">
+          <div>
+            <p className="mb-5 inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-cyan-200">
+              Trilha do briefing
+            </p>
+            <h2
+              className="text-render-premium max-w-2xl text-[42px] font-normal leading-[1.04] text-white sm:text-[62px]"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              Música real, longe da chamada principal.
+            </h2>
+            <p className="mt-6 max-w-xl text-sm leading-relaxed text-zinc-400 sm:text-base">
+              Jazz, pop, instrumental e christian em players oficiais. Para tocar a faixa inteira,
+              use o Spotify logado ou abra direto no app.
+            </p>
+          </div>
+
+          <AiRadioPlayer />
         </div>
       </section>
 
