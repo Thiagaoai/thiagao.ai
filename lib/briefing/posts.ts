@@ -1,6 +1,14 @@
 import { fallbackBriefings } from './fallback';
 import { getSupabaseAdmin } from './supabase';
-import type { AgentRunRecord, BriefingDraftInput, BriefingPost, SubscriberInput } from './types';
+import type {
+  AgentRunRecord,
+  BriefingDraftInput,
+  BriefingPost,
+  NewsletterAgentRun,
+  NewsletterEmailLog,
+  NewsletterSubscriber,
+  SubscriberInput,
+} from './types';
 
 type BriefingRow = {
   id: string;
@@ -21,6 +29,38 @@ type BriefingRow = {
 
 type SubscriberRow = {
   email: string;
+};
+
+type SubscriberAdminRow = {
+  email: string;
+  status: NewsletterSubscriber['status'];
+  source: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type AgentRunRow = {
+  id: string;
+  status: NewsletterAgentRun['status'];
+  started_at: string;
+  finished_at: string;
+  source_count: number;
+  draft_count: number;
+  notes: string[];
+  error: string | null;
+  created_at: string;
+};
+
+type EmailLogRow = {
+  id: string;
+  email: string;
+  subject: string;
+  status: NewsletterEmailLog['status'];
+  provider: string;
+  provider_id: string | null;
+  campaign: string | null;
+  error: string | null;
+  created_at: string;
 };
 
 function toPost(row: BriefingRow): BriefingPost {
@@ -55,6 +95,44 @@ function toRow(post: BriefingDraftInput) {
     sources: post.sources,
     relevance_score: post.relevanceScore,
     reading_minutes: post.readingMinutes,
+  };
+}
+
+function toSubscriber(row: SubscriberAdminRow): NewsletterSubscriber {
+  return {
+    email: row.email,
+    status: row.status,
+    source: row.source,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function toAgentRun(row: AgentRunRow): NewsletterAgentRun {
+  return {
+    id: row.id,
+    status: row.status,
+    startedAt: row.started_at,
+    finishedAt: row.finished_at,
+    sourceCount: row.source_count,
+    draftCount: row.draft_count,
+    notes: row.notes ?? [],
+    error: row.error,
+    createdAt: row.created_at,
+  };
+}
+
+function toEmailLog(row: EmailLogRow): NewsletterEmailLog {
+  return {
+    id: row.id,
+    email: row.email,
+    subject: row.subject,
+    status: row.status,
+    provider: row.provider,
+    providerId: row.provider_id,
+    campaign: row.campaign,
+    error: row.error,
+    createdAt: row.created_at,
   };
 }
 
@@ -220,4 +298,133 @@ export async function getActiveSubscribers() {
   if (error) throw new Error(error.message);
 
   return (data ?? []) as SubscriberRow[];
+}
+
+export async function logEmailSendEvents(
+  events: {
+    postId?: string;
+    email: string;
+    subject: string;
+    status: NewsletterEmailLog['status'];
+    providerId?: string | null;
+    campaign?: string | null;
+    error?: string | null;
+  }[],
+) {
+  const supabase = getSupabaseAdmin();
+  if (!supabase || events.length === 0) return { stored: false, count: 0 };
+
+  const { error } = await supabase.from('newsletter_email_logs').insert(
+    events.map((event) => ({
+      post_id: event.postId && event.postId !== 'gpt-5-5-test' ? event.postId : null,
+      email: event.email,
+      subject: event.subject,
+      status: event.status,
+      provider: 'resend',
+      provider_id: event.providerId ?? null,
+      campaign: event.campaign ?? null,
+      error: event.error ?? null,
+    })),
+  );
+
+  if (error) {
+    console.error('Failed to store newsletter email logs', error);
+    return { stored: false, count: 0, error: error.message };
+  }
+
+  return { stored: true, count: events.length };
+}
+
+async function countRows(table: string, filters: Record<string, string> = {}) {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return 0;
+
+  let query = supabase.from(table).select('*', { count: 'exact', head: true });
+  Object.entries(filters).forEach(([key, value]) => {
+    query = query.eq(key, value);
+  });
+
+  const { count, error } = await query;
+  if (error) return 0;
+
+  return count ?? 0;
+}
+
+export async function getNewsletterAdminOverview() {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) {
+    return {
+      metrics: {
+        subscribers: 0,
+        activeSubscribers: 0,
+        drafts: 0,
+        published: 0,
+        sentEmails: 0,
+        failedEmails: 0,
+      },
+      subscribers: [] as NewsletterSubscriber[],
+      posts: [] as BriefingPost[],
+      agentRuns: [] as NewsletterAgentRun[],
+      emailLogs: [] as NewsletterEmailLog[],
+      emailLogReady: false,
+    };
+  }
+
+  const [
+    subscribersCount,
+    activeSubscribersCount,
+    draftsCount,
+    publishedCount,
+    sentEmailsCount,
+    failedEmailsCount,
+    subscribersResult,
+    postsResult,
+    agentRunsResult,
+    emailLogsResult,
+  ] = await Promise.all([
+    countRows('newsletter_subscribers'),
+    countRows('newsletter_subscribers', { status: 'active' }),
+    countRows('daily_digest_posts', { status: 'draft' }),
+    countRows('daily_digest_posts', { status: 'published' }),
+    countRows('newsletter_email_logs', { status: 'sent' }),
+    countRows('newsletter_email_logs', { status: 'failed' }),
+    supabase
+      .from('newsletter_subscribers')
+      .select('email,status,source,created_at,updated_at')
+      .order('created_at', { ascending: false })
+      .limit(100),
+    supabase
+      .from('daily_digest_posts')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50),
+    supabase
+      .from('agent_runs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(30),
+    supabase
+      .from('newsletter_email_logs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(100),
+  ]);
+
+  const emailLogReady = !emailLogsResult.error;
+
+  return {
+    metrics: {
+      subscribers: subscribersCount,
+      activeSubscribers: activeSubscribersCount,
+      drafts: draftsCount,
+      published: publishedCount,
+      sentEmails: sentEmailsCount,
+      failedEmails: failedEmailsCount,
+    },
+    subscribers: ((subscribersResult.data ?? []) as SubscriberAdminRow[]).map(toSubscriber),
+    posts: ((postsResult.data ?? []) as BriefingRow[]).map(toPost),
+    agentRuns: ((agentRunsResult.data ?? []) as AgentRunRow[]).map(toAgentRun),
+    emailLogs: emailLogReady ? ((emailLogsResult.data ?? []) as EmailLogRow[]).map(toEmailLog) : [],
+    emailLogReady,
+  };
 }

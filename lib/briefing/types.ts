@@ -58,3 +58,35 @@ export type AgentRunRecord = {
   notes: string[];
   error?: string;
 };
+
+export type NewsletterSubscriber = {
+  email: string;
+  status: 'active' | 'unsubscribed' | 'bounced';
+  source: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type NewsletterEmailLog = {
+  id: string;
+  email: string;
+  subject: string;
+  status: 'sent' | 'failed' | 'skipped';
+  provider: string;
+  providerId: string | null;
+  campaign: string | null;
+  error: string | null;
+  createdAt: string;
+};
+
+export type NewsletterAgentRun = {
+  id: string;
+  status: 'success' | 'error';
+  startedAt: string;
+  finishedAt: string;
+  sourceCount: number;
+  draftCount: number;
+  notes: string[];
+  error: string | null;
+  createdAt: string;
+};

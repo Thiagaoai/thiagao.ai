@@ -1,7 +1,7 @@
 import { Resend } from 'resend';
 import { getNewsletterFrom, getNewsletterReplyTo } from './config';
 import { renderBriefingEmail, renderBriefingText } from './email-template';
-import { getActiveSubscribers } from './posts';
+import { getActiveSubscribers, logEmailSendEvents } from './posts';
 import type { BriefingPost } from './types';
 
 export async function sendBriefingEmail(post: BriefingPost) {
@@ -28,13 +28,14 @@ export async function sendBriefingEmail(post: BriefingPost) {
   const text = renderBriefingText(post);
   const replyTo = getNewsletterReplyTo();
   const recipients = subscribers.slice(0, 100);
+  const subject = `${post.category}: ${post.title}`;
 
   const result = await resend.batch.send(
     recipients.map((subscriber) => ({
         from,
         to: subscriber.email,
         replyTo,
-        subject: `${post.category}: ${post.title}`,
+        subject,
         html,
         text,
       })),
@@ -42,12 +43,44 @@ export async function sendBriefingEmail(post: BriefingPost) {
   );
 
   if (result.error) {
+    await logEmailSendEvents(
+      recipients.map((subscriber) => ({
+        postId: post.id,
+        email: subscriber.email,
+        subject,
+        status: 'failed',
+        campaign: post.slug,
+        error: result.error?.message ?? 'Resend batch failed.',
+      })),
+    );
+
     return {
       sent: false,
       attempted: recipients.length,
       reason: result.error.message,
     };
   }
+
+  const errors = new Map((result.data?.errors ?? []).map((error) => [error.index, error.message]));
+  const sentIds = result.data?.data ?? [];
+  let successIndex = 0;
+
+  await logEmailSendEvents(
+    recipients.map((subscriber, index) => {
+      const error = errors.get(index);
+      const providerId = error ? null : sentIds[successIndex++]?.id ?? null;
+
+      return {
+        postId: post.id,
+        email: subscriber.email,
+        subject,
+        status: error ? 'failed' : 'sent',
+        providerId,
+        campaign: post.slug,
+        error: error ?? null,
+      };
+    }),
+  );
 
   return {
     sent: true,
