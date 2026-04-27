@@ -20,13 +20,13 @@ function getGpt55TestPost(): BriefingPost {
     id: 'gpt-5-5-test',
     slug: 'gpt-5-5-openai-real-work',
     status: 'published',
-    title: 'GPT-5.5: a OpenAI mira o trabalho real, nao so respostas melhores',
+    title: 'GPT-5.5: a OpenAI mira o trabalho real, não só respostas melhores',
     dek:
-      'A nova geracao foi apresentada como um modelo para programar, pesquisar, analisar dados, criar documentos e operar ferramentas com menos microgerenciamento.',
+      'A nova geração foi apresentada como um modelo para programar, pesquisar, analisar dados, criar documentos e operar ferramentas com menos microgerenciamento.',
     brief:
-      'A OpenAI publicou em 23 de abril de 2026 o GPT-5.5, posicionando o modelo para tarefas complexas e fluxos de trabalho longos. O sinal importante para builders e operadores nao e apenas mais inteligencia em uma resposta isolada, mas a capacidade de entender uma tarefa mais cedo, usar ferramentas com mais consistencia, verificar o proprio trabalho e continuar ate entregar algo utilizavel.',
+      'A OpenAI publicou, em 23 de abril de 2026, o GPT-5.5, posicionando o modelo para tarefas complexas e fluxos de trabalho longos. O sinal importante para builders e operadores não é apenas mais inteligência em uma resposta isolada, mas a capacidade de entender uma tarefa mais cedo, usar ferramentas com mais consistência, verificar o próprio trabalho e continuar até entregar algo utilizável.',
     takeaway:
-      'Teste GPT-5.5 em tarefas reais: objetivo claro, ferramentas envolvidas, verificacao do resultado e uma entrega que voce conseguiria usar no negocio no mesmo dia.',
+      'Teste o GPT-5.5 em tarefas reais: objetivo claro, ferramentas envolvidas, verificação do resultado e uma entrega que você conseguiria usar no negócio no mesmo dia.',
     category: 'AI',
     tags: ['AI', 'Agents', 'DevTools', 'Automacao'],
     sources: [

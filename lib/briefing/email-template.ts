@@ -89,7 +89,7 @@ export function renderBriefingEmail(post: BriefingPost) {
                           </td>
                           <td valign="top" style="padding-left:16px;">
                             <div style="color:#38bdf8;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px;">ThigaoA.i Daily News</div>
-                            <div style="color:#94a3b8;font-size:13px;line-height:1.5;">AI, agentes, automacao e software para quem constroi.</div>
+                            <div style="color:#94a3b8;font-size:13px;line-height:1.5;">IA, agentes, automação e software para quem constrói.</div>
                           </td>
                         </tr>
                       </table>
@@ -127,19 +127,19 @@ export function renderBriefingEmail(post: BriefingPost) {
                   <tr>
                     <td style="padding:18px;border:1px solid #27272a;border-radius:18px;background:#101216;">
                       <div style="color:#fff;font-size:15px;font-weight:900;margin-bottom:6px;">Para builders</div>
-                      <div style="color:#bfc6d1;font-size:14px;line-height:1.65;">Transforme a noticia em teste pratico: escolha uma tarefa real, entregue contexto, deixe o agente operar ferramentas e cobre verificacao do resultado.</div>
+                      <div style="color:#bfc6d1;font-size:14px;line-height:1.65;">Transforme a notícia em teste prático: escolha uma tarefa real, entregue contexto, deixe o agente operar ferramentas e cobre verificação do resultado.</div>
                     </td>
                   </tr>
                   <tr>
                     <td style="padding:18px;border:1px solid #27272a;border-radius:18px;background:#101216;">
                       <div style="color:#fff;font-size:15px;font-weight:900;margin-bottom:6px;">Para operacao</div>
-                      <div style="color:#bfc6d1;font-size:14px;line-height:1.65;">O valor esta em reduzir microgerenciamento: menos etapas manuais, mais fluxo completo com planejamento, execucao e revisao.</div>
+                      <div style="color:#bfc6d1;font-size:14px;line-height:1.65;">O valor está em reduzir microgerenciamento: menos etapas manuais, mais fluxo completo com planejamento, execução e revisão.</div>
                     </td>
                   </tr>
                   <tr>
                     <td style="padding:18px;border:1px solid #27272a;border-radius:18px;background:#101216;">
                       <div style="color:#fff;font-size:15px;font-weight:900;margin-bottom:6px;">Para conteudo</div>
-                      <div style="color:#bfc6d1;font-size:14px;line-height:1.65;">A melhor pauta nao e "modelo novo"; e mostrar como essa capacidade muda trabalho real em sites, automacoes, atendimento e produto.</div>
+                      <div style="color:#bfc6d1;font-size:14px;line-height:1.65;">A melhor pauta não é “modelo novo”; é mostrar como essa capacidade muda o trabalho real em sites, automações, atendimento e produto.</div>
                     </td>
                   </tr>
                 </table>
@@ -154,7 +154,7 @@ export function renderBriefingEmail(post: BriefingPost) {
             </tr>
             <tr>
               <td style="padding:22px 30px 30px;border-top:1px solid #20242c;background:#07080b;color:#71717a;font-size:12px;line-height:1.65;">
-                Voce recebeu este email porque esta inscrito no ThigaoA.i Daily News. Responda este email para falar com o Thiago.
+                Você recebeu este email porque está inscrito no ThigaoA.i Daily News. Responda este email para falar com o Thiago.
               </td>
             </tr>
           </table>
