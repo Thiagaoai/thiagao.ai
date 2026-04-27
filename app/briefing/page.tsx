@@ -277,10 +277,31 @@ export default async function BriefingPage({ searchParams }: PageProps) {
               })}
             </div>
 
-            <AiRadioPlayer />
           </div>
         </section>
       </header>
+
+      <section id="musica" className="relative z-10 border-y border-zinc-900 bg-black py-16 sm:py-20">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 px-6 lg:grid-cols-[0.82fr_1.18fr]">
+          <div>
+            <p className="mb-5 inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-cyan-200">
+              Trilha do briefing
+            </p>
+            <h2
+              className="text-render-premium max-w-2xl text-[42px] font-normal leading-[1.04] text-white sm:text-[62px]"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              Música real para ler sem atrapalhar a página.
+            </h2>
+            <p className="mt-6 max-w-xl text-sm leading-relaxed text-zinc-400 sm:text-base">
+              Jazz, pop, instrumental e christian em players oficiais. Para tocar a faixa inteira,
+              use o Spotify logado ou abra direto no app.
+            </p>
+          </div>
+
+          <AiRadioPlayer />
+        </div>
+      </section>
 
       <section id="assinar" className="relative z-10 border-y border-zinc-900 bg-black py-24">
         <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-6 lg:grid-cols-[0.95fr_1.05fr]">

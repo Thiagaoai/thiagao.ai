@@ -51,7 +51,7 @@ export default function AiRadioPlayer() {
   const [activePlaylist, setActivePlaylist] = useState(playlists[0]);
 
   return (
-    <div className="animate-fade-rise-delay-3 mt-7 w-full max-w-[min(100%,44rem)] overflow-hidden rounded-[24px] border border-white/10 bg-black/45 p-3 text-left shadow-2xl backdrop-blur-xl sm:mt-10 sm:rounded-[28px]">
+    <div className="w-full overflow-hidden rounded-[24px] border border-white/10 bg-zinc-950/70 p-3 text-left shadow-2xl backdrop-blur-xl sm:rounded-[28px]">
       <div className={`rounded-[22px] bg-gradient-to-r ${activePlaylist.accent} p-px`}>
         <div className="rounded-[21px] bg-black/90 p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -75,7 +75,7 @@ export default function AiRadioPlayer() {
               rel="noreferrer"
               className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-black transition-transform hover:scale-[1.03]"
             >
-              Spotify
+              Ouvir completo
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           </div>
@@ -104,14 +104,14 @@ export default function AiRadioPlayer() {
         title={`Spotify playlist ${activePlaylist.label}`}
         src={activePlaylist.embedUrl}
         width="100%"
-        height="352"
+        height="380"
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
         loading="lazy"
         className="mt-3 rounded-[18px] border-0 bg-zinc-950"
       />
 
       <p className="mt-3 px-2 text-xs leading-relaxed text-zinc-500">
-        Player oficial do Spotify. Musicas conhecidas ficam dentro da plataforma, sem hospedar arquivos no site.
+        Player oficial do Spotify. O tempo completo depende da conta/log-in do visitante; o botao abre a playlist no app.
       </p>
     </div>
   );
