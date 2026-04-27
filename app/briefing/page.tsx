@@ -122,7 +122,7 @@ const principles = [
 export const metadata = {
   title: 'ThigaoA.i Briefing - AI Operator Newsletter',
   description:
-    'Newsletter premium sobre IA aplicada, automacao, dev tools, big tech, hardware, agentes e tendencias para builders.',
+    'Newsletter sobre IA, big tech, ferramentas, novidades e tendencias explicadas para curiosos, novatos, entusiastas e builders.',
 };
 
 export default async function BriefingPage({ searchParams }: PageProps) {
@@ -192,20 +192,20 @@ export default async function BriefingPage({ searchParams }: PageProps) {
         <section className="relative z-10 flex min-h-[calc(100vh-96px)] flex-col items-center justify-center px-6 py-[90px] pb-40 pt-32 text-center">
           <p className="animate-fade-rise mb-8 inline-flex items-center gap-3 rounded-full border border-white/10 bg-black/15 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-zinc-200 backdrop-blur-sm">
             <span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_18px_rgba(110,231,183,0.8)]" />
-            ThigaoA.i Briefing · IA aplicada · Dev · Automacao
+            ThigaoA.i Briefing · IA · Big Tech · Novidades
           </p>
 
           <h1
             className="animate-fade-rise max-w-7xl text-5xl font-normal leading-[0.95] tracking-[-2.46px] text-white sm:text-7xl md:text-8xl"
             style={{ fontFamily: 'var(--font-display)' }}
           >
-            O briefing do <em className="not-italic text-zinc-400">Thiagao</em> para{' '}
-            <em className="not-italic text-zinc-400">builders de IA.</em>
+            A newsletter do <em className="not-italic text-zinc-400">Thiagao</em> para entender{' '}
+            <em className="not-italic text-zinc-400">o futuro sem complicar.</em>
           </h1>
 
           <p className="animate-fade-rise-delay mt-8 max-w-2xl text-base leading-relaxed text-zinc-300 sm:text-lg">
-            Curadoria curta sobre IA, automacao, dev tools, agentes e big tech. O que aparece no
-            @thiagaoAi, na DockPlus AI e no canal @solocodando vira contexto pratico para construir.
+            Notícias, ferramentas, big tech, agentes e tendências de IA explicadas de um jeito direto:
+            bom para quem está começando, para quem é curioso e para quem já está construindo.
           </p>
 
           <div className="animate-fade-rise-delay-2 mt-12 flex flex-col items-center gap-5">
@@ -262,7 +262,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
               className="max-w-3xl text-[44px] font-normal leading-[1.02] tracking-[-0.04em] text-white sm:text-[72px]"
               style={{ fontFamily: 'var(--font-display)' }}
             >
-              Um briefing para construir antes do hype esfriar.
+              IA e big tech sem enrolação, para acompanhar antes da onda passar.
             </h2>
           </div>
 
