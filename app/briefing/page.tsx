@@ -3,6 +3,8 @@ import {
   ArrowRight,
   Bot,
   BrainCircuit,
+  CheckCircle2,
+  Clock3,
   Database,
   ExternalLink,
   Gauge,
@@ -120,6 +122,14 @@ const principles = [
   },
 ];
 
+const newsletterBenefits = [
+  'Noticias importantes de IA, big tech, agentes e ferramentas novas.',
+  'Explicacao simples para quem esta comecando ou acompanhando por curiosidade.',
+  'Impacto pratico: o que muda, por que importa e como usar no mundo real.',
+  'Links, fontes e contexto para voce nao depender so do hype.',
+  'Versao curta pronta para o Solocodando no WhatsApp quando houver destaque.',
+];
+
 export const metadata = {
   title: 'ThigaoA.i Briefing - AI Operator Newsletter',
   description:
@@ -218,6 +228,13 @@ export default async function BriefingPage({ searchParams }: PageProps) {
             bom para quem está começando, para quem é curioso e para quem já está construindo.
           </p>
 
+          <div className="animate-fade-rise-delay-2 mt-7 inline-flex flex-wrap items-center justify-center gap-3 rounded-full border border-cyan-300/20 bg-black/25 px-5 py-3 text-sm font-semibold text-cyan-100 backdrop-blur-xl">
+            <Clock3 className="h-4 w-4 text-cyan-200" />
+            Edição diária às 5 PM New York
+            <span className="hidden h-1 w-1 rounded-full bg-cyan-200/70 sm:inline-flex" />
+            <span className="text-zinc-300">curta, prática e com fontes</span>
+          </div>
+
           <div className="animate-fade-rise-delay-2 mt-12 flex flex-col items-center gap-5">
             <a
               href="#assinar"
@@ -276,6 +293,17 @@ export default async function BriefingPage({ searchParams }: PageProps) {
             >
               IA e big tech sem enrolação, para acompanhar antes da onda passar.
             </h2>
+            <div className="mt-8 grid gap-3">
+              {newsletterBenefits.map((benefit) => (
+                <div
+                  key={benefit}
+                  className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-3 text-sm leading-relaxed text-zinc-300"
+                >
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-200" />
+                  <span>{benefit}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="liquid-glass rounded-[34px] p-4">
