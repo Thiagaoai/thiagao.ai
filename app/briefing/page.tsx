@@ -6,6 +6,7 @@ import {
   Database,
   ExternalLink,
   Gauge,
+  LockKeyhole,
   PlayCircle,
   ShieldCheck,
   Sparkles,
@@ -170,12 +171,22 @@ export default async function BriefingPage({ searchParams }: PageProps) {
             ))}
           </div>
 
-          <a
-            href="#assinar"
-            className="liquid-glass inline-flex rounded-full px-6 py-2.5 text-sm font-medium text-white transition-transform hover:scale-[1.03]"
-          >
-            Assinar
-          </a>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin/login"
+              className="liquid-glass inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-[1.03]"
+              aria-label="Login do painel admin"
+            >
+              <LockKeyhole className="h-4 w-4" />
+              Admin
+            </Link>
+            <a
+              href="#assinar"
+              className="liquid-glass inline-flex rounded-full px-6 py-2.5 text-sm font-medium text-white transition-transform hover:scale-[1.03]"
+            >
+              Assinar
+            </a>
+          </div>
         </nav>
 
         <section className="relative z-10 flex min-h-[calc(100vh-96px)] flex-col items-center justify-center px-6 py-[90px] pb-40 pt-32 text-center">

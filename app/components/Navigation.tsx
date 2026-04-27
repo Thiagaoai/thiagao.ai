@@ -62,11 +62,12 @@ export default function Navigation() {
             ))}
             <Link
               href="/admin/login"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#3b82f6]/30 bg-[#3b82f6]/10 text-[#bfdbfe] transition-colors hover:border-[#22d3ee]/50 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3b82f6]"
+              className="inline-flex items-center gap-2 rounded-full border border-[#3b82f6]/30 bg-[#3b82f6]/10 px-4 py-2.5 text-sm font-semibold text-[#bfdbfe] transition-colors hover:border-[#22d3ee]/50 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3b82f6]"
               aria-label="Login do painel"
               title="Login do painel"
             >
               <LockKeyhole className="h-4 w-4" />
+              Admin
             </Link>
           </div>
 
