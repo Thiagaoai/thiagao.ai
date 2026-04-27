@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { CheckCircle2, KeyRound, Loader2, Radio, Send, UserPlus } from 'lucide-react';
+import { CheckCircle2, Copy, KeyRound, Loader2, MessageCircle, Radio, Send, UserPlus } from 'lucide-react';
 import type { AdminUser } from '@/lib/briefing/admin-users';
 import type { BriefingPost } from '@/lib/briefing/types';
 
@@ -21,6 +21,8 @@ export default function AdminNewsletterClient({
   const [message, setMessage] = useState('');
   const [adminBusy, setAdminBusy] = useState(false);
   const [mailBusy, setMailBusy] = useState(false);
+  const [whatsappBusyId, setWhatsappBusyId] = useState<string | null>(null);
+  const [whatsappText, setWhatsappText] = useState('');
   const [adminForm, setAdminForm] = useState({ name: '', email: '', password: '' });
   const [mailForm, setMailForm] = useState({
     subject: 'Breaking: atualização importante da ThigaoA.i',
@@ -40,7 +42,7 @@ export default function AdminNewsletterClient({
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ id, sendEmail }),
       });
-      const data = (await response.json()) as { ok?: boolean; message?: string };
+      const data = (await response.json()) as { ok?: boolean; message?: string; whatsapp?: { text?: string } };
 
       if (!response.ok || !data.ok) {
         throw new Error(data.message ?? 'Falha ao publicar.');
@@ -48,10 +50,41 @@ export default function AdminNewsletterClient({
 
       setDrafts((current) => current.filter((draft) => draft.id !== id));
       setMessage(sendEmail ? 'Publicado e envio disparado.' : 'Publicado sem enviar email.');
+      if (data.whatsapp?.text) {
+        setWhatsappText(data.whatsapp.text);
+        await navigator.clipboard.writeText(data.whatsapp.text);
+        setMessage(`${sendEmail ? 'Publicado e envio disparado.' : 'Publicado sem enviar email.'} Texto do WhatsApp copiado para o grupo Solocodando.`);
+      }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Falha ao publicar.');
     } finally {
       setBusyId(null);
+    }
+  }
+
+  async function copyWhatsAppText(id: string) {
+    setWhatsappBusyId(id);
+    setMessage('');
+
+    try {
+      const response = await fetch('/api/admin/whatsapp-preview', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      const data = (await response.json()) as { ok?: boolean; message?: string; text?: string };
+
+      if (!response.ok || !data.ok || !data.text) {
+        throw new Error(data.message ?? 'Falha ao gerar texto do WhatsApp.');
+      }
+
+      setWhatsappText(data.text);
+      await navigator.clipboard.writeText(data.text);
+      setMessage('Texto do WhatsApp copiado. Agora é só colar no grupo Solocodando.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Falha ao copiar texto do WhatsApp.');
+    } finally {
+      setWhatsappBusyId(null);
     }
   }
 
@@ -101,13 +134,22 @@ export default function AdminNewsletterClient({
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(mailForm),
       });
-      const data = (await response.json()) as { ok?: boolean; message?: string; email?: { delivered?: number; failed?: number; reason?: string } };
+      const data = (await response.json()) as {
+        ok?: boolean;
+        message?: string;
+        email?: { delivered?: number; failed?: number; reason?: string };
+        whatsapp?: { text?: string };
+      };
 
       if (!response.ok || !data.ok) {
         throw new Error(data.message ?? data.email?.reason ?? 'Falha ao enviar comunicado.');
       }
 
-      setMessage(`Comunicado enviado. Entregues: ${data.email?.delivered ?? 0}. Falhas: ${data.email?.failed ?? 0}.`);
+      if (data.whatsapp?.text) {
+        setWhatsappText(data.whatsapp.text);
+        await navigator.clipboard.writeText(data.whatsapp.text);
+      }
+      setMessage(`Comunicado enviado. Entregues: ${data.email?.delivered ?? 0}. Falhas: ${data.email?.failed ?? 0}. Texto do WhatsApp copiado.`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Falha ao enviar comunicado.');
     } finally {
@@ -231,6 +273,29 @@ export default function AdminNewsletterClient({
         </div>
       </section>
 
+      <section className="mb-8 rounded-[30px] border border-emerald-300/15 bg-emerald-300/[0.04] p-6">
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-200">WhatsApp</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Fluxo Solocodando</h2>
+          </div>
+          <MessageCircle className="h-5 w-5 text-emerald-200" />
+        </div>
+        <div className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
+          <div className="rounded-2xl border border-white/10 bg-black/30 p-4 text-sm leading-relaxed text-zinc-300">
+            O fluxo agora gera uma versão curta do mesmo briefing para o grupo Solocodando. No draft, use
+            “Copiar WhatsApp”. Ao publicar, o texto também é copiado automaticamente para você colar no grupo.
+          </div>
+          <textarea
+            value={whatsappText}
+            onChange={(event) => setWhatsappText(event.target.value)}
+            placeholder="A mensagem WhatsApp-ready aparece aqui depois de copiar um draft ou enviar um comunicado."
+            rows={8}
+            className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/50"
+          />
+        </div>
+      </section>
+
       <div className="grid gap-5">
         {drafts.length === 0 ? (
           <div className="rounded-[30px] border border-zinc-800 bg-zinc-950/70 p-8 text-zinc-400">
@@ -262,6 +327,14 @@ export default function AdminNewsletterClient({
                 >
                   {busyId === draft.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                   Publicar
+                </button>
+                <button
+                  onClick={() => copyWhatsAppText(draft.id)}
+                  disabled={whatsappBusyId === draft.id || busyId === draft.id}
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-300/20 px-5 py-3 text-sm font-bold text-emerald-100 transition-colors hover:bg-emerald-300/10 disabled:opacity-60"
+                >
+                  {whatsappBusyId === draft.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Copy className="h-4 w-4" />}
+                  Copiar WhatsApp
                 </button>
                 <button
                   onClick={() => publish(draft.id, true)}

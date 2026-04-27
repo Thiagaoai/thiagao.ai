@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { isAdminRequestAuthorized } from '@/lib/briefing/admin-request';
 import { sendBriefingEmail } from '@/lib/briefing/email';
 import { publishBriefingPost } from '@/lib/briefing/posts';
+import { renderBriefingWhatsApp } from '@/lib/briefing/whatsapp';
 
 const PublishSchema = z.object({
   id: z.uuid(),
@@ -29,6 +30,9 @@ export async function POST(request: Request) {
       ok: true,
       post,
       email,
+      whatsapp: {
+        text: renderBriefingWhatsApp(post),
+      },
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Publish failed.';

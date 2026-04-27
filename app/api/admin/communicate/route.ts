@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { isAdminRequestAuthorized } from '@/lib/briefing/admin-request';
 import { sendCustomNewsletterEmail } from '@/lib/briefing/email';
+import { renderCustomWhatsApp } from '@/lib/briefing/whatsapp';
 
 export const runtime = 'nodejs';
 
@@ -34,5 +35,11 @@ export async function POST(request: Request) {
     text: body?.text,
   });
 
-  return NextResponse.json({ ok: Boolean(email.sent), email });
+  return NextResponse.json({
+    ok: Boolean(email.sent),
+    email,
+    whatsapp: {
+      text: renderCustomWhatsApp({ headline, preheader, body: html }),
+    },
+  });
 }
