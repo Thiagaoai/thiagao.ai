@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { LockKeyhole } from 'lucide-react';
 import { BRAND_NAME, BrandMark, BrandWordmark } from './BrandMark';
 
 const navItems = [
@@ -58,6 +60,14 @@ export default function Navigation() {
                 {item.label}
               </button>
             ))}
+            <Link
+              href="/admin/login"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#3b82f6]/30 bg-[#3b82f6]/10 text-[#bfdbfe] transition-colors hover:border-[#22d3ee]/50 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3b82f6]"
+              aria-label="Login do painel"
+              title="Login do painel"
+            >
+              <LockKeyhole className="h-4 w-4" />
+            </Link>
           </div>
 
           {/* a11y: aria-expanded para estado do menu */}
@@ -93,6 +103,14 @@ export default function Navigation() {
                 {item.label}
               </button>
             ))}
+            <Link
+              href="/admin/login"
+              onClick={() => setIsOpen(false)}
+              className="flex w-full items-center gap-2 rounded-md px-2 py-3 text-left text-sm text-[#fafafa]/70 transition-colors hover:bg-[#171717] hover:text-[#3b82f6] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3b82f6]"
+            >
+              <LockKeyhole className="h-4 w-4" />
+              Login do painel
+            </Link>
           </div>
         </div>
       </div>

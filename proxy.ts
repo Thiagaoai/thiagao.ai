@@ -19,17 +19,19 @@ function isBasicAuthorized(authorization: string | null) {
 export function proxy(request: NextRequest) {
   const dashboardToken = process.env.ADMIN_DASHBOARD_TOKEN;
   const token = request.nextUrl.searchParams.get('token');
+  const session = request.cookies.get('newsletter_admin_session')?.value;
 
-  if ((dashboardToken && token === dashboardToken) || isBasicAuthorized(request.headers.get('authorization'))) {
+  if (
+    (dashboardToken && (token === dashboardToken || session === dashboardToken)) ||
+    isBasicAuthorized(request.headers.get('authorization'))
+  ) {
     return NextResponse.next();
   }
 
-  return new NextResponse('Authentication required.', {
-    status: 401,
-    headers: {
-      'WWW-Authenticate': 'Basic realm="ThigaoA.i Newsletter Admin", charset="UTF-8"',
-    },
-  });
+  const loginUrl = request.nextUrl.clone();
+  loginUrl.pathname = '/admin/login';
+  loginUrl.search = '';
+  return NextResponse.redirect(loginUrl);
 }
 
 export const config = {

@@ -1,16 +1,19 @@
 import Link from 'next/link';
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import {
   Activity,
   AlertTriangle,
+  BarChart3,
   CheckCircle2,
   Clock3,
   Database,
+  LogOut,
   Mail,
   Send,
   ShieldCheck,
   Users,
 } from 'lucide-react';
+import { listAdminUsers } from '@/lib/briefing/admin-users';
 import { isNewsletterAdminAuthorized } from '@/lib/briefing/admin-auth';
 import { getDraftBriefings, getNewsletterAdminOverview } from '@/lib/briefing/posts';
 import AdminNewsletterClient from './AdminNewsletterClient';
@@ -77,6 +80,39 @@ function MetricCard({
   );
 }
 
+function ThreeDBar({
+  label,
+  value,
+  max,
+  tone,
+}: {
+  label: string;
+  value: number;
+  max: number;
+  tone: string;
+}) {
+  const height = Math.max(16, Math.round((value / Math.max(max, 1)) * 170));
+
+  return (
+    <div className="flex min-w-0 flex-1 flex-col items-center gap-4">
+      <div className="flex h-[190px] w-full items-end justify-center rounded-3xl border border-white/10 bg-black/30 px-3 pb-4 [perspective:760px]">
+        <div
+          className={`w-full max-w-[76px] rounded-t-2xl border border-white/10 bg-gradient-to-t ${tone} shadow-2xl transition-transform duration-300 hover:-translate-y-2 hover:rotate-x-6`}
+          style={{
+            height,
+            transform: 'rotateX(58deg) rotateZ(-6deg)',
+            transformOrigin: 'bottom center',
+          }}
+        />
+      </div>
+      <div className="text-center">
+        <p className="text-2xl font-semibold text-white">{value}</p>
+        <p className="mt-1 text-xs font-black uppercase tracking-[0.16em] text-zinc-500">{label}</p>
+      </div>
+    </div>
+  );
+}
+
 export const metadata = {
   title: 'Admin Newsletter - ThigaoA.i',
   robots: {
@@ -88,8 +124,9 @@ export const metadata = {
 export default async function AdminNewsletterPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const requestHeaders = await headers();
+  const cookieStore = await cookies();
   const apiToken = process.env.ADMIN_API_TOKEN;
-  const token = params?.token;
+  const token = params?.token ?? cookieStore.get('newsletter_admin_session')?.value;
 
   if (
     !apiToken ||
@@ -118,6 +155,7 @@ export default async function AdminNewsletterPage({ searchParams }: PageProps) {
 
   const { posts } = await getDraftBriefings({ limit: 30 });
   const overview = await getNewsletterAdminOverview();
+  const adminUsers = await listAdminUsers();
   const metricCards = [
     {
       label: 'Inscritos',
@@ -173,6 +211,12 @@ export default async function AdminNewsletterPage({ searchParams }: PageProps) {
             <Link href="/briefing" className="rounded-full bg-white px-5 py-3 text-sm font-black text-black transition-colors hover:bg-cyan-100">
               Ver briefing
             </Link>
+            <form action="/api/admin/logout" method="post">
+              <button className="inline-flex items-center gap-2 rounded-full border border-red-300/20 px-5 py-3 text-sm font-bold text-red-100 transition-colors hover:bg-red-300/10">
+                <LogOut className="h-4 w-4" />
+                Sair
+              </button>
+            </form>
           </div>
         </div>
 
@@ -180,6 +224,22 @@ export default async function AdminNewsletterPage({ searchParams }: PageProps) {
           {metricCards.map((metric) => (
             <MetricCard key={metric.label} {...metric} />
           ))}
+        </section>
+
+        <section className="mt-8 rounded-[34px] border border-white/10 bg-zinc-950/70 p-6">
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-200">Performance visual</p>
+              <h2 className="mt-2 text-2xl font-semibold text-white">Gráficos 3D da operação</h2>
+            </div>
+            <BarChart3 className="h-5 w-5 text-zinc-500" />
+          </div>
+          <div className="grid gap-4 md:grid-cols-4">
+            <ThreeDBar label="Inscritos" value={overview.metrics.activeSubscribers} max={Math.max(overview.metrics.activeSubscribers, overview.metrics.sentEmails, overview.metrics.drafts, 1)} tone="from-cyan-400 to-blue-700" />
+            <ThreeDBar label="Enviados" value={overview.metrics.sentEmails} max={Math.max(overview.metrics.activeSubscribers, overview.metrics.sentEmails, overview.metrics.drafts, 1)} tone="from-emerald-300 to-cyan-700" />
+            <ThreeDBar label="Drafts" value={overview.metrics.drafts} max={Math.max(overview.metrics.activeSubscribers, overview.metrics.sentEmails, overview.metrics.drafts, 1)} tone="from-amber-300 to-orange-700" />
+            <ThreeDBar label="Falhas" value={overview.metrics.failedEmails} max={Math.max(overview.metrics.activeSubscribers, overview.metrics.sentEmails, overview.metrics.drafts, 1)} tone="from-red-300 to-rose-800" />
+          </div>
         </section>
 
         {!overview.emailLogReady ? (
@@ -320,7 +380,12 @@ export default async function AdminNewsletterPage({ searchParams }: PageProps) {
           </div>
         </section>
 
-        <AdminNewsletterClient initialDrafts={posts} token={apiToken} />
+        <AdminNewsletterClient
+          initialDrafts={posts}
+          initialAdmins={adminUsers.admins}
+          adminsReady={adminUsers.ready}
+          token={apiToken}
+        />
       </div>
     </main>
   );
