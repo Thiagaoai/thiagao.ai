@@ -70,14 +70,14 @@ function LinkedinIcon({ className }: IconProps) {
 }
 
 const channelLinks = [
-  { label: '@thiagao.ai', href: 'https://instagram.com/thiagao.ai' },
+  { label: '@thiagaoAi', href: 'https://instagram.com/thiagaoAi' },
   { label: '@dockplusai', href: 'https://instagram.com/dockplusai' },
   { label: '@solocodando', href: soloCodandoYoutubeUrl },
 ];
 
 const socialLinks = [
   { label: 'X', href: 'https://x.com/thiagaoai', icon: XIcon },
-  { label: 'Instagram', href: 'https://instagram.com/thiagao.ai', icon: InstagramIcon },
+  { label: 'Instagram', href: 'https://instagram.com/thiagaoAi', icon: InstagramIcon },
   { label: 'Facebook', href: 'https://facebook.com/thiagaoai', icon: FacebookIcon },
   { label: 'LinkedIn', href: 'https://linkedin.com/in/thiagodocarmo', icon: LinkedinIcon },
 ];
@@ -85,7 +85,7 @@ const socialLinks = [
 const videoSlots = [
   {
     title: 'Reels de IA aplicada',
-    source: '@thiagao.ai',
+    source: '@thiagaoAi',
     text: 'Cortes curtos sobre ferramentas, prompts, agentes e automacoes que valem testar.',
   },
   {
@@ -194,7 +194,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
 
           <p className="animate-fade-rise-delay mt-8 max-w-2xl text-base leading-relaxed text-zinc-300 sm:text-lg">
             Curadoria curta sobre IA, automacao, dev tools, agentes e big tech. O que aparece no
-            @thiagao.ai, na DockPlus AI e no canal @solocodando vira contexto pratico para construir.
+            @thiagaoAi, na DockPlus AI e no canal @solocodando vira contexto pratico para construir.
           </p>
 
           <div className="animate-fade-rise-delay-2 mt-12 flex flex-col items-center gap-5">
@@ -512,7 +512,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
                 <BrandMark className="h-12 w-12 rounded-2xl" />
                 <div>
                   <BrandWordmark className="text-xl font-bold text-white" />
-                  <p className="mt-1 text-sm text-zinc-300">Instagram @thiagao.ai · @dockplusai · Canal @solocodando</p>
+                  <p className="mt-1 text-sm text-zinc-300">Instagram @thiagaoAi · @dockplusai · Canal @solocodando</p>
                 </div>
               </div>
               <a

@@ -36,7 +36,7 @@ const EMAIL_URL = `mailto:${EMAIL_ADDRESS}`;
 const NEWSLETTER_URL = '#newsletter';
 const BRAND_DOMAIN = 'thiagao.io';
 const BRAND_URL = 'https://thiagao.io';
-const INSTAGRAM_URL = 'https://instagram.com/thiagaoai';
+const INSTAGRAM_URL = 'https://instagram.com/thiagaoAi';
 const SOLO_CODANDO_URL = 'https://instagram.com/solocodando';
 const DOCKPLUS_URL = 'https://dockplusai.io';
 
@@ -82,7 +82,7 @@ const tickerItems = [
   'CRM + WhatsApp',
   'RAG + embeddings',
   'Landing pages premium',
-  '@thiagaoai',
+  '@thiagaoAi',
   '@solocodando',
 ];
 
@@ -402,7 +402,7 @@ export default function RebrandPreviewPage() {
               href={INSTAGRAM_URL}
               className="hidden rounded-full border border-white/10 px-3 py-1.5 text-xs font-bold text-zinc-400 transition-colors hover:text-white sm:block"
             >
-              @thiagaoai
+              @thiagaoAi
             </a>
             <a
               href={NEWSLETTER_URL}
@@ -456,7 +456,7 @@ export default function RebrandPreviewPage() {
                 DockPlus AI
               </a>
               <a href={INSTAGRAM_URL} className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 transition-colors hover:border-cyan-300/40 hover:text-white">
-                Instagram @thiagaoai
+                Instagram @thiagaoAi
               </a>
               <a href={SOLO_CODANDO_URL} className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 transition-colors hover:border-cyan-300/40 hover:text-white">
                 Canal @solocodando
@@ -912,7 +912,7 @@ export default function RebrandPreviewPage() {
           </p>
           <div className="animate-float-up-delay-3 mt-14 flex flex-col items-center justify-center gap-5 sm:flex-row">
             <CtaLink href={INSTAGRAM_URL} variant="white">
-              Seguir @thiagaoai <Newspaper className="h-4 w-4" />
+              Seguir @thiagaoAi <Newspaper className="h-4 w-4" />
             </CtaLink>
             <CtaLink href={CONTACT_URL} variant="outline">
               Falar comigo <ArrowRight className="h-4 w-4" />
@@ -935,7 +935,7 @@ export default function RebrandPreviewPage() {
             <div className="grid grid-cols-2 gap-10 text-left sm:grid-cols-4">
               {[
                 ['Site', ['Skills', 'Projetos', 'Newsletter']],
-                ['Canais', ['@thiagaoai', '@solocodando', 'DockPlus AI']],
+                ['Canais', ['@thiagaoAi', '@solocodando', 'DockPlus AI']],
                 ['Contato', ['WhatsApp', 'Telegram', 'Email', 'Instagram']],
                 ['Stack', ['LangGraph', 'LangSmith', 'Next.js', 'n8n']],
               ].map(([heading, links]) => (
@@ -952,7 +952,7 @@ export default function RebrandPreviewPage() {
                               ? TELEGRAM_URL
                             : link === 'Email'
                               ? EMAIL_URL
-                            : link === '@thiagaoai' || link === 'Instagram'
+                            : link === '@thiagaoAi' || link === 'Instagram'
                               ? INSTAGRAM_URL
                               : link === '@solocodando'
                                 ? SOLO_CODANDO_URL
