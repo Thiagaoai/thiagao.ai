@@ -106,10 +106,7 @@ export default function ThiagaoChat() {
         ...nextMessages,
         {
           role: 'assistant',
-          content:
-            message.includes('DEEPSEEK_API_KEY')
-              ? 'O Chat do Thiagao ja esta instalado, mas falta colocar a chave DEEPSEEK_API_KEY no servidor.'
-              : 'Nao consegui responder agora. Tente novamente em alguns instantes.',
+          content: 'Nao consegui responder agora. Tente novamente em alguns instantes.',
         },
       ]);
     } finally {

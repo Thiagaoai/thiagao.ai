@@ -77,14 +77,6 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} antialiased`}>
         {children}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              console.log('%cThigaoA.i', 'font-size: 24px; font-weight: bold; color: #22d3ee;');
-              console.log('%cSe voce esta vendo isso, provavelmente e dev tambem. Vamos conversar: dockplus@dockplusai.com ou https://wa.me/17742077924', 'font-size: 14px; color: #737373;');
-            `,
-          }}
-        />
       </body>
     </html>
   );

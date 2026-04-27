@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           ok: false,
-          message: 'Chat do Thiagao ainda precisa da chave DEEPSEEK_API_KEY no servidor.',
+          message: 'Chat do Thiagao ainda precisa ser configurado no servidor.',
         },
         { status: 503 },
       );
