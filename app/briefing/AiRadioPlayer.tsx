@@ -90,20 +90,20 @@ export default function AiRadioPlayer() {
               href={activePlaylist.openUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-black transition-transform hover:scale-[1.03]"
+              className="inline-flex shrink-0 items-center justify-center gap-2 self-start whitespace-nowrap rounded-full border border-white/10 bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.1em] text-black transition-transform hover:scale-[1.03] sm:self-center"
             >
               Ouvir completo
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
+          <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-3">
             {playlists.map((playlist) => (
               <button
                 key={playlist.id}
                 type="button"
                 onClick={() => setActivePlaylist(playlist)}
-                className={`rounded-full border px-3 py-2 text-[11px] font-black uppercase tracking-[0.12em] transition-colors sm:text-xs ${
+                className={`flex min-h-[52px] items-center justify-center rounded-full border px-3 py-2 text-center text-[10px] font-black uppercase leading-tight tracking-[0.06em] transition-colors sm:min-h-[56px] sm:text-[11px] ${
                   activePlaylist.id === playlist.id
                     ? 'border-cyan-300/50 bg-cyan-300/15 text-cyan-100'
                     : 'border-white/10 bg-white/[0.03] text-zinc-400 hover:text-white'
