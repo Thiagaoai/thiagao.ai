@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logNewsletterEvent } from '@/lib/briefing/posts';
 import { verifyAdminCredentials } from '@/lib/briefing/admin-users';
 
 export const runtime = 'nodejs';
@@ -22,6 +23,13 @@ export async function POST(request: Request) {
   if (!verified.ok) {
     return NextResponse.json({ ok: false, message: 'Usuário ou senha inválidos.' }, { status: 401 });
   }
+
+  await logNewsletterEvent({
+    eventType: 'admin_login',
+    path: '/admin/login',
+    source: 'admin',
+    email,
+  });
 
   const response = NextResponse.json({ ok: true, redirectTo: '/admin/newsletter' });
   response.cookies.set('newsletter_admin_session', sessionToken, {

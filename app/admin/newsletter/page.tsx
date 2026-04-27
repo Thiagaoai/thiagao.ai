@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { cookies, headers } from 'next/headers';
 import {
-  Activity,
   AlertTriangle,
   BarChart3,
   CheckCircle2,
@@ -17,12 +16,6 @@ import { listAdminUsers } from '@/lib/briefing/admin-users';
 import { isNewsletterAdminAuthorized } from '@/lib/briefing/admin-auth';
 import { getDraftBriefings, getNewsletterAdminOverview } from '@/lib/briefing/posts';
 import AdminNewsletterClient from './AdminNewsletterClient';
-
-type PageProps = {
-  searchParams?: Promise<{
-    token?: string;
-  }>;
-};
 
 function formatDate(value: string | null) {
   if (!value) return 'Ainda não publicado';
@@ -121,12 +114,11 @@ export const metadata = {
   },
 };
 
-export default async function AdminNewsletterPage({ searchParams }: PageProps) {
-  const params = await searchParams;
+export default async function AdminNewsletterPage() {
   const requestHeaders = await headers();
   const cookieStore = await cookies();
   const apiToken = process.env.ADMIN_API_TOKEN;
-  const token = params?.token ?? cookieStore.get('newsletter_admin_session')?.value;
+  const token = cookieStore.get('newsletter_admin_session')?.value;
 
   if (
     !apiToken ||
@@ -141,12 +133,11 @@ export default async function AdminNewsletterPage({ searchParams }: PageProps) {
           <ShieldCheck className="h-10 w-10 text-amber-200" />
           <h1 className="mt-8 text-4xl font-semibold">Painel protegido</h1>
           <p className="mt-5 leading-relaxed text-zinc-400">
-            Configure <code className="text-zinc-200">ADMIN_DASHBOARD_TOKEN</code> e{' '}
-            <code className="text-zinc-200">ADMIN_API_TOKEN</code>. Depois acesse{' '}
-            <code className="text-zinc-200">/admin/newsletter?token=SEU_TOKEN</code>.
+            Acesse pelo login seguro do painel. Tokens não são aceitos pela URL para evitar
+            vazamento em histórico, logs ou screenshots.
           </p>
-          <Link href="/briefing" className="mt-8 inline-flex rounded-full border border-white/10 px-5 py-3 text-sm font-bold text-white">
-            Voltar para briefing
+          <Link href="/admin/login" className="mt-8 inline-flex rounded-full border border-white/10 px-5 py-3 text-sm font-bold text-white">
+            Ir para login
           </Link>
         </div>
       </main>
@@ -164,10 +155,10 @@ export default async function AdminNewsletterPage({ searchParams }: PageProps) {
       icon: Users,
     },
     {
-      label: 'Emails enviados',
-      value: overview.metrics.sentEmails,
-      detail: `${overview.metrics.failedEmails} falhas registradas no log.`,
-      icon: Send,
+      label: 'Views',
+      value: overview.metrics.pageViews,
+      detail: `${overview.metrics.ctaClicks} cliques rastreados na página.`,
+      icon: BarChart3,
     },
     {
       label: 'Drafts',
@@ -176,12 +167,19 @@ export default async function AdminNewsletterPage({ searchParams }: PageProps) {
       icon: Mail,
     },
     {
-      label: 'Runs do agente',
-      value: overview.agentRuns.length,
-      detail: 'Execuções mais recentes do robô diário.',
-      icon: Activity,
+      label: 'Emails enviados',
+      value: overview.metrics.sentEmails,
+      detail: `${overview.metrics.failedEmails} falhas e ${overview.metrics.blockedSubscribes} inscrições bloqueadas.`,
+      icon: Send,
     },
   ];
+  const visualMax = Math.max(
+    overview.metrics.activeSubscribers,
+    overview.metrics.pageViews,
+    overview.metrics.sentEmails,
+    overview.metrics.drafts,
+    1,
+  );
 
   return (
     <main className="min-h-screen bg-black px-6 py-12 text-white sm:py-20">
@@ -235,10 +233,10 @@ export default async function AdminNewsletterPage({ searchParams }: PageProps) {
             <BarChart3 className="h-5 w-5 text-zinc-500" />
           </div>
           <div className="grid gap-4 md:grid-cols-4">
-            <ThreeDBar label="Inscritos" value={overview.metrics.activeSubscribers} max={Math.max(overview.metrics.activeSubscribers, overview.metrics.sentEmails, overview.metrics.drafts, 1)} tone="from-cyan-400 to-blue-700" />
-            <ThreeDBar label="Enviados" value={overview.metrics.sentEmails} max={Math.max(overview.metrics.activeSubscribers, overview.metrics.sentEmails, overview.metrics.drafts, 1)} tone="from-emerald-300 to-cyan-700" />
-            <ThreeDBar label="Drafts" value={overview.metrics.drafts} max={Math.max(overview.metrics.activeSubscribers, overview.metrics.sentEmails, overview.metrics.drafts, 1)} tone="from-amber-300 to-orange-700" />
-            <ThreeDBar label="Falhas" value={overview.metrics.failedEmails} max={Math.max(overview.metrics.activeSubscribers, overview.metrics.sentEmails, overview.metrics.drafts, 1)} tone="from-red-300 to-rose-800" />
+            <ThreeDBar label="Inscritos" value={overview.metrics.activeSubscribers} max={visualMax} tone="from-cyan-400 to-blue-700" />
+            <ThreeDBar label="Views" value={overview.metrics.pageViews} max={visualMax} tone="from-violet-300 to-blue-700" />
+            <ThreeDBar label="Enviados" value={overview.metrics.sentEmails} max={visualMax} tone="from-emerald-300 to-cyan-700" />
+            <ThreeDBar label="Drafts" value={overview.metrics.drafts} max={visualMax} tone="from-amber-300 to-orange-700" />
           </div>
         </section>
 

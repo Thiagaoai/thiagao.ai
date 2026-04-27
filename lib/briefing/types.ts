@@ -49,6 +49,14 @@ export type SubscriberInput = {
   source?: string;
 };
 
+export type NewsletterEventInput = {
+  eventType: 'page_view' | 'cta_click' | 'subscribe_success' | 'subscribe_blocked' | 'chat_question' | 'admin_login';
+  path?: string;
+  source?: string;
+  email?: string;
+  metadata?: Record<string, unknown>;
+};
+
 export type AgentRunRecord = {
   status: 'success' | 'error';
   startedAt: string;

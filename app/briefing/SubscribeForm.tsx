@@ -1,14 +1,20 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { ArrowRight, Loader2, Mail } from 'lucide-react';
 
 type SubmitState = 'idle' | 'loading' | 'success' | 'error';
 
 export default function SubscribeForm() {
   const [email, setEmail] = useState('');
+  const [company, setCompany] = useState('');
+  const [startedAt, setStartedAt] = useState(0);
   const [state, setState] = useState<SubmitState>('idle');
   const [message, setMessage] = useState('Sem spam. Briefing curto, pratico e com fontes.');
+
+  useEffect(() => {
+    setStartedAt(Date.now());
+  }, []);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -20,7 +26,12 @@ export default function SubscribeForm() {
       const response = await fetch('/api/newsletter/subscribe', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: submittedEmail, source: 'briefing-page' }),
+        body: JSON.stringify({
+          email: submittedEmail,
+          source: 'briefing-page',
+          company,
+          startedAt,
+        }),
       });
       const data = (await response.json()) as { ok?: boolean; stored?: boolean; message?: string };
 
@@ -44,6 +55,15 @@ export default function SubscribeForm() {
 
   return (
     <form onSubmit={onSubmit} className="rounded-[30px] border border-white/10 bg-black/35 p-3 shadow-2xl backdrop-blur-xl">
+      <label className="hidden" aria-hidden="true">
+        Empresa
+        <input
+          value={company}
+          onChange={(event) => setCompany(event.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </label>
       <div className="liquid-glass flex flex-col gap-3 rounded-[24px] p-3 sm:flex-row">
         <label className="flex flex-1 items-center gap-3 rounded-full bg-white/[0.04] px-5 py-4 text-left text-sm text-zinc-500">
           <Mail className="h-4 w-4 text-cyan-300" />

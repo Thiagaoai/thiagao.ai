@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getPublishedBriefings } from '@/lib/briefing/posts';
+import { getPublishedBriefings, logNewsletterEvent } from '@/lib/briefing/posts';
 
 const DAILY_LIMIT = 10;
 const REQUEST_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -61,11 +61,25 @@ function isUsPresidentQuestion(value: string) {
 function getGuardedCurrentAnswer(messages: z.infer<typeof ChatMessageSchema>[]) {
   const lastUserMessage = [...messages].reverse().find((message) => message.role === 'user');
 
-  if (!lastUserMessage || !isUsPresidentQuestion(lastUserMessage.content)) {
+  if (!lastUserMessage) {
     return null;
   }
 
-  return `Em ${getTodayLabel()}, o presidente dos Estados Unidos é Donald J. Trump, o 47º presidente. Cargos públicos podem mudar, então confirme informações políticas atuais em fontes oficiais como whitehouse.gov antes de publicar ou tomar decisão.`;
+  if (isUsPresidentQuestion(lastUserMessage.content)) {
+    return `Em ${getTodayLabel()}, o presidente dos Estados Unidos é Donald J. Trump, o 47º presidente. Cargos públicos podem mudar, então confirme informações políticas atuais em fontes oficiais como whitehouse.gov antes de publicar ou tomar decisão.`;
+  }
+
+  const normalized = normalizeText(lastUserMessage.content);
+  const asksForCurrentFact =
+    /\b(atual|hoje|agora|recente|ultimo|ultima|latest|current|preco|cotacao|ceo|presidente|primeiro ministro|governador|prefeito)\b/.test(
+      normalized,
+    ) || /^quem e (o|a) atual\b/.test(normalized);
+
+  if (!asksForCurrentFact) {
+    return null;
+  }
+
+  return `Eu não vou cravar esse dado como fato atual sem uma fonte recente. Para evitar fake news, confira em uma fonte oficial ou cole aqui o link/notícia que eu te ajudo a interpretar. Se for cargo público, preço, CEO, lei, lançamento ou notícia de hoje, a checagem externa é obrigatória.`;
 }
 
 function getClientKey(request: NextRequest, sessionId?: string) {
@@ -129,6 +143,12 @@ export async function POST(request: NextRequest) {
 
     if (guardedAnswer) {
       const updatedRate = incrementRate(clientKey);
+      await logNewsletterEvent({
+        eventType: 'chat_question',
+        path: '/newsletter#chat-thiagao',
+        source: 'chat-guarded',
+        metadata: { guarded: true },
+      });
 
       return NextResponse.json({
         ok: true,
@@ -197,6 +217,12 @@ export async function POST(request: NextRequest) {
     }
 
     const updatedRate = incrementRate(clientKey);
+    await logNewsletterEvent({
+      eventType: 'chat_question',
+      path: '/newsletter#chat-thiagao',
+      source: 'chat',
+      metadata: { guarded: false },
+    });
 
     return NextResponse.json({
       ok: true,

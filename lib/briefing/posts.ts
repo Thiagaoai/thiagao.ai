@@ -6,6 +6,7 @@ import type {
   BriefingPost,
   NewsletterAgentRun,
   NewsletterEmailLog,
+  NewsletterEventInput,
   NewsletterSubscriber,
   SubscriberInput,
 } from './types';
@@ -229,6 +230,25 @@ export async function subscribeToBriefing({ email, source = 'briefing-ab' }: Sub
   };
 }
 
+export async function logNewsletterEvent(event: NewsletterEventInput) {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return { stored: false };
+
+  const { error } = await supabase.from('newsletter_events').insert({
+    event_type: event.eventType,
+    path: event.path ?? null,
+    source: event.source ?? null,
+    email: event.email?.trim().toLowerCase() ?? null,
+    metadata: event.metadata ?? {},
+  });
+
+  if (error) {
+    return { stored: false, error: error.message };
+  }
+
+  return { stored: true };
+}
+
 export async function saveAgentDrafts(posts: BriefingDraftInput[], run: AgentRunRecord) {
   const supabase = getSupabaseAdmin();
 
@@ -357,6 +377,9 @@ export async function getNewsletterAdminOverview() {
       metrics: {
         subscribers: 0,
         activeSubscribers: 0,
+        pageViews: 0,
+        ctaClicks: 0,
+        blockedSubscribes: 0,
         drafts: 0,
         published: 0,
         sentEmails: 0,
@@ -373,6 +396,9 @@ export async function getNewsletterAdminOverview() {
   const [
     subscribersCount,
     activeSubscribersCount,
+    pageViewsCount,
+    ctaClicksCount,
+    blockedSubscribesCount,
     draftsCount,
     publishedCount,
     sentEmailsCount,
@@ -384,6 +410,9 @@ export async function getNewsletterAdminOverview() {
   ] = await Promise.all([
     countRows('newsletter_subscribers'),
     countRows('newsletter_subscribers', { status: 'active' }),
+    countRows('newsletter_events', { event_type: 'page_view' }),
+    countRows('newsletter_events', { event_type: 'cta_click' }),
+    countRows('newsletter_events', { event_type: 'subscribe_blocked' }),
     countRows('daily_digest_posts', { status: 'draft' }),
     countRows('daily_digest_posts', { status: 'published' }),
     countRows('newsletter_email_logs', { status: 'sent' }),
@@ -416,6 +445,9 @@ export async function getNewsletterAdminOverview() {
     metrics: {
       subscribers: subscribersCount,
       activeSubscribers: activeSubscribersCount,
+      pageViews: pageViewsCount,
+      ctaClicks: ctaClicksCount,
+      blockedSubscribes: blockedSubscribesCount,
       drafts: draftsCount,
       published: publishedCount,
       sentEmails: sentEmailsCount,

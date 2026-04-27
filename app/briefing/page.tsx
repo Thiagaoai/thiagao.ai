@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { BrandMark, BrandWordmark } from '../components/BrandMark';
 import AiRadioPlayer from './AiRadioPlayer';
+import NewsletterTelemetry from './NewsletterTelemetry';
 import SubscribeForm from './SubscribeForm';
 import ThiagaoChat from './ThiagaoChat';
 import ToolBriefingCards from './ToolBriefingCards';
@@ -249,6 +250,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
 
   return (
     <main className="min-h-screen overflow-hidden bg-black text-white selection:bg-amber-500/30">
+      <NewsletterTelemetry />
       <Link
         href="/admin/login"
         className="fixed bottom-4 left-4 z-[80] inline-flex items-center gap-2 rounded-full border border-cyan-300/35 bg-black/80 px-3 py-2 text-xs font-black text-white shadow-[0_18px_60px_rgba(0,0,0,0.55)] backdrop-blur-xl transition-transform hover:scale-[1.04] hover:border-cyan-200 sm:bottom-5 sm:left-auto sm:right-5 sm:px-5 sm:py-3 sm:text-sm md:bottom-7 md:right-7"

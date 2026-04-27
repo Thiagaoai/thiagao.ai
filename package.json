@@ -22,23 +22,27 @@
     "@langchain/langgraph": "^1.2.9",
     "@supabase/supabase-js": "^2.104.1",
     "langsmith": "^0.5.25",
-    "lucide-react": "^1.9.0",
+    "lucide-react": "^1.11.0",
     "motion": "^12.38.0",
-    "next": "16.1.0",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "next": "^16.2.4",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
     "resend": "^6.12.2",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "^4.2.4",
     "@types/node": "^20",
-    "@types/react": "^19",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
-    "eslint": "^9",
-    "eslint-config-next": "16.1.0",
-    "tailwindcss": "^4",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.4",
+    "tailwindcss": "^4.2.4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "postcss": "8.5.12",
+    "uuid": "14.0.0"
   }
 }
