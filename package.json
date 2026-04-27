@@ -11,15 +11,24 @@
     "lint": "eslint",
     "check": "npm run lint && npm run build",
     "clean": "rm -rf .next node_modules/.cache",
+    "composio:session": "node scripts/composio/create-session.mjs",
+    "composio:session:local": "bash scripts/composio/run-session-local.sh",
     "docker:build": "docker build -t thigaoai-site .",
     "docker:run": "docker run --rm -p 3000:3000 thigaoai-site"
   },
   "dependencies": {
+    "@composio/core": "^0.6.11",
+    "@langchain/core": "^1.1.41",
+    "@langchain/langgraph": "^1.2.9",
+    "@supabase/supabase-js": "^2.104.1",
+    "langsmith": "^0.5.25",
     "lucide-react": "^1.9.0",
     "motion": "^12.38.0",
     "next": "16.1.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "resend": "^6.12.2",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

@@ -1,0 +1,30 @@
+name: Daily ThigaoA.i Briefing
+
+on:
+  workflow_dispatch:
+  schedule:
+    # GitHub cron runs in UTC. This runs at 21:00 and 22:00 UTC, then the guard
+    # below only continues when America/New_York is exactly 17:00.
+    - cron: '0 21,22 * * *'
+
+jobs:
+  generate-draft:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check New York time
+        id: time
+        run: |
+          HOUR=$(TZ=America/New_York date +%H)
+          echo "hour=$HOUR" >> "$GITHUB_OUTPUT"
+          echo "New York hour: $HOUR"
+
+      - name: Skip when not 5 PM ET
+        if: github.event_name == 'schedule' && steps.time.outputs.hour != '17'
+        run: echo "Not 5 PM in America/New_York. Skipping."
+
+      - name: Call briefing agent
+        if: github.event_name == 'workflow_dispatch' || steps.time.outputs.hour == '17'
+        run: |
+          curl --fail-with-body -X POST "${{ secrets.BRIEFING_AGENT_URL }}" \
+            -H "Authorization: Bearer ${{ secrets.AGENT_CRON_SECRET }}" \
+            -H "Content-Type: application/json"

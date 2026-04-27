@@ -1,22 +1,42 @@
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-background: var(--site-bg);
+  --color-foreground: var(--site-fg);
+  --color-muted: var(--site-muted);
+  --color-muted-foreground: var(--site-muted-text);
+  --color-accent: var(--brand-accent);
+  --color-accent-hover: var(--brand-accent-hover);
+  --color-border: var(--site-border);
 }
 
 :root {
-  --bg: #0a0a0a;
-  --fg: #fafafa;
-  --accent: #3b82f6;
-  --accent-hover: #2563eb;
-  --muted: #171717;
-  --muted-text: #737373;
-  --border: #262626;
+  --font-display: "Instrument Serif", serif;
+  --font-body: "Inter", sans-serif;
+  --background: 201 100% 13%;
+  --foreground: 0 0% 100%;
+  --muted-foreground: 240 4% 66%;
+  --primary: 0 0% 100%;
+  --primary-foreground: 0 0% 4%;
+  --secondary: 0 0% 10%;
+  --muted: 0 0% 10%;
+  --accent: 0 0% 10%;
+  --border: 0 0% 18%;
+  --input: 0 0% 18%;
+  --site-bg: #0a0a0a;
+  --site-fg: #fafafa;
+  --brand-accent: #3b82f6;
+  --brand-accent-hover: #2563eb;
+  --site-muted: #171717;
+  --site-muted-text: #737373;
+  --site-border: #262626;
 }
 
 * {
   box-sizing: border-box;
-  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-body);
 }
 
 html {
@@ -25,9 +45,9 @@ html {
 
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--fg);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+  background: var(--site-bg);
+  color: var(--site-fg);
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
@@ -38,16 +58,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg);
+  background: var(--site-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--site-border);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-text);
+  background: var(--site-muted-text);
 }
 
 ::selection {
@@ -68,6 +88,62 @@ body {
 
 .fade-in {
   animation: fadeIn 0.6s ease-out forwards;
+}
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-rise {
+  animation: fade-rise 0.8s ease-out both;
+}
+
+.animate-fade-rise-delay {
+  animation: fade-rise 0.8s ease-out 0.2s both;
+}
+
+.animate-fade-rise-delay-2 {
+  animation: fade-rise 0.8s ease-out 0.4s both;
+}
+
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.01);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
+}
+
+.liquid-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(255, 255, 255, 0.15) 20%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(255, 255, 255, 0.15) 80%,
+    rgba(255, 255, 255, 0.45) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 @keyframes float-up {
