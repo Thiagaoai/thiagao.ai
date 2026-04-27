@@ -36,6 +36,38 @@ function getDayKey() {
   }).format(new Date());
 }
 
+function getTodayLabel() {
+  return new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/New_York',
+    dateStyle: 'long',
+  }).format(new Date());
+}
+
+function normalizeText(value: string) {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+function isUsPresidentQuestion(value: string) {
+  const normalized = normalizeText(value);
+  return (
+    normalized.includes('presidente') &&
+    /\b(eua|usa|estados unidos|united states|u\.s\.|america)\b/.test(normalized)
+  );
+}
+
+function getGuardedCurrentAnswer(messages: z.infer<typeof ChatMessageSchema>[]) {
+  const lastUserMessage = [...messages].reverse().find((message) => message.role === 'user');
+
+  if (!lastUserMessage || !isUsPresidentQuestion(lastUserMessage.content)) {
+    return null;
+  }
+
+  return `Em ${getTodayLabel()}, o presidente dos Estados Unidos é Donald J. Trump, o 47º presidente. Cargos públicos podem mudar, então confirme informações políticas atuais em fontes oficiais como whitehouse.gov antes de publicar ou tomar decisão.`;
+}
+
 function getClientKey(request: NextRequest, sessionId?: string) {
   const forwardedFor = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
   const ip = forwardedFor || request.headers.get('x-real-ip') || 'unknown-ip';
@@ -93,6 +125,18 @@ export async function POST(request: NextRequest) {
     }
 
     const recentMessages = body.messages.slice(-8);
+    const guardedAnswer = getGuardedCurrentAnswer(recentMessages);
+
+    if (guardedAnswer) {
+      const updatedRate = incrementRate(clientKey);
+
+      return NextResponse.json({
+        ok: true,
+        answer: guardedAnswer,
+        remaining: Math.max(DAILY_LIMIT - updatedRate.count, 0),
+      });
+    }
+
     const { posts } = await getPublishedBriefings({ limit: 6 });
     const briefingContext = posts
       .slice(0, 6)
@@ -113,8 +157,7 @@ export async function POST(request: NextRequest) {
         messages: [
           {
             role: 'system',
-            content:
-              'Voce e o Chat do Thiagao, assistente da newsletter ThigaoA.i. Responda em portugues do Brasil, direto, util e com tom de mentor pragmatico. Explique IA, big tech, ferramentas, automacao e os briefings do site. Nao invente fatos ou fontes; quando nao souber, diga isso e sugira um caminho pratico. Responda em ate 160 palavras.',
+            content: `Voce e o Chat do Thiagao, assistente da newsletter ThigaoA.i. Data atual do servidor: ${getTodayLabel()} no fuso America/New_York. Responda em portugues do Brasil, direto, util e com tom de mentor pragmatico. Explique IA, big tech, ferramentas, automacao e os briefings do site. Nao invente fatos ou fontes; quando nao souber, diga isso e sugira um caminho pratico. Para fatos atuais ou volateis, como politica, cargos publicos, precos, leis, lancamentos e noticias, nao responda com certeza se nao houver contexto confiavel; diga para confirmar em fonte oficial. Responda em ate 160 palavras.`,
           },
           {
             role: 'system',

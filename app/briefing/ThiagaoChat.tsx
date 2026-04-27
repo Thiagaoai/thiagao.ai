@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { Bot, Loader2, Send, Sparkles } from 'lucide-react';
+import { AlertTriangle, Bot, Loader2, Send, Sparkles } from 'lucide-react';
 
 type ChatMessage = {
   role: 'user' | 'assistant';
@@ -159,6 +159,15 @@ export default function ThiagaoChat() {
             pensando...
           </div>
         )}
+      </div>
+
+      <div className="mt-4 flex items-start gap-2 rounded-2xl border border-amber-300/20 bg-amber-300/[0.06] px-4 py-3 text-xs leading-relaxed text-amber-100/90">
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-200" />
+        <p>
+          O Chat pode cometer erros. Confira fatos importantes em fontes oficiais antes de
+          publicar, investir, decidir ou compartilhar. O ThigaoA.i nao se responsabiliza por
+          decisoes tomadas apenas com base nas respostas.
+        </p>
       </div>
 
       <form onSubmit={onSubmit} className="mt-4 flex flex-col gap-3 sm:flex-row">
