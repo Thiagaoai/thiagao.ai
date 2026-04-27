@@ -137,6 +137,61 @@ const fallbackTodayHighlights = [
   'Um proximo passo simples para testar sem depender do hype.',
 ];
 
+const weeklyAgentCards = [
+  {
+    name: 'Hermes / Nous',
+    lane: 'Open source com memória',
+    edge:
+      'Corre por fora com controle, self-host, tool use e a promessa de um agente que aprende skills com o uso.',
+    risk: 'Vence com builders, mas exige configuração, governança e manutenção.',
+    verdict: 'Melhor para quem quer domínio do stack.',
+  },
+  {
+    name: 'OpenClaw',
+    lane: 'Agente pessoal agressivo',
+    edge:
+      'O apelo é simples: delegar tarefas reais, mexer em apps, mensagens, arquivos e rotinas do dia a dia.',
+    risk: 'É o carro mais barulhento da pista: poderoso, mas precisa provar segurança e limites.',
+    verdict: 'Melhor para experimentação rápida, com muito cuidado.',
+  },
+  {
+    name: 'Claude Cowork',
+    lane: 'Trabalho de escritório',
+    edge:
+      'Aposta em conhecimento worker: abrir arquivos, organizar tarefas, analisar documentos e trabalhar ao lado do usuário.',
+    risk: 'O jogo é confiança empresarial: permissões, auditoria, compliance e consistência.',
+    verdict: 'Favorito em business quando o trabalho exige precisão.',
+  },
+  {
+    name: 'ChatGPT Agents',
+    lane: 'Distribuição + UX',
+    edge:
+      'Junta conversa, pesquisa, navegador, execução e o alcance gigante do ChatGPT em uma experiência familiar.',
+    risk: 'A briga é transformar uso casual em automação confiável sem assustar o usuário.',
+    verdict: 'Favorito no mainstream e no uso pessoal.',
+  },
+];
+
+const weeklyScoreboard = [
+  ['Uso pessoal', 'ChatGPT Agents larga na frente pelo alcance e pela interface.'],
+  ['Business', 'Claude Cowork ameaça ganhar pela confiança e pelo foco no trabalho real.'],
+  ['Builders', 'Hermes / Nous tem vantagem para quem quer controle, self-host e customização.'],
+  ['Risco', 'OpenClaw mostra o poder da autonomia, mas também lembra que agente sem limite vira problema.'],
+];
+
+const weeklyNewsSources = [
+  { label: 'OpenAI: ChatGPT agent', href: 'https://openai.com/blog/introducing-chatgpt-agent/' },
+  {
+    label: 'Anthropic: Claude Cowork',
+    href: 'https://www.anthropic.com/webinars/future-of-ai-at-work-introducing-cowork',
+  },
+  {
+    label: 'Nous: Hermes tool use',
+    href: 'https://github.com/NousResearch/Hermes-Function-Calling',
+  },
+  { label: 'OpenClaw: análise de risco', href: 'https://arxiv.org/abs/2604.04759' },
+];
+
 const recurringCadence = [
   {
     day: 'Segunda',
@@ -224,6 +279,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
             {[
               ['Home', '/'],
               ['Hoje', '#hoje'],
+              ['Weekly', '#weekly-news'],
               ['Arquivo', '#briefings'],
               ['Modalidades', '#modalidades'],
               ['Chat', '#chat-thiagao'],
@@ -390,6 +446,114 @@ export default async function BriefingPage({ searchParams }: PageProps) {
                 Ver arquivo
               </a>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="weekly-news" className="relative z-10 border-b border-zinc-900 bg-black py-28">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_15%,rgba(34,211,238,0.14),transparent_32%),radial-gradient(circle_at_88%_24%,rgba(245,158,11,0.13),transparent_30%)]" />
+        <div className="relative mx-auto max-w-7xl px-6">
+          <div className="mb-14 grid grid-cols-1 gap-9 lg:grid-cols-[0.82fr_1.18fr] lg:items-end">
+            <div>
+              <p className="mb-5 inline-flex rounded-full border border-amber-300/20 bg-amber-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.24em] text-amber-100">
+                Weekly News
+              </p>
+              <h2
+                className="text-render-premium max-w-3xl text-[44px] font-normal leading-[1.04] text-white sm:text-[72px]"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                A corrida dos agentes autônomos virou o campeonato de 2026.
+              </h2>
+            </div>
+            <div className="rounded-[34px] border border-white/10 bg-zinc-950/70 p-6 shadow-[0_30px_90px_rgba(0,0,0,0.4)]">
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200">
+                Tendência da semana
+              </p>
+              <p className="mt-5 text-base leading-relaxed text-zinc-300">
+                O chatbot que só responde está ficando pequeno. A disputa agora é por agentes que
+                recebem uma meta, montam um plano, usam ferramentas, mexem em arquivos, navegam,
+                executam tarefas e voltam com uma entrega pronta.
+              </p>
+              <p className="mt-4 text-sm leading-relaxed text-zinc-500">
+                Para uso pessoal, ganha quem simplifica a vida sem pedir manual. Para business,
+                ganha quem entrega resultado com permissão, auditoria, segurança e custo previsível.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+            {weeklyAgentCards.map((agent, index) => (
+              <article
+                key={agent.name}
+                className="group relative min-h-[360px] overflow-hidden rounded-[30px] border border-zinc-800 bg-zinc-950/80 p-6 transition-all duration-500 hover:-translate-y-1 hover:border-cyan-300/40"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-cyan-300/10 via-transparent to-amber-300/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <div className="relative z-10 flex h-full flex-col">
+                  <div className="mb-8 flex items-start justify-between gap-4">
+                    <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-lg font-black text-cyan-100">
+                      {index + 1}
+                    </span>
+                    <span className="rounded-full border border-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">
+                      {agent.lane}
+                    </span>
+                  </div>
+                  <h3 className="text-3xl font-semibold leading-tight tracking-tight text-white">
+                    {agent.name}
+                  </h3>
+                  <p className="mt-5 text-sm leading-relaxed text-zinc-400">{agent.edge}</p>
+                  <p className="mt-4 text-sm leading-relaxed text-zinc-500">{agent.risk}</p>
+                  <p className="mt-auto pt-8 text-sm font-bold leading-relaxed text-cyan-100">
+                    {agent.verdict}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="rounded-[34px] border border-white/10 bg-zinc-950/75 p-7">
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200">
+                Quem ganha essa corrida?
+              </p>
+              <h3 className="mt-4 text-3xl font-semibold leading-tight tracking-tight text-white">
+                Não é o modelo mais esperto. É quem resolve sem virar risco.
+              </h3>
+              <p className="mt-5 text-base leading-relaxed text-zinc-400">
+                A final de 2026 não é só inteligência. É distribuição, confiança, integração,
+                permissões e capacidade de fazer trabalho real. ChatGPT tem a massa. Claude tem a
+                confiança de escritório. Hermes tem a liberdade open source. OpenClaw força o limite
+                da autonomia. O vencedor real é o agente que vira solução, não distração.
+              </p>
+            </div>
+
+            <div className="grid gap-3">
+              {weeklyScoreboard.map(([label, text]) => (
+                <div
+                  key={label}
+                  className="rounded-[24px] border border-white/10 bg-white/[0.035] p-5"
+                >
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">
+                    {label}
+                  </p>
+                  <p className="mt-3 text-sm leading-relaxed text-zinc-300">{text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-7 flex flex-wrap gap-3">
+            {weeklyNewsSources.map((source) => (
+              <a
+                key={source.label}
+                href={source.href}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold text-zinc-300 transition-colors hover:border-cyan-300/40 hover:text-white"
+              >
+                {source.label}
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            ))}
           </div>
         </div>
       </section>
