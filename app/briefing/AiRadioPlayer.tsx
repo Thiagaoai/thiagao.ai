@@ -45,6 +45,23 @@ const playlists: Playlist[] = [
     openUrl: 'https://open.spotify.com/playlist/3acZBx7chxYVbvB7kIy58U',
     accent: 'from-amber-200 to-rose-400',
   },
+  {
+    id: 'romantic-br',
+    label: 'Romântico BR',
+    description: 'Românticas nacionais em português do Brasil.',
+    embedUrl:
+      'https://open.spotify.com/embed/user/xkf88ohis2de80w7pucn0kv2n/playlist/2ZPtKxXHL8osAJeKvUsO8j?utm_source=generator&theme=0',
+    openUrl: 'https://open.spotify.com/user/xkf88ohis2de80w7pucn0kv2n/playlist/2ZPtKxXHL8osAJeKvUsO8j',
+    accent: 'from-rose-300 to-amber-300',
+  },
+  {
+    id: 'romantic-en',
+    label: 'Love Songs',
+    description: 'Românticas em inglês para ouvir com calma.',
+    embedUrl: 'https://open.spotify.com/embed/playlist/5KbTzqKBqxQRD8OBtJTZrS?utm_source=generator&theme=0',
+    openUrl: 'https://open.spotify.com/playlist/5KbTzqKBqxQRD8OBtJTZrS',
+    accent: 'from-violet-300 to-cyan-300',
+  },
 ];
 
 export default function AiRadioPlayer() {
@@ -80,7 +97,7 @@ export default function AiRadioPlayer() {
             </a>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
             {playlists.map((playlist) => (
               <button
                 key={playlist.id}

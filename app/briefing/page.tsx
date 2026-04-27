@@ -534,8 +534,8 @@ export default async function BriefingPage({ searchParams }: PageProps) {
               Música real, longe da chamada principal.
             </h2>
             <p className="mt-6 max-w-xl text-sm leading-relaxed text-zinc-400 sm:text-base">
-              Jazz, pop, instrumental e christian em players oficiais. Para tocar a faixa inteira,
-              use o Spotify logado ou abra direto no app.
+              Jazz, pop, instrumental, christian e playlists românticas em português e inglês.
+              Para tocar a faixa inteira, use o Spotify logado ou abra direto no app.
             </p>
           </div>
 
