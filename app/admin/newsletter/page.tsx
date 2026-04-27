@@ -384,7 +384,6 @@ export default async function AdminNewsletterPage({ searchParams }: PageProps) {
           initialDrafts={posts}
           initialAdmins={adminUsers.admins}
           adminsReady={adminUsers.ready}
-          token={apiToken}
         />
       </div>
     </main>

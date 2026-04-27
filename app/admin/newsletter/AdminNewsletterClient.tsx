@@ -10,12 +10,10 @@ export default function AdminNewsletterClient({
   initialDrafts,
   initialAdmins,
   adminsReady,
-  token,
 }: {
   initialDrafts: BriefingPost[];
   initialAdmins: AdminUser[];
   adminsReady: boolean;
-  token: string;
 }) {
   const [drafts, setDrafts] = useState(initialDrafts);
   const [admins, setAdmins] = useState(initialAdmins);
@@ -39,10 +37,7 @@ export default function AdminNewsletterClient({
     try {
       const response = await fetch('/api/admin/publish', {
         method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          authorization: `Bearer ${token}`,
-        },
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ id, sendEmail }),
       });
       const data = (await response.json()) as { ok?: boolean; message?: string };
@@ -62,7 +57,7 @@ export default function AdminNewsletterClient({
 
   async function refreshAdmins() {
     const response = await fetch('/api/admin/users', {
-      headers: { authorization: `Bearer ${token}` },
+      headers: { 'content-type': 'application/json' },
     });
     const data = (await response.json()) as { admins?: AdminUser[] };
     setAdmins(data.admins ?? []);
@@ -76,10 +71,7 @@ export default function AdminNewsletterClient({
     try {
       const response = await fetch('/api/admin/users', {
         method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          authorization: `Bearer ${token}`,
-        },
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify(adminForm),
       });
       const data = (await response.json()) as { ok?: boolean; message?: string };
@@ -106,10 +98,7 @@ export default function AdminNewsletterClient({
     try {
       const response = await fetch('/api/admin/communicate', {
         method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          authorization: `Bearer ${token}`,
-        },
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify(mailForm),
       });
       const data = (await response.json()) as { ok?: boolean; message?: string; email?: { delivered?: number; failed?: number; reason?: string } };

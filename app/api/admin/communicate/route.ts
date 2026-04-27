@@ -1,19 +1,11 @@
 import { NextResponse } from 'next/server';
+import { isAdminRequestAuthorized } from '@/lib/briefing/admin-request';
 import { sendCustomNewsletterEmail } from '@/lib/briefing/email';
 
 export const runtime = 'nodejs';
 
-function isAuthorized(request: Request) {
-  const token = process.env.ADMIN_API_TOKEN;
-  if (!token && process.env.NODE_ENV !== 'production') return true;
-  if (!token) return false;
-
-  const bearer = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
-  return bearer === token;
-}
-
 export async function POST(request: Request) {
-  if (!isAuthorized(request)) {
+  if (!isAdminRequestAuthorized(request)) {
     return NextResponse.json({ ok: false, message: 'Unauthorized.' }, { status: 401 });
   }
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { isAdminRequestAuthorized } from '@/lib/briefing/admin-request';
 import { sendBriefingEmail } from '@/lib/briefing/email';
 import { publishBriefingPost } from '@/lib/briefing/posts';
 
@@ -8,17 +9,8 @@ const PublishSchema = z.object({
   sendEmail: z.boolean().optional().default(false),
 });
 
-function isAuthorized(request: Request) {
-  const token = process.env.ADMIN_API_TOKEN;
-  if (!token && process.env.NODE_ENV !== 'production') return true;
-  if (!token) return false;
-
-  const bearer = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
-  return bearer === token;
-}
-
 export async function POST(request: Request) {
-  if (!isAuthorized(request)) {
+  if (!isAdminRequestAuthorized(request)) {
     return NextResponse.json(
       {
         ok: false,
