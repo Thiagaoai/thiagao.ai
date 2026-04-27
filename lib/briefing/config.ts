@@ -1,5 +1,6 @@
 export const DEFAULT_NEWSLETTER_FROM = 'ThigaoA.i Briefing <dockplus@dockplusai.com>';
 export const DEFAULT_NEWSLETTER_REPLY_TO = 'dockplus@dockplusai.com';
+export const DEFAULT_SITE_URL = 'https://www.thiagao.io';
 
 export function getNewsletterFrom() {
   return process.env.NEWSLETTER_FROM || DEFAULT_NEWSLETTER_FROM;
@@ -7,6 +8,10 @@ export function getNewsletterFrom() {
 
 export function getNewsletterReplyTo() {
   return process.env.NEWSLETTER_REPLY_TO || DEFAULT_NEWSLETTER_REPLY_TO;
+}
+
+export function getSiteUrl() {
+  return process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || DEFAULT_SITE_URL;
 }
 
 export function getBriefingConfigStatus() {
