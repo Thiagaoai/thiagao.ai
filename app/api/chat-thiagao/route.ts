@@ -131,12 +131,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!providerResponse.ok) {
-      const text = await providerResponse.text();
       return NextResponse.json(
         {
           ok: false,
           message: `DeepSeek respondeu com erro ${providerResponse.status}.`,
-          detail: text.slice(0, 240),
         },
         { status: 502 },
       );
