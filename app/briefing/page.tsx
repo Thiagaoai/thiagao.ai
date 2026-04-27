@@ -17,6 +17,7 @@ import {
 import { BrandMark, BrandWordmark } from '../components/BrandMark';
 import AiRadioPlayer from './AiRadioPlayer';
 import SubscribeForm from './SubscribeForm';
+import ThiagaoChat from './ThiagaoChat';
 import ToolBriefingCards from './ToolBriefingCards';
 import { BRIEFING_TAGS } from '@/lib/briefing/types';
 import { getPublishedBriefings } from '@/lib/briefing/posts';
@@ -136,6 +137,34 @@ const fallbackTodayHighlights = [
   'Um proximo passo simples para testar sem depender do hype.',
 ];
 
+const recurringCadence = [
+  {
+    day: 'Segunda',
+    title: 'Radar IA e big tech',
+    text: 'Modelos, updates de plataformas e sinais fortes para começar a semana.',
+  },
+  {
+    day: 'Terça',
+    title: 'Ferramentas e automação',
+    text: 'Apps, agentes, no-code, devtools e workflows que valem teste real.',
+  },
+  {
+    day: 'Quarta',
+    title: 'Aplicação prática',
+    text: 'Como transformar novidade em conteúdo, funil, produto, pesquisa ou operação.',
+  },
+  {
+    day: 'Quinta',
+    title: 'Mercado e criadores',
+    text: 'Movimentos de startups, big tech, social, mídia e oportunidades para builders.',
+  },
+  {
+    day: 'Sexta',
+    title: 'Resumo da semana',
+    text: 'O que ficou, o que foi barulho e quais links merecem entrar na lista.',
+  },
+];
+
 export const metadata = {
   title: 'ThigaoA.i Briefing - AI Operator Newsletter',
   description:
@@ -148,6 +177,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
   const { posts } = await getPublishedBriefings({ tag: selectedTag, limit: 12 });
   const featured = posts[0];
   const remainingPosts = posts.slice(1);
+  const footerEditions = posts.slice(0, 5);
   const todayLabel = new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: 'long',
@@ -196,8 +226,8 @@ export default async function BriefingPage({ searchParams }: PageProps) {
               ['Hoje', '#hoje'],
               ['Arquivo', '#briefings'],
               ['Modalidades', '#modalidades'],
+              ['Chat', '#chat-thiagao'],
               ['Música', '#musica'],
-              ['Social', '#social'],
             ].map(([label, href], index) => (
               <a
                 key={label}
@@ -602,6 +632,131 @@ export default async function BriefingPage({ searchParams }: PageProps) {
               </a>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section id="dias-anteriores" className="relative z-10 border-b border-zinc-900 bg-black py-24">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-6 lg:grid-cols-[1.08fr_0.92fr]">
+          <div>
+            <div className="mb-10 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+              <div>
+                <p className="mb-5 inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-cyan-200">
+                  Dias anteriores
+                </p>
+                <h2
+                  className="text-render-premium max-w-3xl text-[42px] font-normal leading-[1.04] text-white sm:text-[64px]"
+                  style={{ fontFamily: 'var(--font-display)' }}
+                >
+                  Um arquivo rápido perto do rodapé.
+                </h2>
+              </div>
+              <Link
+                href="/newsletter#briefings"
+                className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-bold text-white transition-colors hover:border-cyan-300/40"
+              >
+                Ver todas
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="grid gap-3">
+              {footerEditions.length > 0 ? (
+                footerEditions.map((post, index) => (
+                  <article
+                    key={post.id}
+                    className="grid grid-cols-[auto_1fr] gap-4 rounded-[26px] border border-white/10 bg-zinc-950/70 p-4 transition-colors hover:border-cyan-300/35"
+                  >
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/20 bg-cyan-300/10 text-sm font-black text-cyan-100">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="rounded-full border border-zinc-800 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-200">
+                          {post.category}
+                        </span>
+                        <span className="text-xs text-zinc-600">{post.readingMinutes} min</span>
+                      </div>
+                      <h3 className="mt-3 text-xl font-semibold leading-tight text-white">
+                        {post.title}
+                      </h3>
+                      <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-zinc-400">
+                        {post.dek}
+                      </p>
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <div className="rounded-[28px] border border-white/10 bg-zinc-950/70 p-6 text-sm leading-relaxed text-zinc-400">
+                  As edições anteriores aparecem aqui conforme os briefings forem publicados no
+                  painel.
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-[34px] border border-white/10 bg-zinc-950/70 p-6 shadow-[0_30px_90px_rgba(0,0,0,0.38)]">
+            <div className="mb-6">
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200">
+                Recorrência semanal
+              </p>
+              <h3 className="mt-3 text-3xl font-semibold leading-tight tracking-tight text-white">
+                O que entra nos próximos dias.
+              </h3>
+            </div>
+            <div className="grid gap-3">
+              {recurringCadence.map((item) => (
+                <div
+                  key={item.day}
+                  className="rounded-[22px] border border-white/10 bg-white/[0.035] p-4"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">
+                      {item.day}
+                    </span>
+                    <Clock3 className="h-4 w-4 text-cyan-200" />
+                  </div>
+                  <h4 className="mt-3 text-lg font-semibold text-white">{item.title}</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-zinc-400">{item.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="chat-thiagao" className="relative z-10 border-b border-zinc-900 bg-black py-24">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(34,211,238,0.12),transparent_30%),radial-gradient(circle_at_90%_50%,rgba(168,85,247,0.09),transparent_34%)]" />
+        <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-6 lg:grid-cols-[0.78fr_1.22fr]">
+          <div>
+            <p className="mb-5 inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-cyan-200">
+              Chat do Thiagão
+            </p>
+            <h2
+              className="text-render-premium max-w-3xl text-[42px] font-normal leading-[1.04] text-white sm:text-[66px]"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              Pergunte sobre IA sem gastar com modelo caro.
+            </h2>
+            <p className="mt-6 max-w-xl text-sm leading-relaxed text-zinc-400 sm:text-base">
+              O chat usa DeepSeek no backend e responde em português com limite de 10 perguntas por
+              usuário ao dia. A ideia é tirar dúvida rápida sobre ferramentas, notícias e edições
+              anteriores.
+            </p>
+            <div className="mt-7 grid gap-3 text-sm text-zinc-400">
+              {[
+                'Comparar ferramentas antes de testar.',
+                'Resumir impacto de uma notícia de IA.',
+                'Transformar briefing em próximo passo prático.',
+              ].map((item) => (
+                <div key={item} className="flex items-start gap-3">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-200" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <ThiagaoChat />
         </div>
       </section>
 
