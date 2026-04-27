@@ -13,6 +13,11 @@ type Mood = {
   accent: string;
 };
 
+type WebAudioWindow = Window &
+  typeof globalThis & {
+    webkitAudioContext?: typeof AudioContext;
+  };
+
 const moods: Mood[] = [
   {
     id: 'future',
@@ -67,9 +72,19 @@ function makeNoiseBuffer(context: AudioContext) {
   return buffer;
 }
 
+function createAudioContext() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const AudioContextCtor = window.AudioContext ?? (window as WebAudioWindow).webkitAudioContext;
+  return AudioContextCtor ? new AudioContextCtor() : null;
+}
+
 export default function AiRadioPlayer() {
   const [activeMood, setActiveMood] = useState(moods[0]);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [status, setStatus] = useState('Toque em AI Radio para ligar o som.');
   const audioRef = useRef<AudioContext | null>(null);
   const masterRef = useRef<GainNode | null>(null);
   const timerRef = useRef<number | null>(null);
@@ -89,6 +104,7 @@ export default function AiRadioPlayer() {
     }
 
     setIsPlaying(false);
+    setStatus('AI Radio pausada.');
   }
 
   function playNote(context: AudioContext, master: GainNode, mood: Mood, step: number) {
@@ -139,35 +155,48 @@ export default function AiRadioPlayer() {
   }
 
   async function start(mood = activeMood) {
-    const context = audioRef.current ?? new AudioContext();
-    audioRef.current = context;
+    try {
+      const context = audioRef.current ?? createAudioContext();
 
-    if (context.state === 'suspended') {
-      await context.resume();
-    }
+      if (!context) {
+        setIsPlaying(false);
+        setStatus('Audio indisponivel neste navegador.');
+        return;
+      }
 
-    const master = masterRef.current ?? context.createGain();
-    if (!masterRef.current) {
-      const filter = context.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.value = 5200;
-      master.gain.value = 0;
-      master.connect(filter).connect(context.destination);
-      masterRef.current = master;
-    }
+      audioRef.current = context;
 
-    if (timerRef.current) {
-      window.clearInterval(timerRef.current);
-    }
+      if (context.state === 'suspended') {
+        await context.resume();
+      }
 
-    master.gain.cancelScheduledValues(context.currentTime);
-    master.gain.setTargetAtTime(0.32, context.currentTime, 0.12);
-    playNote(context, master, mood, stepRef.current);
-    timerRef.current = window.setInterval(() => {
-      stepRef.current += 1;
+      const master = masterRef.current ?? context.createGain();
+      if (!masterRef.current) {
+        const filter = context.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 5200;
+        master.gain.value = 0;
+        master.connect(filter).connect(context.destination);
+        masterRef.current = master;
+      }
+
+      if (timerRef.current) {
+        window.clearInterval(timerRef.current);
+      }
+
+      master.gain.cancelScheduledValues(context.currentTime);
+      master.gain.setTargetAtTime(0.42, context.currentTime, 0.12);
       playNote(context, master, mood, stepRef.current);
-    }, (60 / mood.bpm) * 1000);
-    setIsPlaying(true);
+      timerRef.current = window.setInterval(() => {
+        stepRef.current += 1;
+        playNote(context, master, mood, stepRef.current);
+      }, (60 / mood.bpm) * 1000);
+      setIsPlaying(true);
+      setStatus(`Tocando modo ${mood.label}.`);
+    } catch {
+      setIsPlaying(false);
+      setStatus('O navegador bloqueou o audio. Toque novamente para liberar.');
+    }
   }
 
   async function changeMood(mood: Mood) {
@@ -176,6 +205,8 @@ export default function AiRadioPlayer() {
 
     if (isPlaying) {
       await start(mood);
+    } else {
+      setStatus(`Modo ${mood.label} pronto.`);
     }
   }
 
@@ -187,24 +218,24 @@ export default function AiRadioPlayer() {
   }, []);
 
   return (
-    <div className="animate-fade-rise-delay-3 mt-10 w-full max-w-2xl rounded-[28px] border border-white/10 bg-black/25 p-3 text-left shadow-2xl backdrop-blur-xl">
+    <div className="animate-fade-rise-delay-3 mt-7 w-full max-w-[min(100%,42rem)] rounded-[24px] border border-white/10 bg-black/35 p-3 text-left shadow-2xl backdrop-blur-xl sm:mt-10 sm:rounded-[28px]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <button
           type="button"
           onClick={() => (isPlaying ? stop() : start())}
-          className="liquid-glass inline-flex items-center justify-center gap-3 rounded-full px-5 py-3 text-sm font-bold text-white transition-transform hover:scale-[1.02]"
+          className="liquid-glass inline-flex w-full items-center justify-center gap-3 rounded-full px-5 py-3 text-sm font-bold text-white transition-transform hover:scale-[1.02] sm:w-auto"
         >
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           AI Radio
         </button>
 
-        <div className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-2">
+        <div className="grid min-w-0 flex-1 grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-center">
           {moods.map((mood) => (
             <button
               key={mood.id}
               type="button"
               onClick={() => changeMood(mood)}
-              className={`rounded-full border px-3 py-2 text-xs font-black uppercase tracking-[0.14em] transition-colors ${
+              className={`rounded-full border px-3 py-2 text-[11px] font-black uppercase tracking-[0.12em] transition-colors sm:text-xs sm:tracking-[0.14em] ${
                 activeMood.id === mood.id
                   ? 'border-cyan-300/50 bg-cyan-300/15 text-cyan-100'
                   : 'border-white/10 bg-white/[0.03] text-zinc-400 hover:text-white'
@@ -216,7 +247,7 @@ export default function AiRadioPlayer() {
         </div>
       </div>
 
-      <div className="mt-4 flex items-end gap-1.5 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+      <div className="mt-4 flex items-end gap-1 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-3 sm:gap-1.5 sm:px-4">
         <Radio className="mr-2 h-4 w-4 shrink-0 text-cyan-200" />
         {[22, 38, 28, 52, 34, 64, 30, 46, 26, 58, 36, 48].map((height, index) => (
           <span
@@ -224,13 +255,13 @@ export default function AiRadioPlayer() {
             className={`w-full rounded-full bg-gradient-to-t ${activeMood.accent} opacity-80 ${
               isPlaying ? 'animate-pulse' : ''
             }`}
-            style={{ height }}
+            style={{ height: Math.max(14, Math.round(height * 0.78)) }}
           />
         ))}
       </div>
 
       <p className="mt-3 px-2 text-xs leading-relaxed text-zinc-500">
-        Som gerado no navegador, sem sample externo e sem royalty.
+        {status} Som gerado no navegador, sem sample externo e sem royalty.
       </p>
     </div>
   );

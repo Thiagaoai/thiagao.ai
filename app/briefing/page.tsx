@@ -147,11 +147,12 @@ export default async function BriefingPage({ searchParams }: PageProps) {
     <main className="min-h-screen overflow-hidden bg-black text-white selection:bg-amber-500/30">
       <Link
         href="/admin/login"
-        className="fixed bottom-5 right-5 z-[80] inline-flex items-center gap-2 rounded-full border border-cyan-300/35 bg-black/80 px-5 py-3 text-sm font-black text-white shadow-[0_18px_60px_rgba(0,0,0,0.55)] backdrop-blur-xl transition-transform hover:scale-[1.04] hover:border-cyan-200 md:bottom-7 md:right-7"
+        className="fixed bottom-4 left-4 z-[80] inline-flex items-center gap-2 rounded-full border border-cyan-300/35 bg-black/80 px-3 py-2 text-xs font-black text-white shadow-[0_18px_60px_rgba(0,0,0,0.55)] backdrop-blur-xl transition-transform hover:scale-[1.04] hover:border-cyan-200 sm:bottom-5 sm:left-auto sm:right-5 sm:px-5 sm:py-3 sm:text-sm md:bottom-7 md:right-7"
         aria-label="Abrir login do painel admin"
       >
         <LockKeyhole className="h-4 w-4 text-cyan-200" />
-        Admin Login
+        <span className="hidden sm:inline">Admin Login</span>
+        <span className="sm:hidden">Admin</span>
       </Link>
 
       <header className="relative min-h-screen overflow-hidden bg-[hsl(var(--background))]">
@@ -159,11 +160,11 @@ export default async function BriefingPage({ searchParams }: PageProps) {
           <source src={heroVideoUrl} type="video/mp4" />
         </video>
 
-        <nav className="liquid-glass relative z-10 mx-auto mt-6 flex w-[calc(100%-2rem)] max-w-7xl flex-row items-center justify-between rounded-full px-5 py-3 md:px-8">
+        <nav className="liquid-glass relative z-10 mx-auto mt-4 flex w-[calc(100%-1rem)] max-w-7xl flex-row items-center justify-between rounded-[24px] px-3 py-2 sm:mt-6 sm:w-[calc(100%-2rem)] sm:rounded-full sm:px-5 sm:py-3 md:px-8">
           <Link href="/" className="flex items-center gap-3 text-white">
-            <BrandMark className="h-9 w-9 rounded-xl" />
+            <BrandMark className="h-8 w-8 rounded-xl sm:h-9 sm:w-9" />
             <span
-              className="text-3xl tracking-tight"
+              className="hidden text-3xl tracking-tight sm:inline"
               style={{ fontFamily: 'var(--font-display)' }}
             >
               ThigaoA.i
@@ -194,7 +195,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
           <div className="flex items-center gap-2">
             <Link
               href="/admin/login"
-              className="liquid-glass inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-[1.03]"
+              className="liquid-glass hidden items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-[1.03] sm:inline-flex"
               aria-label="Login do painel admin"
             >
               <LockKeyhole className="h-4 w-4" />
@@ -202,43 +203,43 @@ export default async function BriefingPage({ searchParams }: PageProps) {
             </Link>
             <a
               href="#assinar"
-              className="liquid-glass inline-flex rounded-full px-6 py-2.5 text-sm font-medium text-white transition-transform hover:scale-[1.03]"
+              className="liquid-glass inline-flex rounded-full px-4 py-2 text-xs font-medium text-white transition-transform hover:scale-[1.03] sm:px-6 sm:py-2.5 sm:text-sm"
             >
               Assinar
             </a>
           </div>
         </nav>
 
-        <section className="relative z-10 flex min-h-[calc(100vh-96px)] flex-col items-center justify-center px-6 py-[90px] pb-40 pt-32 text-center">
-          <p className="animate-fade-rise mb-8 inline-flex items-center gap-3 rounded-full border border-white/10 bg-black/15 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-zinc-200 backdrop-blur-sm">
+        <section className="relative z-10 flex min-h-0 flex-col items-center justify-start px-4 pb-16 pt-14 text-center sm:px-6 sm:pb-24 sm:pt-24 md:min-h-[calc(100vh-96px)] md:justify-center md:pb-40 md:pt-32">
+          <p className="animate-fade-rise mb-5 inline-flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-full border border-white/10 bg-black/15 px-3 py-2 text-[10px] font-bold uppercase leading-relaxed tracking-[0.16em] text-zinc-200 backdrop-blur-sm sm:mb-8 sm:gap-3 sm:px-4 sm:text-xs sm:tracking-[0.24em]">
             <span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_18px_rgba(110,231,183,0.8)]" />
             ThigaoA.i Briefing · IA · Big Tech · Novidades
           </p>
 
           <h1
-            className="animate-fade-rise max-w-7xl text-5xl font-normal leading-[0.95] tracking-[-2.46px] text-white sm:text-7xl md:text-8xl"
+            className="animate-fade-rise max-w-5xl text-[42px] font-normal leading-[1.02] tracking-tight text-white sm:text-6xl md:text-8xl"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             A newsletter do <em className="not-italic text-zinc-400">Thiagao</em> para entender{' '}
             <em className="not-italic text-zinc-400">o futuro sem complicar.</em>
           </h1>
 
-          <p className="animate-fade-rise-delay mt-8 max-w-2xl text-base leading-relaxed text-zinc-300 sm:text-lg">
+          <p className="animate-fade-rise-delay mt-6 max-w-xl text-sm leading-relaxed text-zinc-300 sm:mt-8 sm:text-lg">
             Notícias, ferramentas, big tech, agentes e tendências de IA explicadas de um jeito direto:
             bom para quem está começando, para quem é curioso e para quem já está construindo.
           </p>
 
-          <div className="animate-fade-rise-delay-2 mt-7 inline-flex flex-wrap items-center justify-center gap-3 rounded-full border border-cyan-300/20 bg-black/25 px-5 py-3 text-sm font-semibold text-cyan-100 backdrop-blur-xl">
+          <div className="animate-fade-rise-delay-2 mt-6 inline-flex max-w-[calc(100vw-2rem)] flex-wrap items-center justify-center gap-2 rounded-[22px] border border-cyan-300/20 bg-black/25 px-4 py-3 text-xs font-semibold text-cyan-100 backdrop-blur-xl sm:mt-7 sm:gap-3 sm:rounded-full sm:px-5 sm:text-sm">
             <Clock3 className="h-4 w-4 text-cyan-200" />
             Edição diária às 5 PM New York
             <span className="hidden h-1 w-1 rounded-full bg-cyan-200/70 sm:inline-flex" />
             <span className="text-zinc-300">curta, prática e com fontes</span>
           </div>
 
-          <div className="animate-fade-rise-delay-2 mt-12 flex flex-col items-center gap-5">
+          <div className="animate-fade-rise-delay-2 mt-8 flex w-full max-w-2xl flex-col items-center gap-4 sm:mt-12 sm:gap-5">
             <a
               href="#assinar"
-              className="liquid-glass inline-flex cursor-pointer items-center gap-3 rounded-full px-14 py-5 text-base font-medium text-white transition-transform hover:scale-[1.03]"
+              className="liquid-glass inline-flex cursor-pointer items-center gap-3 rounded-full px-8 py-4 text-sm font-medium text-white transition-transform hover:scale-[1.03] sm:px-14 sm:py-5 sm:text-base"
             >
               Assinar briefing
               <ArrowRight className="h-4 w-4" />
@@ -251,7 +252,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
                   href={link.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-xs font-bold tracking-[0.12em] text-zinc-300 backdrop-blur-sm transition-colors hover:border-cyan-300/40 hover:text-white"
+                  className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-[10px] font-bold tracking-[0.1em] text-zinc-300 backdrop-blur-sm transition-colors hover:border-cyan-300/40 hover:text-white sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.12em]"
                 >
                   {link.label}
                 </a>
@@ -268,7 +269,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
                     target="_blank"
                     rel="noreferrer"
                     aria-label={link.label}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/20 text-zinc-300 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-cyan-300/40 hover:text-white"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/20 text-zinc-300 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-cyan-300/40 hover:text-white sm:h-11 sm:w-11"
                   >
                     <Icon className="h-5 w-5" />
                   </a>
