@@ -96,12 +96,20 @@ export async function sendCustomNewsletterEmail({
   preheader,
   html,
   text,
+  cardImageUrl,
+  ctaLabel = 'Abrir briefing no site',
+  ctaUrl = 'https://thiagao.io/newslatter',
+  mode = 'designer',
 }: {
   subject: string;
   headline: string;
   preheader: string;
   html: string;
   text?: string;
+  cardImageUrl?: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+  mode?: 'designer' | 'html';
 }) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = getNewsletterFrom();
@@ -125,7 +133,19 @@ export async function sendCustomNewsletterEmail({
   const replyTo = getNewsletterReplyTo();
   const recipients = subscribers.slice(0, 100);
   const campaign = `manual-${Date.now()}`;
-  const wrappedHtml = `<!doctype html>
+  const safeCtaUrl = ctaUrl || 'https://thiagao.io/newslatter';
+  const safeCtaLabel = ctaLabel || 'Abrir briefing no site';
+  const imageBlock = cardImageUrl
+    ? `<tr>
+              <td style="padding:0 30px 26px;">
+                <img src="${cardImageUrl}" alt="${headline}" style="display:block;width:100%;max-width:620px;border-radius:24px;border:1px solid rgba(255,255,255,.12);" />
+              </td>
+            </tr>`
+    : '';
+  const wrappedHtml =
+    mode === 'html'
+      ? html
+      : `<!doctype html>
 <html lang="pt-BR">
   <body style="margin:0;background:#050505;color:#f7f7f7;font-family:Inter,Arial,sans-serif;">
     <div style="display:none;max-height:0;overflow:hidden;color:transparent">${preheader}</div>
@@ -141,11 +161,12 @@ export async function sendCustomNewsletterEmail({
                 <p style="margin:16px 0 0;font-size:16px;line-height:1.7;color:#a1a1aa;">${preheader}</p>
               </td>
             </tr>
+            ${imageBlock}
             <tr>
               <td style="padding:0 30px 34px;color:#e5e7eb;font-size:16px;line-height:1.75;">
                 ${html}
                 <p style="margin:28px 0 0;">
-                  <a href="https://thiagao.io/newslatter" style="display:inline-block;background:#ffffff;color:#050505;text-decoration:none;font-weight:900;border-radius:999px;padding:13px 18px;">Abrir briefing no site</a>
+                  <a href="${safeCtaUrl}" style="display:inline-block;background:#ffffff;color:#050505;text-decoration:none;font-weight:900;border-radius:999px;padding:13px 18px;">${safeCtaLabel}</a>
                 </p>
               </td>
             </tr>

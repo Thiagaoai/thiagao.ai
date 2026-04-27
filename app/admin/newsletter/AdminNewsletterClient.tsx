@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import type { FormEvent } from 'react';
-import { CheckCircle2, Copy, KeyRound, Loader2, MessageCircle, Radio, Send, UserPlus } from 'lucide-react';
+import type { ChangeEvent, FormEvent } from 'react';
+import { CheckCircle2, Copy, Eye, FileCode2, ImagePlus, KeyRound, Loader2, MessageCircle, Radio, Send, Sparkles, UserPlus } from 'lucide-react';
 import type { AdminUser } from '@/lib/briefing/admin-users';
 import type { BriefingPost } from '@/lib/briefing/types';
 
@@ -21,13 +21,18 @@ export default function AdminNewsletterClient({
   const [message, setMessage] = useState('');
   const [adminBusy, setAdminBusy] = useState(false);
   const [mailBusy, setMailBusy] = useState(false);
+  const [uploadBusy, setUploadBusy] = useState(false);
   const [whatsappBusyId, setWhatsappBusyId] = useState<string | null>(null);
   const [whatsappText, setWhatsappText] = useState('');
   const [adminForm, setAdminForm] = useState({ name: '', email: '', password: '' });
   const [mailForm, setMailForm] = useState({
+    mode: 'designer' as 'designer' | 'html',
     subject: 'Breaking: atualização importante da ThigaoA.i',
     headline: 'Uma notícia importante acabou de entrar no radar.',
     preheader: 'Resumo rápido, contexto e próximos passos para você agir sem perder tempo.',
+    cardImageUrl: '',
+    ctaLabel: 'Ler briefing completo',
+    ctaUrl: 'https://www.thiagao.io/newslatter',
     html:
       '<p>Esta é uma comunicação especial enviada fora do briefing diário.</p><p><strong>Contexto:</strong> explique aqui o que aconteceu, por que importa e qual ação você recomenda.</p>',
   });
@@ -157,6 +162,37 @@ export default function AdminNewsletterClient({
     }
   }
 
+  async function uploadNewsletterCard(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadBusy(true);
+    setMessage('');
+
+    try {
+      const formData = new FormData();
+      formData.append('card', file);
+
+      const response = await fetch('/api/admin/upload-newsletter-card', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = (await response.json()) as { ok?: boolean; message?: string; url?: string };
+
+      if (!response.ok || !data.ok || !data.url) {
+        throw new Error(data.message ?? 'Falha ao subir card.');
+      }
+
+      setMailForm((current) => ({ ...current, cardImageUrl: data.url || '' }));
+      setMessage('Card enviado. Ele ja vai entrar no email e no texto do WhatsApp.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Falha ao subir card.');
+    } finally {
+      setUploadBusy(false);
+      event.target.value = '';
+    }
+  }
+
   return (
     <div>
       {message ? (
@@ -229,13 +265,35 @@ export default function AdminNewsletterClient({
         <div className="rounded-[30px] border border-white/10 bg-zinc-950/70 p-6">
           <div className="mb-5 flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-200">Broadcast</p>
-              <h2 className="mt-2 text-2xl font-semibold text-white">Enviar comunicado urgente</h2>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-200">Breaking news</p>
+              <h2 className="mt-2 text-2xl font-semibold text-white">Disparo manual da newsletter</h2>
             </div>
             <Radio className="h-5 w-5 text-zinc-500" />
           </div>
 
           <form onSubmit={sendCommunication} className="grid gap-3">
+            <div className="grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-black/30 p-1">
+              <button
+                type="button"
+                onClick={() => setMailForm((current) => ({ ...current, mode: 'designer' }))}
+                className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-colors ${
+                  mailForm.mode === 'designer' ? 'bg-white text-black' : 'text-zinc-300 hover:bg-white/5'
+                }`}
+              >
+                <Sparkles className="h-4 w-4" />
+                Visual pronto
+              </button>
+              <button
+                type="button"
+                onClick={() => setMailForm((current) => ({ ...current, mode: 'html' }))}
+                className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-colors ${
+                  mailForm.mode === 'html' ? 'bg-white text-black' : 'text-zinc-300 hover:bg-white/5'
+                }`}
+              >
+                <FileCode2 className="h-4 w-4" />
+                HTML proprio
+              </button>
+            </div>
             <input
               value={mailForm.subject}
               onChange={(event) => setMailForm((current) => ({ ...current, subject: event.target.value }))}
@@ -255,19 +313,69 @@ export default function AdminNewsletterClient({
               rows={2}
               className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/50"
             />
+            {mailForm.mode === 'designer' ? (
+              <div className="grid gap-3 md:grid-cols-[0.9fr_1.1fr]">
+                <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-cyan-300/30 bg-cyan-300/10 px-4 py-3 text-sm font-bold text-cyan-100 transition-colors hover:bg-cyan-300/15">
+                  {uploadBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+                  Subir card da noticia
+                  <input type="file" accept="image/*" onChange={uploadNewsletterCard} className="hidden" />
+                </label>
+                <input
+                  value={mailForm.cardImageUrl}
+                  onChange={(event) => setMailForm((current) => ({ ...current, cardImageUrl: event.target.value }))}
+                  placeholder="Ou cole a URL publica do card/imagem"
+                  className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/50"
+                />
+              </div>
+            ) : null}
+            {mailForm.mode === 'designer' ? (
+              <div className="grid gap-3 md:grid-cols-2">
+                <input
+                  value={mailForm.ctaLabel}
+                  onChange={(event) => setMailForm((current) => ({ ...current, ctaLabel: event.target.value }))}
+                  placeholder="Texto do botão"
+                  className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/50"
+                />
+                <input
+                  value={mailForm.ctaUrl}
+                  onChange={(event) => setMailForm((current) => ({ ...current, ctaUrl: event.target.value }))}
+                  placeholder="Link do botão"
+                  className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/50"
+                />
+              </div>
+            ) : null}
             <textarea
               value={mailForm.html}
               onChange={(event) => setMailForm((current) => ({ ...current, html: event.target.value }))}
-              placeholder="<p>Seu HTML aqui...</p>"
-              rows={7}
+              placeholder={mailForm.mode === 'html' ? '<!doctype html><html>...</html>' : '<p>Corpo da noticia em HTML...</p>'}
+              rows={mailForm.mode === 'html' ? 10 : 7}
               className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 font-mono text-xs text-white outline-none focus:border-cyan-300/50"
             />
+            {mailForm.mode === 'designer' ? (
+              <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+                <div className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-zinc-500">
+                  <Eye className="h-4 w-4" />
+                  Preview rapido
+                </div>
+                {mailForm.cardImageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={mailForm.cardImageUrl} alt="" className="mb-4 aspect-[16/9] w-full rounded-2xl object-cover" />
+                ) : null}
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">ThigaoA.i Breaking Briefing</p>
+                <h3 className="mt-2 text-2xl font-semibold leading-tight text-white">{mailForm.headline}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-zinc-400">{mailForm.preheader}</p>
+              </div>
+            ) : (
+              <p className="rounded-2xl border border-amber-300/20 bg-amber-300/10 px-4 py-3 text-xs leading-relaxed text-amber-100">
+                No modo HTML proprio, o codigo colado sera enviado como email completo. Use URLs publicas para imagens.
+              </p>
+            )}
             <button
-              disabled={mailBusy}
+              disabled={mailBusy || uploadBusy}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-cyan-300 px-5 py-3 text-sm font-black text-black transition-colors hover:bg-cyan-200 disabled:opacity-60"
             >
               {mailBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              Enviar para inscritos ativos
+              Disparar agora para inscritos ativos
             </button>
           </form>
         </div>

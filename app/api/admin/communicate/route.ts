@@ -16,6 +16,10 @@ export async function POST(request: Request) {
     preheader?: string;
     html?: string;
     text?: string;
+    cardImageUrl?: string;
+    ctaLabel?: string;
+    ctaUrl?: string;
+    mode?: 'designer' | 'html';
   } | null;
 
   const subject = body?.subject?.trim() ?? '';
@@ -33,13 +37,23 @@ export async function POST(request: Request) {
     preheader,
     html,
     text: body?.text,
+    cardImageUrl: body?.cardImageUrl?.trim(),
+    ctaLabel: body?.ctaLabel?.trim(),
+    ctaUrl: body?.ctaUrl?.trim(),
+    mode: body?.mode === 'html' ? 'html' : 'designer',
   });
 
   return NextResponse.json({
     ok: Boolean(email.sent),
     email,
     whatsapp: {
-      text: renderCustomWhatsApp({ headline, preheader, body: html }),
+      text: renderCustomWhatsApp({
+        headline,
+        preheader,
+        body: html,
+        cardImageUrl: body?.cardImageUrl?.trim(),
+        ctaUrl: body?.ctaUrl?.trim(),
+      }),
     },
   });
 }

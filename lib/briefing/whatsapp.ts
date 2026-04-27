@@ -42,10 +42,14 @@ export function renderCustomWhatsApp({
   headline,
   preheader,
   body,
+  cardImageUrl,
+  ctaUrl,
 }: {
   headline: string;
   preheader: string;
   body: string;
+  cardImageUrl?: string;
+  ctaUrl?: string;
 }) {
   const groupUrl = getSolocodandoWhatsAppUrl();
 
@@ -57,7 +61,10 @@ export function renderCustomWhatsApp({
     '',
     clean(body.replace(/<[^>]+>/g, ' ')),
     '',
-    `Briefing: ${normalizeUrl('/newslatter')}`,
+    cardImageUrl ? `Card: ${cardImageUrl}` : null,
+    `Briefing: ${ctaUrl || normalizeUrl('/newslatter')}`,
     groupUrl ? `Grupo Solocodando: ${groupUrl}` : 'Grupo Solocodando: peça o link no @thiagaoAi',
-  ].join('\n');
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
