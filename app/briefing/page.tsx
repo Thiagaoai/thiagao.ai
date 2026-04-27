@@ -135,6 +135,15 @@ export default async function BriefingPage({ searchParams }: PageProps) {
 
   return (
     <main className="min-h-screen overflow-hidden bg-black text-white selection:bg-amber-500/30">
+      <Link
+        href="/admin/login"
+        className="fixed bottom-5 right-5 z-[80] inline-flex items-center gap-2 rounded-full border border-cyan-300/35 bg-black/80 px-5 py-3 text-sm font-black text-white shadow-[0_18px_60px_rgba(0,0,0,0.55)] backdrop-blur-xl transition-transform hover:scale-[1.04] hover:border-cyan-200 md:bottom-7 md:right-7"
+        aria-label="Abrir login do painel admin"
+      >
+        <LockKeyhole className="h-4 w-4 text-cyan-200" />
+        Admin Login
+      </Link>
+
       <header className="relative min-h-screen overflow-hidden bg-[hsl(var(--background))]">
         <video autoPlay loop muted playsInline className="absolute inset-0 z-0 h-full w-full object-cover">
           <source src={heroVideoUrl} type="video/mp4" />
