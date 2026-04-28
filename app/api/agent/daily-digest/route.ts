@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { runDailyBriefingAgent } from '@/lib/briefing/agent';
-import { saveAgentDrafts } from '@/lib/briefing/posts';
+import { getSuccessfulAgentRunForToday, saveAgentDrafts } from '@/lib/briefing/posts';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -28,6 +28,18 @@ export async function POST(request: Request) {
   }
 
   try {
+    const body = (await request.json().catch(() => ({}))) as { force?: boolean };
+    const previousRun = body.force ? null : await getSuccessfulAgentRunForToday();
+
+    if (previousRun) {
+      return NextResponse.json({
+        ok: true,
+        skipped: true,
+        reason: 'Daily briefing agent already ran successfully for today in America/New_York.',
+        previousRun,
+      });
+    }
+
     const result = await runDailyBriefingAgent();
     const storage = await saveAgentDrafts(result.drafts, result.run);
 

@@ -3,8 +3,9 @@ name: Daily ThigaoA.i Briefing
 on:
   workflow_dispatch:
   schedule:
-    # GitHub cron runs in UTC. This runs at 21:00 and 22:00 UTC, then the guard
-    # below only continues when America/New_York is exactly 17:00.
+    # GitHub cron runs in UTC. This runs around 5 PM New York across DST.
+    # The agent endpoint is idempotent for the New York day, so delayed or
+    # duplicated schedule runs will not create duplicate drafts.
     - cron: '0 21,22 * * *'
 
 jobs:
@@ -15,16 +16,29 @@ jobs:
         id: time
         run: |
           HOUR=$(TZ=America/New_York date +%H)
+          SHOULD_RUN=false
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            SHOULD_RUN=true
+          elif [ "$HOUR" -ge 17 ] && [ "$HOUR" -le 23 ]; then
+            SHOULD_RUN=true
+          fi
           echo "hour=$HOUR" >> "$GITHUB_OUTPUT"
+          echo "should_run=$SHOULD_RUN" >> "$GITHUB_OUTPUT"
           echo "New York hour: $HOUR"
+          echo "Should run: $SHOULD_RUN"
 
-      - name: Skip when not 5 PM ET
-        if: github.event_name == 'schedule' && steps.time.outputs.hour != '17'
-        run: echo "Not 5 PM in America/New_York. Skipping."
+      - name: Skip outside the late-afternoon send window
+        if: steps.time.outputs.should_run != 'true'
+        run: echo "Outside the 5 PM New York send window. Skipping."
 
       - name: Call briefing agent
-        if: github.event_name == 'workflow_dispatch' || steps.time.outputs.hour == '17'
+        if: steps.time.outputs.should_run == 'true'
         run: |
+          FORCE=false
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            FORCE=true
+          fi
           curl --fail-with-body -X POST "${{ secrets.BRIEFING_AGENT_URL }}" \
             -H "Authorization: Bearer ${{ secrets.AGENT_CRON_SECRET }}" \
-            -H "Content-Type: application/json"
+            -H "Content-Type: application/json" \
+            --data "{\"force\":$FORCE}"
