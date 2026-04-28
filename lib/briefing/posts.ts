@@ -440,6 +440,21 @@ export async function logEmailSendEvents(
   return { stored: true, count: events.length };
 }
 
+export async function hasSentCampaign(campaign: string) {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return false;
+
+  const { count, error } = await supabase
+    .from('newsletter_email_logs')
+    .select('*', { count: 'exact', head: true })
+    .eq('campaign', campaign)
+    .eq('status', 'sent');
+
+  if (error) throw new Error(error.message);
+
+  return Boolean(count && count > 0);
+}
+
 async function countRows(table: string, filters: Record<string, string> = {}) {
   const supabase = getSupabaseAdmin();
   if (!supabase) return 0;

@@ -4,7 +4,7 @@ import { renderBriefingEmail, renderBriefingText } from './email-template';
 import { getActiveSubscribers, logEmailSendEvents } from './posts';
 import type { BriefingPost } from './types';
 
-export async function sendBriefingEmail(post: BriefingPost) {
+export async function sendBriefingEmail(post: BriefingPost, options: { campaign?: string } = {}) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = getNewsletterFrom();
 
@@ -29,6 +29,7 @@ export async function sendBriefingEmail(post: BriefingPost) {
   const replyTo = getNewsletterReplyTo();
   const recipients = subscribers.slice(0, 100);
   const subject = `${post.category}: ${post.title}`;
+  const campaign = options.campaign ?? post.slug;
 
   const result = await resend.batch.send(
     recipients.map((subscriber) => ({
@@ -49,7 +50,7 @@ export async function sendBriefingEmail(post: BriefingPost) {
         email: subscriber.email,
         subject,
         status: 'failed',
-        campaign: post.slug,
+        campaign,
         error: result.error?.message ?? 'Resend batch failed.',
       })),
     );
@@ -76,7 +77,7 @@ export async function sendBriefingEmail(post: BriefingPost) {
         subject,
         status: error ? 'failed' : 'sent',
         providerId,
-        campaign: post.slug,
+        campaign,
         error: error ?? null,
       };
     }),

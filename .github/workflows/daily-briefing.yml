@@ -5,11 +5,11 @@ on:
   schedule:
     # GitHub cron runs in UTC. This runs around 5 PM New York across DST.
     # The agent endpoint is idempotent for the New York day, so delayed or
-    # duplicated schedule runs will not create duplicate drafts.
+    # duplicated schedule runs will not send duplicate emails.
     - cron: '0 21,22 * * *'
 
 jobs:
-  generate-draft:
+  publish-and-send:
     runs-on: ubuntu-latest
     steps:
       - name: Check New York time
