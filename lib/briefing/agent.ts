@@ -1,5 +1,6 @@
 import { Annotation, END, START, StateGraph } from '@langchain/langgraph';
-import type { BriefingDraftInput, BriefingSource, BriefingTag } from './types';
+import { getPublishedBriefings } from './posts';
+import type { BriefingDraftInput, BriefingPost, BriefingSource, BriefingTag } from './types';
 
 type FeedSource = {
   name: string;
@@ -35,6 +36,18 @@ type DailyTheme = {
   xQuery: string;
   keywords: string[];
   trustedDomains: string[];
+};
+
+type TopicRule = {
+  name: string;
+  label: string;
+  keywords: string[];
+};
+
+type TopicMemory = {
+  counts: Map<string, number>;
+  suppressTopics: Set<string>;
+  note: string;
 };
 
 const feedSources: FeedSource[] = [
@@ -153,6 +166,49 @@ const signalKeywords = [
   'openclaw',
 ];
 
+const topicRules: TopicRule[] = [
+  {
+    name: 'openai',
+    label: 'OpenAI/ChatGPT/GPT/Codex',
+    keywords: ['openai', 'chatgpt', 'gpt', 'gpt-5', 'gpt-5.5', 'codex', 'sora'],
+  },
+  {
+    name: 'anthropic',
+    label: 'Anthropic/Claude',
+    keywords: ['anthropic', 'claude'],
+  },
+  {
+    name: 'google',
+    label: 'Google/Gemini/DeepMind',
+    keywords: ['google', 'gemini', 'deepmind'],
+  },
+  {
+    name: 'meta',
+    label: 'Meta/Llama',
+    keywords: ['meta', 'llama'],
+  },
+  {
+    name: 'microsoft',
+    label: 'Microsoft/Copilot',
+    keywords: ['microsoft', 'copilot'],
+  },
+  {
+    name: 'nvidia',
+    label: 'NVIDIA/GPU',
+    keywords: ['nvidia', 'gpu', 'blackwell', 'cuda'],
+  },
+  {
+    name: 'chinese-models',
+    label: 'DeepSeek/Kimi/Qwen/MiniMax/Z.ai',
+    keywords: ['deepseek', 'kimi', 'qwen', 'minimax', 'z.ai', 'glm'],
+  },
+  {
+    name: 'agents',
+    label: 'Agentes autonomos',
+    keywords: ['agent', 'agents', 'agentic', 'mcp', 'openclaw', 'hermes', 'nous'],
+  },
+];
+
 const AgentState = Annotation.Root({
   items: Annotation<SourceItem[]>({
     reducer: (_left, right) => right,
@@ -252,7 +308,103 @@ function hostnameFromUrl(url: string) {
   }
 }
 
-function scoreItem(item: Pick<SourceItem, 'title' | 'summary' | 'category' | 'publishedAt' | 'provider' | 'publisher'>, theme: DailyTheme) {
+function normalizeTopicText(value: string) {
+  return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function itemText(item: Pick<SourceItem, 'title' | 'summary' | 'publisher'>) {
+  return normalizeTopicText(`${item.publisher} ${item.title} ${item.summary}`);
+}
+
+function postText(post: BriefingPost) {
+  return normalizeTopicText(
+    [
+      post.title,
+      post.dek,
+      post.brief,
+      post.takeaway,
+      post.category,
+      post.tags.join(' '),
+      post.sources.map((source) => `${source.publisher} ${source.title}`).join(' '),
+    ].join(' '),
+  );
+}
+
+function matchedTopics(text: string) {
+  return topicRules.filter((rule) => rule.keywords.some((keyword) => text.includes(keyword)));
+}
+
+async function getRecentTopicMemory(): Promise<TopicMemory> {
+  try {
+    const { posts, source } = await getPublishedBriefings({ limit: 5 });
+
+    if (source !== 'supabase' || posts.length === 0) {
+      return {
+        counts: new Map(),
+        suppressTopics: new Set(),
+        note: 'Recent topic memory skipped: no published Supabase history available.',
+      };
+    }
+
+    const counts = new Map<string, number>();
+    for (const post of posts) {
+      const topicsInPost = new Set(matchedTopics(postText(post)).map((topic) => topic.name));
+      for (const topic of topicsInPost) {
+        counts.set(topic, (counts.get(topic) ?? 0) + 1);
+      }
+    }
+
+    const suppressTopics = new Set(
+      Array.from(counts.entries())
+        .filter(([, count]) => count >= 2)
+        .map(([topic]) => topic),
+    );
+    const summary = Array.from(counts.entries())
+      .map(([topic, count]) => {
+        const label = topicRules.find((rule) => rule.name === topic)?.label ?? topic;
+        return `${label}: ${count}/${posts.length}`;
+      })
+      .join(', ');
+
+    return {
+      counts,
+      suppressTopics,
+      note: summary ? `Recent topic memory: ${summary}.` : 'Recent topic memory: no repeated topics detected.',
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'unknown error';
+
+    return {
+      counts: new Map(),
+      suppressTopics: new Set(),
+      note: `Recent topic memory skipped: ${message}.`,
+    };
+  }
+}
+
+function repeatedTopicPenalty(item: Pick<SourceItem, 'title' | 'summary' | 'publisher'>, memory: TopicMemory) {
+  const topics = matchedTopics(itemText(item));
+
+  return topics.reduce((penalty, topic) => {
+    const count = memory.counts.get(topic.name) ?? 0;
+    if (count >= 3) return penalty + 90;
+    if (count >= 2) return penalty + 70;
+    if (count === 1) return penalty + 24;
+    return penalty;
+  }, 0);
+}
+
+function isSuppressedByRecentTopics(item: SourceItem, memory: TopicMemory) {
+  if (memory.suppressTopics.size === 0) return false;
+
+  return matchedTopics(itemText(item)).some((topic) => memory.suppressTopics.has(topic.name));
+}
+
+function scoreItem(
+  item: Pick<SourceItem, 'title' | 'summary' | 'category' | 'publishedAt' | 'provider' | 'publisher'>,
+  theme: DailyTheme,
+  memory: TopicMemory,
+) {
   const text = `${item.title} ${item.summary}`.toLowerCase();
   const signalScore = signalKeywords.reduce((score, keyword) => {
     return text.includes(keyword) ? score + 7 : score;
@@ -263,8 +415,9 @@ function scoreItem(item: Pick<SourceItem, 'title' | 'summary' | 'category' | 'pu
   const freshnessScore = Math.max(0, 22 - Math.floor(getAgeInDays(item.publishedAt) * 3));
   const providerScore = item.provider === 'perplexity' ? 12 : item.provider === 'x' ? 7 : 0;
   const sourcePenalty = item.publisher === 'OpenAI' && theme.category !== 'AI' && theme.category !== 'BigTech' ? -18 : 0;
+  const memoryPenalty = repeatedTopicPenalty(item, memory);
 
-  return Math.max(0, Math.min(99, signalScore + themeScore + freshnessScore + providerScore + sourcePenalty));
+  return Math.max(0, Math.min(99, signalScore + themeScore + freshnessScore + providerScore + sourcePenalty - memoryPenalty));
 }
 
 async function fetchFeed(source: FeedSource): Promise<SourceItem[]> {
@@ -447,7 +600,7 @@ async function fetchXSignals(theme: DailyTheme): Promise<CollectionResult> {
   };
 }
 
-function rankItems(items: SourceItem[], theme: DailyTheme) {
+function rankItems(items: SourceItem[], theme: DailyTheme, memory: TopicMemory) {
   const deduped = items.filter((item, index, arr) => {
     const urlKey = item.url.replace(/#.*$/, '').replace(/\?.*$/, '');
     return arr.findIndex((candidate) => candidate.url.replace(/#.*$/, '').replace(/\?.*$/, '') === urlKey) === index;
@@ -457,13 +610,15 @@ function rankItems(items: SourceItem[], theme: DailyTheme) {
   const scored = candidates
     .map((item) => ({
       ...item,
-      score: Math.max(item.score, scoreItem(item, theme)),
+      score: Math.max(0, Math.min(99, Math.max(item.score, scoreItem(item, theme, memory)) - repeatedTopicPenalty(item, memory))),
     }))
     .sort((a, b) => b.score - a.score);
+  const diverseScored = scored.filter((item) => !isSuppressedByRecentTopics(item, memory));
+  const pool = diverseScored.length >= 6 ? diverseScored : scored;
   const publisherCounts = new Map<string, number>();
   const ranked: SourceItem[] = [];
 
-  for (const item of scored) {
+  for (const item of pool) {
     const maxPerPublisher = item.publisher.includes('OpenAI') ? 1 : 2;
     const current = publisherCounts.get(item.publisher) ?? 0;
     if (current >= maxPerPublisher) continue;
@@ -600,11 +755,12 @@ const collect = async () => {
 
 const rank = async (state: typeof AgentState.State) => {
   const theme = getDailyTheme();
-  const ranked = rankItems(state.items, theme);
+  const memory = await getRecentTopicMemory();
+  const ranked = rankItems(state.items, theme, memory);
 
   return {
     ranked,
-    notes: [`Ranked ${ranked.length} source items by relevance.`],
+    notes: [memory.note, `Ranked ${ranked.length} source items by relevance and recent-topic diversity.`],
   };
 };
 
