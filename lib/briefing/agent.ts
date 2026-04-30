@@ -209,6 +209,17 @@ const topicRules: TopicRule[] = [
   },
 ];
 
+const lowSignalKeywords = [
+  'down',
+  'unavailable',
+  'outage',
+  'not working',
+  'is broken',
+  'error 500',
+  'status page',
+  '[fixed]',
+];
+
 const AgentState = Annotation.Root({
   items: Annotation<SourceItem[]>({
     reducer: (_left, right) => right,
@@ -394,6 +405,17 @@ function repeatedTopicPenalty(item: Pick<SourceItem, 'title' | 'summary' | 'publ
   }, 0);
 }
 
+function qualityPenalty(item: Pick<SourceItem, 'title' | 'summary' | 'publisher'>) {
+  const text = itemText(item);
+  const isOutageNoise = lowSignalKeywords.some((keyword) => text.includes(keyword));
+  const isSocialOrForumSignal = item.publisher.includes('Hacker News') || item.publisher.startsWith('X ');
+
+  if (isOutageNoise && isSocialOrForumSignal) return 60;
+  if (isOutageNoise) return 28;
+  if (item.publisher.includes('Hacker News')) return 12;
+  return 0;
+}
+
 function isSuppressedByRecentTopics(item: SourceItem, memory: TopicMemory) {
   if (memory.suppressTopics.size === 0) return false;
 
@@ -416,8 +438,12 @@ function scoreItem(
   const providerScore = item.provider === 'perplexity' ? 12 : item.provider === 'x' ? 7 : 0;
   const sourcePenalty = item.publisher === 'OpenAI' && theme.category !== 'AI' && theme.category !== 'BigTech' ? -18 : 0;
   const memoryPenalty = repeatedTopicPenalty(item, memory);
+  const lowQualityPenalty = qualityPenalty(item);
 
-  return Math.max(0, Math.min(99, signalScore + themeScore + freshnessScore + providerScore + sourcePenalty - memoryPenalty));
+  return Math.max(
+    0,
+    Math.min(99, signalScore + themeScore + freshnessScore + providerScore + sourcePenalty - memoryPenalty - lowQualityPenalty),
+  );
 }
 
 async function fetchFeed(source: FeedSource): Promise<SourceItem[]> {
@@ -610,7 +636,13 @@ function rankItems(items: SourceItem[], theme: DailyTheme, memory: TopicMemory) 
   const scored = candidates
     .map((item) => ({
       ...item,
-      score: Math.max(0, Math.min(99, Math.max(item.score, scoreItem(item, theme, memory)) - repeatedTopicPenalty(item, memory))),
+      score: Math.max(
+        0,
+        Math.min(
+          99,
+          Math.max(item.score, scoreItem(item, theme, memory)) - repeatedTopicPenalty(item, memory) - qualityPenalty(item),
+        ),
+      ),
     }))
     .sort((a, b) => b.score - a.score);
   const diverseScored = scored.filter((item) => !isSuppressedByRecentTopics(item, memory));
@@ -619,7 +651,7 @@ function rankItems(items: SourceItem[], theme: DailyTheme, memory: TopicMemory) 
   const ranked: SourceItem[] = [];
 
   for (const item of pool) {
-    const maxPerPublisher = item.publisher.includes('OpenAI') ? 1 : 2;
+    const maxPerPublisher = item.publisher.includes('OpenAI') || item.publisher.includes('Hacker News') ? 1 : 2;
     const current = publisherCounts.get(item.publisher) ?? 0;
     if (current >= maxPerPublisher) continue;
 
