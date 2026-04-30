@@ -2,6 +2,12 @@ name: Daily ThigaoA.i Briefing
 
 on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Run the agent without saving, publishing, or sending email.
+        required: false
+        type: boolean
+        default: false
   schedule:
     # GitHub cron runs in UTC. This runs around 5 PM New York across DST.
     # The agent endpoint is idempotent for the New York day, so delayed or
@@ -34,11 +40,12 @@ jobs:
       - name: Call briefing agent
         if: steps.time.outputs.should_run == 'true'
         run: |
+          DRY_RUN="${{ inputs.dry_run || false }}"
           FORCE=false
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "$DRY_RUN" != "true" ]; then
             FORCE=true
           fi
           curl --fail-with-body -X POST "${{ secrets.BRIEFING_AGENT_URL }}" \
             -H "Authorization: Bearer ${{ secrets.AGENT_CRON_SECRET }}" \
             -H "Content-Type: application/json" \
-            --data "{\"force\":$FORCE}"
+            --data "{\"force\":$FORCE,\"dryRun\":$DRY_RUN}"

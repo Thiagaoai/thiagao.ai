@@ -42,8 +42,31 @@ export async function POST(request: Request) {
   }
 
   try {
-    const body = (await request.json().catch(() => ({}))) as { force?: boolean };
+    const body = (await request.json().catch(() => ({}))) as { force?: boolean; dryRun?: boolean };
     const campaign = `daily-${getNewYorkDateKey()}`;
+
+    if (body.dryRun) {
+      const result = await runDailyBriefingAgent();
+
+      return NextResponse.json({
+        ok: true,
+        dryRun: true,
+        campaign,
+        draftsCreated: result.drafts.length,
+        preview: result.drafts.map((draft) => ({
+          title: draft.title,
+          dek: draft.dek,
+          category: draft.category,
+          relevanceScore: draft.relevanceScore,
+          sources: draft.sources.map((source) => ({
+            publisher: source.publisher,
+            title: source.title,
+          })),
+        })),
+        run: result.run,
+      });
+    }
+
     const alreadySent = body.force ? false : await hasSentCampaign(campaign);
 
     if (alreadySent) {
