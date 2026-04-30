@@ -14,6 +14,13 @@ function normalizeUrl(path: string) {
   return `${getSiteUrl().replace(/\/$/, '')}${path}`;
 }
 
+function renderRichText(value: string) {
+  return escapeHtml(value)
+    .split(/\n{2,}/)
+    .map((paragraph) => `<p style="margin:0 0 14px;color:#d4d4d8;font-size:16px;line-height:1.75;">${paragraph.replace(/\n/g, '<br />')}</p>`)
+    .join('');
+}
+
 export function renderBriefingText(post: BriefingPost) {
   const sources = post.sources.map((source) => `${source.publisher}: ${source.url}`).join('\n');
 
@@ -99,7 +106,7 @@ export function renderBriefingEmail(post: BriefingPost) {
                       <table role="presentation" cellspacing="0" cellpadding="0" style="margin-top:24px;">
                         <tr>
                           <td>
-                            <a href="${escapeHtml(sourceUrl)}" style="display:inline-block;background:#ffffff;color:#050505;text-decoration:none;font-size:14px;font-weight:900;padding:14px 18px;border-radius:999px;">Ler fonte oficial</a>
+                            <a href="${escapeHtml(sourceUrl)}" style="display:inline-block;background:#ffffff;color:#050505;text-decoration:none;font-size:14px;font-weight:900;padding:14px 18px;border-radius:999px;">Abrir fonte principal</a>
                           </td>
                           <td style="padding-left:10px;">
                             <a href="${briefingUrl}" style="display:inline-block;border:1px solid #334155;color:#e5e7eb;text-decoration:none;font-size:14px;font-weight:900;padding:13px 18px;border-radius:999px;">Abrir briefing</a>
@@ -122,11 +129,11 @@ export function renderBriefingEmail(post: BriefingPost) {
                   </tr>
                 </table>
                 <h2 style="margin:30px 0 12px;color:#ffffff;font-size:23px;line-height:1.2;">O que aconteceu</h2>
-                <p style="margin:0;color:#d4d4d8;font-size:16px;line-height:1.75;">${escapeHtml(post.brief)}</p>
+                ${renderRichText(post.brief)}
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:26px 0;border-collapse:separate;border-spacing:0 10px;">
                   <tr>
                     <td style="padding:18px;border:1px solid #27272a;border-radius:18px;background:#101216;">
-                      <div style="color:#fff;font-size:15px;font-weight:900;margin-bottom:6px;">Para builders</div>
+                      <div style="color:#fff;font-size:15px;font-weight:900;margin-bottom:6px;">Para quem constrói</div>
                       <div style="color:#bfc6d1;font-size:14px;line-height:1.65;">Transforme a notícia em teste prático: escolha uma tarefa real, entregue contexto, deixe o agente operar ferramentas e cobre verificação do resultado.</div>
                     </td>
                   </tr>
@@ -144,7 +151,7 @@ export function renderBriefingEmail(post: BriefingPost) {
                   </tr>
                 </table>
                 <div style="padding:18px 0 4px;border-top:1px solid #27272a;">
-                  <div style="color:#a1a1aa;font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;">Fonte usada</div>
+                  <div style="color:#a1a1aa;font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;">Fontes usadas</div>
                   <div style="color:#d4d4d8;font-size:14px;line-height:1.6;">${escapeHtml(sourceLabel)}</div>
                 </div>
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:12px;">

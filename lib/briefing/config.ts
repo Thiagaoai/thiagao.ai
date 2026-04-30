@@ -24,6 +24,8 @@ export function getBriefingConfigStatus() {
     adminDashboardToken: Boolean(process.env.ADMIN_DASHBOARD_TOKEN),
     langSmithApiKey: Boolean(process.env.LANGSMITH_API_KEY),
     langSmithTracing: process.env.LANGSMITH_TRACING === 'true',
+    perplexityApiKey: Boolean(process.env.PERPLEXITY_API_KEY),
+    xBearerToken: Boolean(process.env.X_BEARER_TOKEN || process.env.TWITTER_BEARER_TOKEN),
   };
 
   return {
@@ -34,6 +36,8 @@ export function getBriefingConfigStatus() {
       agent: checks.agentCronSecret,
       admin: checks.adminApiToken && checks.adminDashboardToken,
       tracing: checks.langSmithApiKey && checks.langSmithTracing,
+      freshResearch: checks.perplexityApiKey,
+      socialSignals: checks.xBearerToken,
     },
     sender: {
       from: getNewsletterFrom(),
