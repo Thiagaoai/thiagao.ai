@@ -90,3 +90,9 @@ MISSED_CALL_ROUTES=[{"twilioNumber":"+1508XXXXXXX","forwardTo":"+1508YYYYYYY","b
 ```bash
 npm ci && npm run check      # lint + testes + build
 ```
+
+## 5. Imagens e design da loja
+- Fotos de produto e lifestyle: geradas com IA (Higgsfield, GPT Image 2.5) e servidas pelo CDN da Higgsfield via `next/image` (converte para AVIF/WebP no tamanho certo). Mapa em `lib/farmz3d/media.ts`.
+- O rodapé avisa que são prévias geradas por IA. Assim que houver fotos reais das peças impressas, coloque os arquivos em `public/farmz3d/` e troque o `src` do produto em `lib/farmz3d/media.ts` (ex.: `/farmz3d/christmas-name-ornament.jpg`).
+- Hero 3D: `app/farmz3d/Hero3D.tsx` (React Three Fiber, 100% procedural, sem arquivos externos). Respeita "reduzir movimento" do sistema.
+- Paleta: papel `#F5F5F3`, grafite `#0B0C0E`, acento cobalto `#2B5BFF`. Fontes: Unbounded (títulos), Geist (texto), Geist Mono (detalhes).
