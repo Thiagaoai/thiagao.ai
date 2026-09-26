@@ -30,7 +30,8 @@ const securityHeaders = [
       "object-src 'none'",
       "frame-ancestors 'none'",
       "form-action 'self'",
-      "script-src 'self' 'unsafe-inline'",
+      // React needs eval() for dev tooling only; production stays without 'unsafe-eval'.
+      process.env.NODE_ENV === 'development' ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'" : "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https://res.cloudinary.com https://d8j0ntlcm91z4.cloudfront.net https://i.scdn.co",
       "font-src 'self' data:",
@@ -52,6 +53,12 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
         pathname: '/**',
+      },
+      {
+        // Farmz3D product imagery generated with Higgsfield.
+        protocol: 'https',
+        hostname: 'd8j0ntlcm91z4.cloudfront.net',
+        pathname: '/user_3C3uSI3vU6b29vcS2xQJeq4dOn8/**',
       },
     ],
   },
