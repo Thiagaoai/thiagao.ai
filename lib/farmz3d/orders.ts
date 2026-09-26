@@ -3,7 +3,8 @@ import { Resend } from 'resend';
 import { getNewsletterFrom } from '@/lib/briefing/config';
 import { getSupabaseAdmin } from '@/lib/briefing/supabase';
 import { escapeHtml, senderWithName } from '@/lib/shared/request-guard';
-import { formatUsd, getProduct, type OrderInput } from './catalog';
+import { formatUsd, type OrderInput } from './catalog';
+import { getLiveCatalog } from './pricing';
 import { getActiveCampaign, newYorkToday } from './season';
 
 const ORDER_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -25,19 +26,24 @@ type SavedOrder = {
   orderNumber: string;
   productName: string;
   unitPriceCents: number;
+  shippingCents: number;
   estimatedTotalCents: number;
   campaign: string;
 };
 
 export async function saveOrder(order: OrderInput): Promise<{ saved: SavedOrder; stored: boolean; storeError?: string }> {
-  const product = getProduct(order.productId);
+  // Price and campaign come from the approved decisions, never from the browser.
+  const { products, leadDays, shippingCents: flatShipping } = await getLiveCatalog();
+  const product = products.find((item) => item.id === order.productId);
   if (!product) throw new Error('Unknown product.');
 
-  const campaign = getActiveCampaign().id;
+  const campaign = getActiveCampaign(new Date(), leadDays).id;
+  const shippingCents = order.fulfillment === 'shipping' ? flatShipping : 0;
   const base = {
     productName: product.name,
     unitPriceCents: product.priceCents,
-    estimatedTotalCents: product.priceCents * order.quantity,
+    shippingCents,
+    estimatedTotalCents: product.priceCents * order.quantity + shippingCents,
     campaign,
   };
 
@@ -55,6 +61,7 @@ export async function saveOrder(order: OrderInput): Promise<{ saved: SavedOrder;
       product_name: product.name,
       unit_price_cents: product.priceCents,
       quantity: order.quantity,
+      shipping_cents: shippingCents,
       estimated_total_cents: base.estimatedTotalCents,
       personalization: order.personalization,
       needed_by: order.neededBy ?? null,
@@ -81,7 +88,9 @@ function orderRows(order: OrderInput, saved: SavedOrder) {
     ['Order', saved.orderNumber],
     ['Product', saved.productName],
     ['Quantity', String(order.quantity)],
-    ['Estimated total', `${formatUsd(saved.estimatedTotalCents)} (before shipping)`],
+    ['Unit price', formatUsd(saved.unitPriceCents)],
+    ['Shipping', saved.shippingCents ? formatUsd(saved.shippingCents) : 'Local pickup — no shipping'],
+    ['Estimated total', formatUsd(saved.estimatedTotalCents)],
     ['Personalization', order.personalization],
     ['Needed by', order.neededBy ?? '—'],
     ['Fulfillment', order.fulfillment === 'shipping' ? `Shipping to ZIP ${order.shippingZip}` : 'Local pickup'],

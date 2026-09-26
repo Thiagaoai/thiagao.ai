@@ -1,6 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { MessageSquareText, PhoneMissed, ShieldCheck, Smartphone, Star } from 'lucide-react';
+import { getResolvedNumbers } from '@/lib/decisions/store';
+
+// Prices come from the approved decisions in /admin/farmz3d.
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: 'Reviews Machine + Missed-Call Text-Back — DockPlus AI',
@@ -9,42 +13,57 @@ export const metadata: Metadata = {
   alternates: { canonical: '/reviews-machine' },
 };
 
-// Offer pricing lives here so it is easy to change in one place.
-const PLANS = [
-  {
-    name: 'Reviews Machine',
-    setup: '$497 setup',
-    monthly: '$197/mo',
-    items: [
-      '3 branded NFC + QR counter stands (3D-printed)',
-      'Your own review page: 4–5 stars go to Google',
-      '1–3 stars become private feedback, emailed to you instantly',
-      'Monthly report: scans, ratings, feedback',
-    ],
-  },
-  {
-    name: 'Missed-Call Text-Back',
-    setup: '$297 setup',
-    monthly: '$197/mo',
-    items: [
-      'A business number that rings your cell',
-      'Missed call? The caller gets your text in seconds',
-      'Every missed call logged — no lead forgotten',
-      'We handle the carrier (A2P 10DLC) registration',
-    ],
-  },
-  {
-    name: 'Both — Local Growth Kit',
-    setup: '$697 setup',
-    monthly: '$347/mo',
-    highlight: true,
-    items: ['Everything in both plans', 'One monthly report', 'Priority setup (live in about 2 weeks, after carrier approval)'],
-  },
-];
+const usd = (cents: number) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(cents / 100);
+
+async function getPlans() {
+  const numbers = await getResolvedNumbers();
+  const price = (id: string) => {
+    const value = numbers.get(id);
+    if (value === undefined) throw new Error(`Missing pricing decision ${id}`);
+    return value;
+  };
+  const plan = (key: string) => ({
+    setup: price(`service:${key}-setup`) === 0 ? 'No setup fee' : `${usd(price(`service:${key}-setup`))} setup`,
+    monthly: `${usd(price(`service:${key}-monthly`))}/mo`,
+  });
+
+  return [
+    {
+      name: 'Reviews Machine',
+      ...plan('reviews'),
+      highlight: false,
+      items: [
+        '3 branded NFC + QR counter stands (3D-printed)',
+        'Your own review page: 4–5 stars go to Google',
+        '1–3 stars become private feedback, emailed to you instantly',
+        'Monthly report: scans, ratings, feedback',
+      ],
+    },
+    {
+      name: 'Missed-Call Text-Back',
+      ...plan('missed-call'),
+      highlight: false,
+      items: [
+        'A business number that rings your cell',
+        'Missed call? The caller gets your text in seconds',
+        'Every missed call logged — no lead forgotten',
+        'We handle the carrier (A2P 10DLC) registration',
+      ],
+    },
+    {
+      name: 'Both — Local Growth Kit',
+      ...plan('bundle'),
+      highlight: true,
+      items: ['Everything in both plans', 'One monthly report', 'Priority setup (live in about 2 weeks, after carrier approval)'],
+    },
+  ];
+}
 
 const CONTACT = 'mailto:dockplus@dockplusai.com?subject=Reviews%20Machine%20%2F%20Missed-Call%20Text-Back';
 
-export default function ReviewsMachinePage() {
+export default async function ReviewsMachinePage() {
+  const PLANS = await getPlans();
   return (
     <div className="min-h-screen bg-white text-[#0f172a]">
       <header className="border-b border-slate-200">

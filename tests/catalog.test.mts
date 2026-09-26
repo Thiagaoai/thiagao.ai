@@ -21,7 +21,7 @@ test('catalog is consistent', () => {
   const collections = new Set(COLLECTIONS.map((collection) => collection.id));
   for (const product of PRODUCTS) {
     assert.ok(collections.has(product.collection), `${product.id} has a known collection`);
-    assert.ok(Number.isInteger(product.priceCents) && product.priceCents > 0, `${product.id} has a price`);
+    assert.equal('priceCents' in product, false, 'prices live in the decisions registry, not the catalog');
   }
   for (const collection of collections) {
     assert.ok(PRODUCTS.some((product) => product.collection === collection), `${collection} has products`);

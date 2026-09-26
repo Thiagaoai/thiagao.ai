@@ -1,8 +1,11 @@
-import { NextResponse } from 'next/server';
+import { after, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { OrderInputSchema } from '@/lib/farmz3d/catalog';
+import { getProduct, OrderInputSchema } from '@/lib/farmz3d/catalog';
 import { getFarmz3dConfigStatus, saveOrder, sendOrderEmails } from '@/lib/farmz3d/orders';
 import { getClientIp, isRateLimited } from '@/lib/shared/request-guard';
+import { isTypeSafeConfigured } from '@/lib/typesafe/client';
+import { triageOrder } from '@/lib/typesafe/order-triage';
+import { saveOrderTriage } from '@/lib/typesafe/store';
 
 const MIN_FORM_TIME_MS = 3000;
 const MAX_ORDERS_PER_IP_PER_HOUR = 10;
@@ -56,6 +59,16 @@ export async function POST(request: Request) {
 
     if (!stored) console.error('[farmz3d] order emailed but not stored', { storeError });
     if (!email.emailed && config.email) console.error('[farmz3d] order stored but email failed', { error: email.error });
+
+    // Jev production check runs after the response, so the customer never waits on it.
+    const product = getProduct(order.productId);
+    if (stored && product && isTypeSafeConfigured()) {
+      after(async () => {
+        const result = await triageOrder(product, order);
+        if (result.ok) await saveOrderTriage(saved.orderNumber, result.triage);
+        else console.error('[jev] order triage failed', { order: saved.orderNumber, error: result.error });
+      });
+    }
 
     return NextResponse.json({
       ok: true,

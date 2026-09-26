@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { COLLECTIONS, formatUsd, PRODUCTS, type CollectionId } from '@/lib/farmz3d/catalog';
+import { COLLECTIONS, formatUsd, type CollectionId } from '@/lib/farmz3d/catalog';
+import { getLiveCatalog } from '@/lib/farmz3d/pricing';
 import { formatLongDate, getActiveCampaign, getUpcomingCampaigns, newYorkToday, type CampaignId } from '@/lib/farmz3d/season';
 import { MotionRoot, PrintedOrnament, Reveal, TiltCard } from './Motion';
 import OrderForm from './OrderForm';
@@ -47,9 +48,10 @@ const FAQ = [
   },
 ];
 
-export default function Farmz3dPage() {
-  const campaign = getActiveCampaign();
-  const upcoming = getUpcomingCampaigns();
+export default async function Farmz3dPage() {
+  const { products: PRODUCTS, leadDays, shippingCents } = await getLiveCatalog();
+  const campaign = getActiveCampaign(new Date(), leadDays);
+  const upcoming = getUpcomingCampaigns(new Date(), leadDays);
   const today = newYorkToday();
   const theme = THEME[campaign.id];
   const instagram = process.env.NEXT_PUBLIC_FARMZ3D_INSTAGRAM?.replace(/^@/, '');
@@ -143,7 +145,7 @@ export default function Farmz3dPage() {
 
         <section id="collections" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <h2 className="text-3xl font-extrabold sm:text-4xl">Pick a gift</h2>
-          <p className="mt-2 text-[#5b4a3a]">Every piece is personalized. Prices are per item or set as shown; shipping is quoted on confirmation.</p>
+          <p className="mt-2 text-[#5b4a3a]">Every piece is personalized. Prices are per item or set as shown; flat {formatUsd(shippingCents)} shipping per order, or free local pickup.</p>
 
           {collectionOrder.map((collectionId) => {
             const collection = COLLECTIONS.find((item) => item.id === collectionId);
@@ -228,7 +230,7 @@ export default function Farmz3dPage() {
               ))}
             </dl>
           </div>
-          <OrderForm products={productOptions} defaultProductId={firstProduct.id} today={today} />
+          <OrderForm products={productOptions} defaultProductId={firstProduct.id} today={today} shippingCents={shippingCents} />
         </section>
       </main>
       </MotionRoot>

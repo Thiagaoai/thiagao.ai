@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-// Prices are suggested starting points. Adjust them here before promoting the store;
-// every page and email reads from this single list.
+// Products. Prices are not set here: each product has a typed pricing decision
+// (`price:<product id>`) in lib/decisions/registry.ts, approved in /admin/farmz3d.
 
 export const COLLECTION_IDS = ['halloween', 'thanksgiving', 'christmas', 'year-round', 'business'] as const;
 export type CollectionId = (typeof COLLECTION_IDS)[number];
@@ -12,13 +12,16 @@ export type Collection = {
   tagline: string;
 };
 
+export type PricedProduct = Product & { priceCents: number };
+
 export type Product = {
   id: string;
   collection: CollectionId;
   name: string;
   description: string;
   personalizationHint: string;
-  priceCents: number;
+  // What the personalization must contain before printing (used by the Jev order check).
+  requiredDetails: string;
   unitLabel: string;
   emoji: string;
 };
@@ -38,7 +41,7 @@ export const PRODUCTS: Product[] = [
     name: 'Trick-or-Treat Name Tag',
     description: 'Custom name tag that clips onto any candy bucket or bag. Pumpkin, ghost or bat shape.',
     personalizationHint: 'Name + shape (pumpkin, ghost or bat)',
-    priceCents: 1200,
+    requiredDetails: 'A name, and a shape: pumpkin, ghost or bat.',
     unitLabel: 'each',
     emoji: '🎃',
   },
@@ -48,7 +51,7 @@ export const PRODUCTS: Product[] = [
     name: 'Halloween Cookie Cutter Set',
     description: 'Set of 3 food-contact PLA cutters. Add a name or monogram cutter for your family.',
     personalizationHint: 'Name or monogram for the custom cutter',
-    priceCents: 2400,
+    requiredDetails: 'The name or monogram for the custom cutter.',
     unitLabel: 'set of 3',
     emoji: '🦇',
   },
@@ -58,7 +61,7 @@ export const PRODUCTS: Product[] = [
     name: 'Spooky Photo Lithophane Light',
     description: 'Your photo printed in 3D — it appears when the warm LED behind it turns on.',
     personalizationHint: 'We will ask for the photo by email after the order',
-    priceCents: 4500,
+    requiredDetails: 'Nothing in the text is required: the photo is requested later by email. A caption is optional.',
     unitLabel: 'each',
     emoji: '👻',
   },
@@ -68,7 +71,7 @@ export const PRODUCTS: Product[] = [
     name: 'Personalized Place Card Holders',
     description: 'Leaf or pumpkin holders with each guest name printed in.',
     personalizationHint: 'Guest names, separated by commas',
-    priceCents: 3600,
+    requiredDetails: 'The guest names, up to six.',
     unitLabel: 'set of 6',
     emoji: '🍂',
   },
@@ -78,7 +81,7 @@ export const PRODUCTS: Product[] = [
     name: 'Name Napkin Rings',
     description: 'Napkin rings with each name — doubles as a take-home keepsake.',
     personalizationHint: 'Names, separated by commas',
-    priceCents: 3000,
+    requiredDetails: 'The names, up to six.',
     unitLabel: 'set of 6',
     emoji: '🦃',
   },
@@ -88,7 +91,7 @@ export const PRODUCTS: Product[] = [
     name: 'Personalized Name Ornament',
     description: 'Layered ornament with name and year. Snowflake, star or tree.',
     personalizationHint: 'Name + year + shape (snowflake, star or tree)',
-    priceCents: 1500,
+    requiredDetails: 'A name, a year, and a shape: snowflake, star or tree.',
     unitLabel: 'each',
     emoji: '🎄',
   },
@@ -98,7 +101,7 @@ export const PRODUCTS: Product[] = [
     name: 'Stocking Name Tags',
     description: 'Clip-on name tags so every stocking is claimed.',
     personalizationHint: 'Names, separated by commas',
-    priceCents: 2800,
+    requiredDetails: 'The names, up to four.',
     unitLabel: 'set of 4',
     emoji: '🧦',
   },
@@ -108,7 +111,7 @@ export const PRODUCTS: Product[] = [
     name: 'Photo Lithophane Ornament',
     description: 'Family photo lithophane ornament — the gift grandparents keep forever.',
     personalizationHint: 'We will ask for the photo by email after the order',
-    priceCents: 4500,
+    requiredDetails: 'Nothing in the text is required: the photo is requested later by email. A caption is optional.',
     unitLabel: 'each',
     emoji: '⭐',
   },
@@ -118,7 +121,7 @@ export const PRODUCTS: Product[] = [
     name: 'Pet Memorial Keepsake',
     description: 'Paw-print plaque with your pet name and dates, or a photo lithophane.',
     personalizationHint: 'Pet name + dates (photo requested by email)',
-    priceCents: 5500,
+    requiredDetails: 'The pet name and the dates (the photo is requested later by email).',
     unitLabel: 'each',
     emoji: '🐾',
   },
@@ -128,7 +131,7 @@ export const PRODUCTS: Product[] = [
     name: 'Custom Cake Topper',
     description: 'Name and age topper for birthdays, weddings and baby showers.',
     personalizationHint: 'Text + color',
-    priceCents: 2500,
+    requiredDetails: 'The text to print and a color.',
     unitLabel: 'each',
     emoji: '🎂',
   },
@@ -138,7 +141,7 @@ export const PRODUCTS: Product[] = [
     name: 'Google Review NFC + QR Stand',
     description: 'Counter stand with your logo. Customers tap their phone or scan to leave a review.',
     personalizationHint: 'Business name (we will ask for the logo by email)',
-    priceCents: 4500,
+    requiredDetails: 'The business name (the logo is requested later by email).',
     unitLabel: 'each',
     emoji: '📲',
   },

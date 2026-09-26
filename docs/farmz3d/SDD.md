@@ -115,3 +115,16 @@ Assinatura: HMAC-SHA1 (chave = Auth Token) sobre `URL completa + parâmetros POS
 ## 7. Testes
 - `npm test` → `node --test` em `tests/`: datas de feriado (Thanksgiving = 4ª quinta), campanha ativa por data, prazo de pedido, assinatura Twilio (vetor conhecido + parâmetros alterados), TwiML escapado, schema de pedido.
 - Verificação manual/automática: build de produção, servidor local, `curl` nas APIs e Playwright nas páginas (mobile e desktop).
+
+## 8. Decisões tipadas + Jev (v2)
+
+**Registro de decisões** (`lib/decisions/`): cada preço, frete, prazo e canal é um `Decision` validado por zod na carga (opção recomendada precisa existir, valor precisa bater com a unidade, ids únicos). Cada decisão tem evidência de mercado com URL de fonte (pesquisa de set/2026) e custo estimado.
+- O site lê a opção **aprovada** (tabela `business_decisions`) ou, se pendente, a **recomendada**: `/farmz3d` (preços, frete, prazos) e `/reviews-machine` (planos). Aprovar chama `revalidatePath` → muda na hora.
+- O preço cobrado é sempre calculado no servidor (`getLiveCatalog`); valores enviados pelo navegador são ignorados.
+
+**Jev / TypeSafe** (`lib/typesafe/`), seguindo a documentação oficial (docs.typesafe.ai):
+- Cliente HTTP próprio para `POST /v1/systemone`, resposta validada por zod, confere que cada resposta tem o tipo da pergunta e que a Choice é uma das opções, retry com backoff em 429/529, timeout.
+- **O Jev não faz conta** (limitação documentada do jev-1.13): preços e margens ficam no código; para o Jev vão só texto e um balde nomeado ("high/medium/low margin").
+- **Mediação:** 1 Choice (qual opção atende os dois motivos) + 1 Noul (os motivos conflitam?) + 1 Noul por opção por sócio (a opção atende o motivo dele?), numa única requisição paralela. Código: justiça = mínimo entre os dois; sugestão = maior justiça; "forte" só se a Choice concordar com confiança ≥ 0.6.
+- **Checagem de pedido:** 4 Nouls atômicos sobre personalização/notas (detalhes completos, marca de terceiros, conteúdo ofensivo, urgência). Estado mínimo, sem nome/email do cliente. Roda com `after()` depois da resposta ao cliente; falha do Jev nunca bloqueia pedido.
+- Tabelas: `business_decision_positions`, `business_decision_mediations`, `farmz3d_order_triage` (FK com cascade).

@@ -1,10 +1,29 @@
 # Setup — colocar em produção
 
-Rotas novas: `/farmz3d`, `/reviews-machine`, `/r/<slug>` (demo: `/r/demo`).
+Rotas novas: `/farmz3d`, `/reviews-machine`, `/r/<slug>` (demo: `/r/demo`) e o painel **`/admin/farmz3d`**.
 
 ## 1. Banco (Supabase)
-SQL Editor → cole e rode `supabase/migrations/005_farmz3d_dockplus.sql`.
-Tabelas criadas: `farmz3d_orders`, `dockplus_review_events`, `dockplus_missed_calls` (RLS ligado, acesso só pelo servidor).
+SQL Editor → rode, nesta ordem:
+1. `supabase/migrations/005_farmz3d_dockplus.sql` → `farmz3d_orders`, `dockplus_review_events`, `dockplus_missed_calls`
+2. `supabase/migrations/006_business_decisions.sql` → `business_decisions`, `business_decision_log`, coluna `shipping_cents`
+3. `supabase/migrations/007_jev_typesafe.sql` → `business_decision_positions`, `business_decision_mediations`, `farmz3d_order_triage`
+
+RLS ligado em todas; acesso só pelo servidor.
+
+## 1b. Painel `/admin/farmz3d`
+Mesmo login do painel da newsletter (`/admin/login`, variáveis `ADMIN_DASHBOARD_TOKEN`/`ADMIN_API_TOKEN` já existentes).
+- **Decisões:** cada preço/prazo com dados de mercado e fonte. Escolha "Decidindo como Thiago/Bruna", selecione a opção e clique **Aprovar** → o site muda na hora (`/farmz3d` e `/reviews-machine`). Pendente = site usa a opção recomendada. Tudo fica no histórico.
+- **Pedidos:** lista com status editável (`Novo → Confirmado → Imprimindo → Enviado/Retirado`).
+- **Reviews** e **Ligações perdidas:** o que os clientes da DockPlus estão recebendo.
+
+## 1c. Jev (TypeSafe) — denominador comum e checagem de pedidos
+```
+TYPESAFE_API_KEY=...          # console.typesafe.ai — sem ela o painel funciona, só sem os botões do Jev
+TYPESAFE_MODEL=jev-latest     # opcional (padrão jev-latest)
+```
+- **Denominador comum:** em cada decisão, cada um escolhe a opção e escreve o motivo → **Registrar minha posição**. Se discordarem, **Jev: encontrar o denominador comum**. O Jev julga se cada opção atende o motivo do Thiago e o da Bruna (probabilidades) e o código sugere a opção mais justa (a que melhor atende quem fica menos satisfeito). A aprovação continua sendo humana.
+- **Checagem de pedidos:** todo pedido novo é analisado depois de responder ao cliente (não atrasa o checkout): faltam detalhes? personagem/marca de terceiros (risco de direitos)? texto ofensivo? pediu urgência? → "Pronto para produzir / Conferir / Pedir detalhes / Revisar". Botão "Reanalisar" em cada pedido.
+- **Antes de confiar nos números:** os limites (0.5 / 0.8) são pontos de partida. Rode nos primeiros ~30 pedidos reais e ajuste em `lib/typesafe/order-triage.ts` (`TRIAGE_THRESHOLDS`).
 
 ## 2. Variáveis de ambiente (Dokploy)
 Obrigatórias para a Farmz3D (algumas já existem para o newsletter):

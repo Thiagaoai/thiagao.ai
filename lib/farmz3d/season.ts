@@ -12,7 +12,7 @@ export type Campaign = {
 };
 
 // Days between the last accepted order and the holiday (production + shipping).
-// Tune these to the real print capacity and carrier transit times.
+// Defaults only: the live values come from the approved decisions in /admin/farmz3d.
 export const ORDER_LEAD_DAYS: Record<CampaignId, number> = {
   halloween: 9,
   thanksgiving: 10,
@@ -69,10 +69,12 @@ export function holidayDates(year: number): Record<CampaignId, string> {
   };
 }
 
-export function campaignsForYear(year: number, today: string): Campaign[] {
+export type LeadDays = Record<CampaignId, number>;
+
+export function campaignsForYear(year: number, today: string, leadDays: LeadDays = ORDER_LEAD_DAYS): Campaign[] {
   const dates = holidayDates(year);
   return (Object.keys(dates) as CampaignId[]).map((id) => {
-    const orderByDate = addDays(dates[id], -ORDER_LEAD_DAYS[id]);
+    const orderByDate = addDays(dates[id], -leadDays[id]);
     return {
       id,
       name: CAMPAIGN_NAMES[id],
@@ -85,19 +87,19 @@ export function campaignsForYear(year: number, today: string): Campaign[] {
 }
 
 // The campaign still accepting orders that closes soonest.
-export function getActiveCampaign(now: Date = new Date()): Campaign {
+export function getActiveCampaign(now: Date = new Date(), leadDays: LeadDays = ORDER_LEAD_DAYS): Campaign {
   const today = newYorkToday(now);
   const year = Number(today.slice(0, 4));
-  const upcoming = [...campaignsForYear(year, today), ...campaignsForYear(year + 1, today)].filter(
+  const upcoming = [...campaignsForYear(year, today, leadDays), ...campaignsForYear(year + 1, today, leadDays)].filter(
     (campaign) => campaign.daysUntilOrderBy >= 0,
   );
   return upcoming[0];
 }
 
-export function getUpcomingCampaigns(now: Date = new Date()): Campaign[] {
+export function getUpcomingCampaigns(now: Date = new Date(), leadDays: LeadDays = ORDER_LEAD_DAYS): Campaign[] {
   const today = newYorkToday(now);
   const year = Number(today.slice(0, 4));
-  return [...campaignsForYear(year, today), ...campaignsForYear(year + 1, today)]
+  return [...campaignsForYear(year, today, leadDays), ...campaignsForYear(year + 1, today, leadDays)]
     .filter((campaign) => campaign.daysUntilOrderBy >= 0)
     .slice(0, 3);
 }

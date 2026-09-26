@@ -16,6 +16,7 @@ type Props = {
   products: ProductOption[];
   defaultProductId: string;
   today: string;
+  shippingCents: number;
 };
 
 type Status = { state: 'idle' | 'loading' | 'error'; message?: string } | { state: 'success'; orderNumber: string; totalCents: number };
@@ -25,7 +26,7 @@ const usd = (cents: number) => new Intl.NumberFormat('en-US', { style: 'currency
 const inputClass =
   'w-full rounded-xl border border-[#d9c9b3] bg-white px-4 py-3 text-[15px] text-[#2b1d12] outline-none transition focus:border-[#c2571a] focus:ring-2 focus:ring-[#c2571a]/20';
 
-export default function OrderForm({ products, defaultProductId, today }: Props) {
+export default function OrderForm({ products, defaultProductId, today, shippingCents }: Props) {
   const [productId, setProductId] = useState(defaultProductId);
   const [quantity, setQuantity] = useState(1);
   const [personalization, setPersonalization] = useState('');
@@ -105,7 +106,7 @@ export default function OrderForm({ products, defaultProductId, today }: Props) 
           Your order number is <strong className="font-mono text-[#2b1d12]">{status.orderNumber}</strong>.
         </p>
         <p className="mt-2 text-[#5b4a3a]">
-          Estimated total {usd(status.totalCents)} before shipping. We will email you a confirmation and a payment link —
+          Estimated total {usd(status.totalCents)}. We will email you a confirmation and a payment link —
           nothing is charged until you approve it.
         </p>
         <button
@@ -244,8 +245,8 @@ export default function OrderForm({ products, defaultProductId, today }: Props) 
 
       <div className="flex flex-col items-start justify-between gap-4 border-t border-[#e6d8c4] pt-5 sm:flex-row sm:items-center">
         <p className="text-sm text-[#5b4a3a]">
-          Estimated: <strong className="text-lg text-[#2b1d12]">{product ? usd(product.priceCents * quantity) : '—'}</strong>{' '}
-          <span className="text-xs">+ shipping · pay after we confirm</span>
+          Estimated: <strong className="text-lg text-[#2b1d12]">{product ? usd(product.priceCents * quantity + (fulfillment === 'shipping' ? shippingCents : 0)) : '—'}</strong>{' '}
+          <span className="text-xs">{fulfillment === 'shipping' ? `incl. ${usd(shippingCents)} shipping` : 'local pickup'} · pay after we confirm</span>
         </p>
         <button
           type="submit"
