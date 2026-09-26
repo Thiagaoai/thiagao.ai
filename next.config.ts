@@ -30,7 +30,8 @@ const securityHeaders = [
       "object-src 'none'",
       "frame-ancestors 'none'",
       "form-action 'self'",
-      "script-src 'self' 'unsafe-inline'",
+      // React needs eval() for dev tooling only; production stays without 'unsafe-eval'.
+      process.env.NODE_ENV === 'development' ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'" : "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https://res.cloudinary.com https://d8j0ntlcm91z4.cloudfront.net https://i.scdn.co",
       "font-src 'self' data:",

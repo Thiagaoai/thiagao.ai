@@ -20,6 +20,15 @@ Um website minimalista e moderno desenvolvido com Next.js 16, TypeScript e Tailw
 - **Tailwind CSS 4** - Estilização utilitária
 - **React 19** - Biblioteca UI
 
+## 🎃 Farmz3D + DockPlus (loja, painel e Jev)
+
+```bash
+npm ci
+npm run farmz3d:local   # http://localhost:3002/farmz3d · painel: /admin/login (admin / farmz3d-local)
+```
+
+Documentação: `docs/farmz3d/` (PRD, SDD, plano de execução e setup).
+
 ## 📦 Instalação
 
 ```bash

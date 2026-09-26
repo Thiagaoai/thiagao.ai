@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3002 --hostname localhost",
+    "farmz3d:local": "node scripts/farmz3d/local-dev.mjs",
     "build": "next build",
     "postbuild": "mkdir -p .next/standalone/.next && cp -R public .next/standalone/public && cp -R .next/static .next/standalone/.next/static",
     "start": "PORT=${PORT:-3002} HOSTNAME=${HOSTNAME:-localhost} node .next/standalone/server.js",

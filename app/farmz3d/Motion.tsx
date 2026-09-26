@@ -64,7 +64,7 @@ export function PrintedOrnament({ accent }: { accent: string }) {
   const reduce = useReducedMotion();
   const layers = Array.from({ length: LAYERS }, (_, index) => {
     const t = (index + 0.5) / LAYERS;
-    return Math.max(18, RADIUS * Math.sin(Math.PI * t));
+    return Math.round(Math.max(18, RADIUS * Math.sin(Math.PI * t)));
   });
   const printSeconds = 0.14;
 

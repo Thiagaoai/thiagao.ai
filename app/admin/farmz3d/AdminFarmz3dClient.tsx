@@ -210,7 +210,7 @@ export function DecisionCard({ decision, canWrite, jevEnabled }: { decision: Dec
             ))}
             {decision.unitCostCents !== null && (
               <li className="flex justify-between gap-3 rounded-xl bg-white/[0.03] px-3 py-2">
-                <span className="text-zinc-400">Custo estimado (material + embalagem)</span>
+                <span className="text-zinc-400">Custo estimado (só material; sem mão de obra, embalagem e taxas)</span>
                 <span className="font-semibold text-zinc-100">
                   {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(decision.unitCostCents / 100)}
                 </span>
@@ -243,7 +243,7 @@ export function DecisionCard({ decision, canWrite, jevEnabled }: { decision: Dec
                         <Sparkles className="h-3 w-3" /> Recomendado
                       </span>
                     )}
-                    {optionMargin !== null && <span className="text-xs text-zinc-500">margem bruta ~{optionMargin}%</span>}
+                    {optionMargin !== null && <span className="text-xs text-zinc-500">margem sobre o custo listado ~{optionMargin}%</span>}
                   </span>
                   <span className="mt-1 block text-xs leading-relaxed text-zinc-400">{option.rationale}</span>
                 </label>

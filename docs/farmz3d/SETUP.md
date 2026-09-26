@@ -1,4 +1,21 @@
-# Setup — colocar em produção
+# Setup
+
+## 0. Rodar tudo no seu computador (localhost) — sem configurar nada
+```bash
+git clone https://github.com/Thiagaoai/thiagao.ai.git
+cd thiagao.ai
+git checkout claude/stoic-carson-aku6as   # ou main, depois do merge
+npm ci
+npm run farmz3d:local
+```
+Abra:
+- Loja: http://localhost:3002/farmz3d
+- Reviews Machine: http://localhost:3002/reviews-machine · demo: http://localhost:3002/r/demo
+- Painel: http://localhost:3002/admin/login → usuário `admin`, senha `farmz3d-local` → botão **Farmz3D + DockPlus**
+
+No modo local, pedidos, decisões e avaliações ficam em `.data/local-db.json` (apague o arquivo para zerar). Emails não são enviados. Para ligar o Jev, crie `.env.local` com `TYPESAFE_API_KEY=...`. Se o `.env.local` tiver Supabase real, ele é usado no lugar do arquivo local. O modo local nunca liga em produção (`NODE_ENV=production`).
+
+# Colocar em produção
 
 Rotas novas: `/farmz3d`, `/reviews-machine`, `/r/<slug>` (demo: `/r/demo`) e o painel **`/admin/farmz3d`**.
 
