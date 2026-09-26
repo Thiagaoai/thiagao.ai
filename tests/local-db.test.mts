@@ -78,7 +78,8 @@ test('count, range filters, maybeSingle and delete', async () => {
 });
 
 test('a second module instance sees writes from the first (Next.js dev loads modules per route)', async () => {
-  const other = await import('../lib/dev/local-db.ts?second-instance');
+  const secondInstance = '../lib/dev/local-db.ts?second-instance';
+  const other = (await import(secondInstance)) as typeof import('../lib/dev/local-db.ts');
   const otherDb = createClient('http://local-demo-db.invalid', 'local-demo', {
     auth: { autoRefreshToken: false, persistSession: false },
     global: { fetch: other.localDemoFetch },

@@ -54,6 +54,12 @@ const nextConfig: NextConfig = {
         hostname: 'res.cloudinary.com',
         pathname: '/**',
       },
+      {
+        // Farmz3D product imagery generated with Higgsfield.
+        protocol: 'https',
+        hostname: 'd8j0ntlcm91z4.cloudfront.net',
+        pathname: '/user_3C3uSI3vU6b29vcS2xQJeq4dOn8/**',
+      },
     ],
   },
   // Performance optimizations
