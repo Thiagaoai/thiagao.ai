@@ -14,6 +14,7 @@ const siteUrl = "https://thiagao.io";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  alternates: { canonical: "/" },
   title: `${brandName} - Dev, Automação, LangGraph & IA Customizada`,
   description: "Thiago do Carmo cria automações, sites, agentes de IA, LangGraph, LangSmith, n8n, chatbots e soluções customizadas para negócios reais.",
   keywords: [brandName, "thiagao.io", "Thiago do Carmo", "LangGraph", "LangSmith", "Automação", "IA Customizada", "Next.js", "n8n", "AI Agents"],
@@ -70,7 +71,6 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="scroll-smooth">
       <head>
-        <link rel="canonical" href="https://thiagao.io" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
