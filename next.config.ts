@@ -57,6 +57,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  // Lets `FARMZ3D_HOSTS=farmz3d.localhost npm run farmz3d:local` preview the store domain in dev.
+  allowedDevOrigins: ['farmz3d.localhost'],
   reactCompiler: true,
   images: {
     formats: ['image/avif', 'image/webp'],

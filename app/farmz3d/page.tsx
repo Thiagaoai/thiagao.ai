@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { COLLECTIONS, formatUsd, type CollectionId } from '@/lib/farmz3d/catalog';
+import { FARMZ3D_WHATSAPP, formatUsPhone, whatsappLink } from '@/lib/farmz3d/contact';
 import { LIFESTYLE_MEDIA, PRODUCT_MEDIA } from '@/lib/farmz3d/media';
 import { getLiveCatalog } from '@/lib/farmz3d/pricing';
 import { formatLongDate, getActiveCampaign, getUpcomingCampaigns, newYorkToday } from '@/lib/farmz3d/season';
@@ -10,19 +11,24 @@ import { body, display, mono } from './fonts';
 import HeroCanvas from './HeroCanvas';
 import { MotionRoot, Reveal, TiltCard } from './Motion';
 import OrderForm from './OrderForm';
+import WhatsAppIcon from './WhatsAppIcon';
 
 // Re-render hourly so the active campaign and countdown follow the calendar.
 export const revalidate = 3600;
+
+const STORE_URL = process.env.FARMZ3D_SITE_URL ? `${process.env.FARMZ3D_SITE_URL.replace(/\/$/, '')}/` : '/farmz3d';
+const CHAT_LINK = whatsappLink(FARMZ3D_WHATSAPP, 'Hi Bruna! I have a question about a Farmz3D order.');
 
 export const metadata: Metadata = {
   title: 'Farmz3D — Personalized 3D-Printed Holiday Gifts',
   description:
     'Custom 3D-printed Halloween, Thanksgiving and Christmas gifts: name ornaments, photo lithophanes, place cards and more. Made to order.',
-  alternates: { canonical: '/farmz3d' },
+  // With its own domain (FARMZ3D_SITE_URL=https://farmz3d.com) the store root is the canonical URL.
+  alternates: { canonical: STORE_URL },
   openGraph: {
     title: 'Farmz3D — Personalized 3D-Printed Holiday Gifts',
     description: 'Made-to-order personalized gifts for Halloween, Thanksgiving and Christmas.',
-    url: '/farmz3d',
+    url: STORE_URL,
     type: 'website',
     locale: 'en_US',
   },
@@ -35,11 +41,15 @@ const FAQ = [
   },
   {
     q: 'How do photo lithophanes work?',
-    a: 'We turn your photo into a 3D print with different thicknesses. When light shines through it, the photo appears. After you order, we reply asking for the photo.',
+    a: 'We turn your photo into a 3D print with different thicknesses. When light shines through it, the photo appears. Attach the photo in the order form (or send it on WhatsApp).',
   },
   {
     q: 'What are the pieces made of?',
     a: 'PLA printed in our workshop. Cookie cutters use food-contact PLA; hand wash only.',
+  },
+  {
+    q: 'Can I talk to someone?',
+    a: `Yes — message Bruna on WhatsApp at ${formatUsPhone(FARMZ3D_WHATSAPP)}. After you order, the confirmation screen has a button that sends us your order number.`,
   },
   {
     q: 'What if I need it faster?',
@@ -94,6 +104,14 @@ export default async function Farmz3dPage() {
             </a>
             <a href="#how" className="hidden rounded-full px-3 py-1.5 text-white/70 transition hover:text-white sm:inline">
               Process
+            </a>
+            <a
+              href={CHAT_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden items-center gap-1.5 rounded-full px-3 py-1.5 text-white/70 transition hover:text-white sm:inline-flex"
+            >
+              <WhatsAppIcon className="h-3.5 w-3.5" /> WhatsApp
             </a>
             <a href="#order" className="rounded-full bg-white px-4 py-1.5 font-medium text-[#0B0C0E] transition hover:bg-[#DDE4FF]">
               Order now
@@ -362,19 +380,33 @@ export default async function Farmz3dPage() {
                   ))}
                 </dl>
               </div>
-              <OrderForm products={productOptions} defaultProductId={firstProduct.id} today={today} shippingCents={shippingCents} />
+              <OrderForm products={productOptions} defaultProductId={firstProduct.id} today={today} shippingCents={shippingCents} whatsapp={FARMZ3D_WHATSAPP} />
             </div>
           </section>
         </main>
       </MotionRoot>
 
-      <footer className="bg-[#0B0C0E] py-10 text-white/50">
+      {/* Floating WhatsApp button */}
+      <a
+        href={CHAT_LINK}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Chat with Farmz3D on WhatsApp"
+        className="fixed bottom-5 right-5 z-50 grid h-14 w-14 place-items-center rounded-full bg-[#25D366] text-white shadow-[0_12px_30px_-8px_rgba(37,211,102,0.7)] transition hover:scale-105 hover:bg-[#1EBE5A]"
+      >
+        <WhatsAppIcon className="h-7 w-7" />
+      </a>
+
+      <footer className="bg-[#0B0C0E] py-10 pb-24 text-white/50 sm:pb-10">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p className="tracking-[0.18em] text-white fz-display">
             FARMZ<span className="text-[#8EA3FF]">3D</span>
           </p>
           <p className="text-xs">
-            © {today.slice(0, 4)} Farmz3D · Personalized 3D-printed gifts
+            © {today.slice(0, 4)} Farmz3D · Personalized 3D-printed gifts ·{' '}
+            <a href={CHAT_LINK} target="_blank" rel="noopener noreferrer" className="text-white/80 hover:text-white">
+              WhatsApp {formatUsPhone(FARMZ3D_WHATSAPP)}
+            </a>
             {instagram && (
               <>
                 {' · '}

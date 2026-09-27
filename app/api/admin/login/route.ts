@@ -1,11 +1,18 @@
 import { NextResponse } from 'next/server';
 import { logNewsletterEvent } from '@/lib/briefing/posts';
 import { verifyAdminCredentials } from '@/lib/briefing/admin-users';
+import { getClientIp, isRateLimited, isSameOriginRequest } from '@/lib/shared/request-guard';
+
+const MAX_ATTEMPTS_PER_HOUR = 10;
 
 export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
-  const sessionToken = process.env.ADMIN_DASHBOARD_TOKEN || process.env.ADMIN_API_TOKEN;
+  // The session cookie holds the dashboard token only; the API token never goes to a browser.
+  const sessionToken = process.env.ADMIN_DASHBOARD_TOKEN;
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ ok: false, message: 'Origem inválida.' }, { status: 403 });
+  }
 
   if (!sessionToken) {
     return NextResponse.json({ ok: false, message: 'Login is not configured.' }, { status: 500 });
@@ -17,6 +24,13 @@ export async function POST(request: Request) {
 
   if (!email || !password) {
     return NextResponse.json({ ok: false, message: 'Informe usuário e senha.' }, { status: 400 });
+  }
+
+  if (
+    isRateLimited(`admin-login:ip:${getClientIp(request)}`, MAX_ATTEMPTS_PER_HOUR) ||
+    isRateLimited(`admin-login:user:${email.toLowerCase()}`, MAX_ATTEMPTS_PER_HOUR)
+  ) {
+    return NextResponse.json({ ok: false, message: 'Muitas tentativas. Tente de novo em 1 hora.' }, { status: 429 });
   }
 
   const verified = await verifyAdminCredentials(email, password);

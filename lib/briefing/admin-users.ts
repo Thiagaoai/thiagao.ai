@@ -1,4 +1,8 @@
-import { pbkdf2Sync, randomBytes, timingSafeEqual } from 'node:crypto';
+import { pbkdf2, pbkdf2Sync, randomBytes, timingSafeEqual } from 'node:crypto';
+import { promisify } from 'node:util';
+import { safeEqual } from '@/lib/shared/request-guard';
+
+const pbkdf2Async = promisify(pbkdf2);
 import { getSupabaseAdmin } from './supabase';
 
 const ITERATIONS = 310_000;
@@ -37,11 +41,12 @@ function hashPassword(password: string) {
   return `pbkdf2:${ITERATIONS}:${salt}:${hash}`;
 }
 
-function verifyPassword(password: string, storedHash: string) {
+// Async so a login attempt never blocks the event loop for other requests.
+async function verifyPassword(password: string, storedHash: string) {
   const [scheme, iterations, salt, hash] = storedHash.split(':');
   if (scheme !== 'pbkdf2' || !iterations || !salt || !hash) return false;
 
-  const candidate = pbkdf2Sync(password, salt, Number(iterations), KEY_LENGTH, DIGEST);
+  const candidate = await pbkdf2Async(password, salt, Number(iterations), KEY_LENGTH, DIGEST);
   const expected = Buffer.from(hash, 'hex');
   return candidate.length === expected.length && timingSafeEqual(candidate, expected);
 }
@@ -80,7 +85,7 @@ export async function verifyAdminCredentials(emailOrUser: string, password: stri
   const envPassword = process.env.ADMIN_DASHBOARD_PASSWORD;
   const normalized = normalizeEmail(emailOrUser);
 
-  if (envUser && envPassword && emailOrUser === envUser && password === envPassword) {
+  if (envUser && envPassword && safeEqual(emailOrUser, envUser) && safeEqual(password, envPassword)) {
     return { ok: true, email: envUser, name: envUser, source: 'env' as const };
   }
 
@@ -93,7 +98,7 @@ export async function verifyAdminCredentials(emailOrUser: string, password: stri
     .eq('email', normalized)
     .maybeSingle();
 
-  if (error || !data || !data.is_active || !verifyPassword(password, data.password_hash)) {
+  if (error || !data || !data.is_active || !(await verifyPassword(password, data.password_hash))) {
     return { ok: false as const };
   }
 

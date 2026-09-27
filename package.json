@@ -28,7 +28,7 @@
     "langsmith": "^0.5.25",
     "lucide-react": "^1.11.0",
     "motion": "^12.38.0",
-    "next": "^16.2.4",
+    "next": "^16.3.6",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "resend": "^6.12.2",
@@ -43,7 +43,7 @@
     "@types/three": "^0.186.0",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9.39.4",
-    "eslint-config-next": "^16.2.4",
+    "eslint-config-next": "^16.3.6",
     "tailwindcss": "^4.2.4",
     "typescript": "^5"
   },

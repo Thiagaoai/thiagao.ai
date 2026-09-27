@@ -23,6 +23,7 @@ export type AdminOrder = {
   customer_email: string;
   customer_phone: string | null;
   notes: string | null;
+  image_path: string | null;
   campaign: string;
   created_at: string;
 };

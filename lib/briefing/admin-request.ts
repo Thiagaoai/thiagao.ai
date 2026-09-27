@@ -1,11 +1,13 @@
+import { isSameOriginRequest, safeEqual } from '@/lib/shared/request-guard';
+
+// Always requires credentials, in every environment (no development bypass).
 export function isAdminRequestAuthorized(request: Request) {
   const apiToken = process.env.ADMIN_API_TOKEN;
   const dashboardToken = process.env.ADMIN_DASHBOARD_TOKEN;
 
-  if (!apiToken && !dashboardToken && process.env.NODE_ENV !== 'production') return true;
-
-  const bearer = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
-  if (apiToken && bearer === apiToken) return true;
+  const authorization = request.headers.get('authorization') ?? '';
+  if (apiToken && /^Bearer\s+/i.test(authorization) && safeEqual(authorization.replace(/^Bearer\s+/i, ''), apiToken)) return true;
+  if (!isSameOriginRequest(request)) return false;
 
   const cookies = request.headers.get('cookie') ?? '';
   const sessionCookie = cookies
@@ -16,5 +18,5 @@ export function isAdminRequestAuthorized(request: Request) {
     .slice(1)
     .join('=');
 
-  return Boolean(dashboardToken && sessionCookie === dashboardToken);
+  return Boolean(dashboardToken && sessionCookie && safeEqual(sessionCookie, dashboardToken));
 }
