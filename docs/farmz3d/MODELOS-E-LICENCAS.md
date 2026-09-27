@@ -1,4 +1,4 @@
-# Modelos 3D e licenças — como produzir os 30 itens sem problema
+# Modelos 3D e licenças — como produzir os 34 itens sem problema
 
 Pesquisa feita em set/2026 nas páginas oficiais do MakerWorld, da Bambu Lab e do Creative Commons (fontes no fim). Isto é orientação prática, não parecer jurídico.
 
@@ -16,7 +16,7 @@ Antes de listar um modelo de terceiros: tire um print datado da página com a li
 - **B. MakerLab** (Make My Sign, Image to Keychain, Relief Sculpture etc.) — segundo o FAQ, "a maioria das ferramentas" gera obra do usuário sem restrição comercial; **exceções:** Parametric Model Maker (segue a licença do modelo base) e geradores de IA de terceiros (ver termos de cada um).
 - **C. Modelo de terceiros** — só com filtro de licença **Public Domain / BY / BY-SA / BY-ND** no navegador de modelos do MakerWorld, com crédito; ou com Commercial License ativa do designer.
 
-## Os 30 itens — caminho recomendado
+## Os 34 itens — caminho recomendado
 | Item | Caminho | Como fazer |
 |---|---|---|
 | Trick-or-Treat Name Tag | A | Forma de fantasma/abóbora/morcego simples + Text Shape |
@@ -49,6 +49,16 @@ Antes de listar um modelo de terceiros: tire um print datado da página com a li
 | Logo Business Card Holder | A | Suporte + logo **do cliente** (autorização dele) |
 | Table Number Set | A | Base + Text Shape |
 | Logo Keychains (bulk) | A | Placa + logo **do cliente** |
+| Soccer Jersey Keychain | A | Camisa simples (contorno SVG próprio) + nome/número em Text Shape, cores do cliente — **sem escudo, sem nome de clube** |
+| Soccer Ball Name Keychain | A ou C | Bola de pentágonos (forma genérica) + etiqueta com Text Shape |
+| Couple Heart Keychains | A | Coração dividido em 2 (SVG próprio) + Text Shape em cada metade |
+| Kids Room Name Sign | A | Text Shape em fonte arredondada sobre base retangular |
+
+## Times de futebol (Flamengo, Corinthians, Palmeiras etc.)
+- Escudos, nomes e mascotes de clubes são **marcas registradas**. Comprar ou baixar o modelo no Cults3D (ou em qualquer site) dá, no máximo, licença do **arquivo** — não dá direito de usar a **marca** do clube. Vender isso nos EUA (Etsy, Instagram, site) pode gerar derrubada de anúncio, bloqueio da loja e notificação judicial.
+- O que vende igual e é seguro: a camisa com **nome + número nas cores que o cliente escolher** (verde e amarelo, vermelho e preto, preto e branco…). O cliente sabe o time pelas cores; nós não imprimimos escudo nem nome de clube.
+- A checagem do Jev nos pedidos marca "personagem/marca de terceiros" — se o cliente pedir escudo, respondam oferecendo a versão só com cores.
+- Só dá para vender com escudo se tiverem licença oficial do clube (produto licenciado).
 
 ## Fontes
 - Licenças e filtro do MakerWorld: https://makerworld.com/en/3d-models

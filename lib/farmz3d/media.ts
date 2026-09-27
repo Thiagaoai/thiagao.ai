@@ -1,4 +1,5 @@
 // AI-generated product and lifestyle imagery (Higgsfield, GPT Image 2.5, Sept 2026).
+// All designs shown are original and generic (no third-party characters, brands or model photos).
 // Illustrative previews: the footer says so, and real photos of printed pieces should
 // replace them as they become available (drop files in /public and point `src` there).
 
@@ -50,6 +51,98 @@ export const PRODUCT_MEDIA: Record<string, Media> = {
   'business-review-stand': {
     src: `${CDN}/hf_20260926_211743_055fee5e-f166-4669-a66f-b1725f9b6d3c.png`,
     alt: 'Graphite review stand with QR code being tapped by a phone on a shop counter',
+  },
+  'halloween-bat-wall-set': {
+    src: `${CDN}/hf_20260927_011651_6e9e915c-693a-4b22-8062-bb46cf0aa4f3.png`,
+    alt: 'Twenty-four matte black 3D-printed bats flying across a gray wall above a white console',
+  },
+  'halloween-skull-planter': {
+    src: `${CDN}/hf_20260927_011651_d336cae8-72a3-4f81-aa87-61711ca881d6.png`,
+    alt: 'Bone-white low-poly skull planter holding a green succulent',
+  },
+  'halloween-pumpkin-lantern': {
+    src: `${CDN}/hf_20260927_011651_2f9c5b93-5371-4357-8179-b006e465f7c1.png`,
+    alt: 'Translucent pumpkin lantern with a geometric face glowing in the dark',
+  },
+  'thanksgiving-pumpkin-trio': {
+    src: `${CDN}/hf_20260927_011651_98937e2d-89dc-46d9-ad26-ee7f0619437e.png`,
+    alt: 'Three ribbed pumpkin tealight holders in sand, cream and sage',
+  },
+  'thanksgiving-leaf-garland': {
+    src: `${CDN}/hf_20260927_011651_25bc09c7-7ed8-43c9-a0c5-3dbe5687da68.png`,
+    alt: 'Cream and beige 3D-printed leaf garland draped across an oak mantel',
+  },
+  'christmas-snowflake-set': {
+    src: `${CDN}/hf_20260927_011651_e330155d-cb92-47a8-a279-b850bdb2d3e4.png`,
+    alt: 'Six geometric white and silver snowflake ornaments hanging at different heights',
+  },
+  'christmas-village-lantern': {
+    src: `${CDN}/hf_20260927_011651_31add408-6a94-4e17-b8aa-da5d709b9311.png`,
+    alt: 'White village house lantern with glowing windows',
+  },
+  'christmas-star-topper': {
+    src: `${CDN}/hf_20260927_011651_a1350918-ef4c-4b21-8ea5-f22f24727220.png`,
+    alt: 'Pearl-white faceted star topper on a white flocked tree',
+  },
+  'christmas-gift-tags': {
+    src: `${CDN}/hf_20260927_011651_c5ed43ce-9912-46a9-8fca-de4354baf48d.png`,
+    alt: 'White 3D-printed name gift tags tied to wrapped presents',
+  },
+  'christmas-baby-first': {
+    src: `${CDN}/hf_20260927_011651_546949eb-695f-4f04-9619-c52e37f35d20.png`,
+    alt: "White round Baby's First Christmas ornament reading LUCAS 2026",
+  },
+  'christmas-countdown': {
+    src: `${CDN}/hf_20260927_011651_fe8d1ba8-fc97-4df3-8792-db892ee7ab2f.png`,
+    alt: 'House-shaped Christmas countdown blocks showing 24 days',
+  },
+  'moon-lamp': {
+    src: `${CDN}/hf_20260927_011651_a0b230ff-3aa7-4003-9f2a-ba1d090d79ff.png`,
+    alt: 'Glowing moon lithophane lamp on a graphite stand',
+  },
+  'geometric-planter': {
+    src: `${CDN}/hf_20260927_011654_5805a999-433f-4f31-af3a-9628539b6e05.png`,
+    alt: 'White faceted planter with drainage tray holding a snake plant',
+  },
+  'name-keychains': {
+    src: `${CDN}/hf_20260927_011654_d00ae6eb-efb7-42af-891a-e1d60a935a1f.png`,
+    alt: 'Three name keychains reading EMMA, NOAH and AVA in white, graphite and blue',
+  },
+  'phone-stand': {
+    src: `${CDN}/hf_20260927_011654_982d1b98-d31d-430a-8ac1-7e0032e72841.png`,
+    alt: 'Graphite phone stand with the name SOFIA holding a phone',
+  },
+  'desk-nameplate': {
+    src: `${CDN}/hf_20260927_011654_beb9e41f-e2e2-468f-849a-70944ddb0a02.png`,
+    alt: 'Two-tone desk nameplate reading Dr. Maria Costa',
+  },
+  'soccer-jersey-keychain': {
+    src: `${CDN}/hf_20260927_012006_4d55e053-b84b-4a75-b749-b967e5cd0f0f.png`,
+    alt: 'Three mini soccer jersey keychains reading LUCAS 10, ANA 7 and PEDRO 9 in custom colors, no logos',
+  },
+  'soccer-ball-keychain': {
+    src: `${CDN}/hf_20260927_012006_fd5c028a-f807-4fea-b2af-1fe4c4e276cb.png`,
+    alt: 'White and graphite soccer ball keychain with a THEO name tag on artificial turf',
+  },
+  'couple-heart-keychains': {
+    src: `${CDN}/hf_20260927_012006_25651f11-3d6f-4521-be26-ddbde0df8a5e.png`,
+    alt: 'Split heart couple keychains in white and rose with the names JOÃO and MARIA',
+  },
+  'kids-name-sign': {
+    src: `${CDN}/hf_20260927_012006_3919a37d-8ca2-49d6-aed5-0ed93a4146da.png`,
+    alt: 'Standing name sign reading OLIVIA on a sage-green base in a kids room',
+  },
+  'business-card-holder': {
+    src: `${CDN}/hf_20260927_011654_5884795b-ca83-4e94-810e-aeb14c85f6e9.png`,
+    alt: 'Graphite business card holder with a raised leaf logo',
+  },
+  'business-table-numbers': {
+    src: `${CDN}/hf_20260927_011654_0f8a0487-01d8-48e8-b530-8394f502c798.png`,
+    alt: 'White table number stands 1 to 5 on a restaurant table',
+  },
+  'business-logo-keychains': {
+    src: `${CDN}/hf_20260927_011654_cd066d49-902d-47e6-a6bb-f58dec06732b.png`,
+    alt: 'Pile of blue and white custom logo keychains',
   },
 };
 
