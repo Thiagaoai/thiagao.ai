@@ -4,6 +4,8 @@ import { getNewsletterFrom } from '@/lib/briefing/config';
 import { getSupabaseAdmin } from '@/lib/briefing/supabase';
 import { escapeHtml, senderWithName } from '@/lib/shared/request-guard';
 import { formatUsd, type OrderInput } from './catalog';
+import { FARMZ3D_WHATSAPP, formatUsPhone, toWhatsappDigits, whatsappLink } from './contact';
+import type { OrderImage } from './order-images';
 import { getLiveCatalog } from './pricing';
 import { getActiveCampaign, newYorkToday } from './season';
 
@@ -31,7 +33,7 @@ type SavedOrder = {
   campaign: string;
 };
 
-export async function saveOrder(order: OrderInput): Promise<{ saved: SavedOrder; stored: boolean; storeError?: string }> {
+export async function saveOrder(order: OrderInput, imagePath: string | null = null): Promise<{ saved: SavedOrder; stored: boolean; storeError?: string }> {
   // Price and campaign come from the approved decisions, never from the browser.
   const { products, leadDays, shippingCents: flatShipping } = await getLiveCatalog();
   const product = products.find((item) => item.id === order.productId);
@@ -71,6 +73,7 @@ export async function saveOrder(order: OrderInput): Promise<{ saved: SavedOrder;
       customer_email: order.email.toLowerCase(),
       customer_phone: order.phone ?? null,
       notes: order.notes ?? null,
+      image_path: imagePath,
       campaign,
     });
 
@@ -96,7 +99,7 @@ function orderRows(order: OrderInput, saved: SavedOrder) {
     ['Fulfillment', order.fulfillment === 'shipping' ? `Shipping to ZIP ${order.shippingZip}` : 'Local pickup'],
     ['Name', order.name],
     ['Email', order.email],
-    ['Phone', order.phone ?? '—'],
+    ['WhatsApp / phone', order.phone],
     ['Notes', order.notes ?? '—'],
   ];
 }
@@ -110,7 +113,7 @@ function rowsToHtml(rows: string[][]) {
     .join('')}</table>`;
 }
 
-export async function sendOrderEmails(order: OrderInput, saved: SavedOrder) {
+export async function sendOrderEmails(order: OrderInput, saved: SavedOrder, image: OrderImage | null = null) {
   const apiKey = process.env.RESEND_API_KEY;
   const ordersEmail = process.env.FARMZ3D_ORDERS_EMAIL;
   if (!apiKey || !ordersEmail) return { emailed: false, error: 'RESEND_API_KEY and FARMZ3D_ORDERS_EMAIL are required.' };
@@ -118,15 +121,27 @@ export async function sendOrderEmails(order: OrderInput, saved: SavedOrder) {
   const resend = new Resend(apiKey);
   const from = process.env.FARMZ3D_FROM_EMAIL || senderWithName('Farmz3D', getNewsletterFrom());
   const rows = orderRows(order, saved);
+  if (image) rows.push(['Reference image', `${image.originalName} (attached)`]);
   const text = rows.map(([label, value]) => `${label}: ${value}`).join('\n');
+
+  const customerWhatsapp = toWhatsappDigits(order.phone);
+  const replyOnWhatsapp = customerWhatsapp
+    ? whatsappLink(customerWhatsapp, `Hi ${order.name}! This is Bruna from Farmz3D about your order ${saved.orderNumber} (${saved.productName}).`)
+    : null;
+  const shopWhatsapp = whatsappLink(FARMZ3D_WHATSAPP, `Hi! My Farmz3D order is ${saved.orderNumber}.`);
 
   const owner = await resend.emails.send({
     from,
     to: ordersEmail,
     replyTo: order.email,
     subject: `New Farmz3D order ${saved.orderNumber} — ${saved.productName} x${order.quantity}`,
-    html: `<h2 style="font-family:Arial,sans-serif">New order</h2>${rowsToHtml(rows)}`,
-    text,
+    html: `<h2 style="font-family:Arial,sans-serif">New order</h2>${rowsToHtml(rows)}${
+      replyOnWhatsapp
+        ? `<p style="font-family:Arial,sans-serif;margin-top:20px"><a href="${escapeHtml(replyOnWhatsapp)}" style="background:#25D366;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none;font-weight:bold">Reply on WhatsApp</a></p>`
+        : ''
+    }`,
+    text: replyOnWhatsapp ? `${text}\n\nReply on WhatsApp: ${replyOnWhatsapp}` : text,
+    attachments: image ? [{ filename: `${saved.orderNumber}.${image.ext}`, content: Buffer.from(image.bytes), contentType: image.contentType }] : undefined,
   });
 
   if (owner.error) return { emailed: false, error: owner.error.message };
@@ -140,8 +155,8 @@ export async function sendOrderEmails(order: OrderInput, saved: SavedOrder) {
     html: `<p style="font-family:Arial,sans-serif">Hi ${escapeHtml(order.name)},</p>
 <p style="font-family:Arial,sans-serif">Thanks for your order! We will review the details and reply with a confirmation and a payment link. Nothing is charged until you approve it.</p>
 ${rowsToHtml(rows)}
-<p style="font-family:Arial,sans-serif">Just reply to this email if anything needs to change.<br/>— Farmz3D</p>`,
-    text: `Hi ${order.name},\n\nThanks for your order! We will reply with a confirmation and a payment link. Nothing is charged until you approve it.\n\n${text}\n\n— Farmz3D`,
+<p style="font-family:Arial,sans-serif">Questions? Reply to this email or message us on WhatsApp: <a href="${escapeHtml(shopWhatsapp)}">${escapeHtml(formatUsPhone(FARMZ3D_WHATSAPP))}</a>.<br/>— Farmz3D</p>`,
+    text: `Hi ${order.name},\n\nThanks for your order! We will reply with a confirmation and a payment link. Nothing is charged until you approve it.\n\n${text}\n\nQuestions? Reply to this email or message us on WhatsApp: ${shopWhatsapp}\n\n— Farmz3D`,
   });
 
   return { emailed: true, customerEmailed: !customer.error };

@@ -11,7 +11,7 @@ const valid = {
   shippingZip: '02601',
   name: 'Jane Doe',
   email: 'jane@example.com',
-  phone: '',
+  phone: '(508) 555-0123',
   notes: '',
 };
 
@@ -31,7 +31,7 @@ test('catalog is consistent', () => {
 test('valid order parses and blanks become undefined', () => {
   const order = OrderInputSchema.parse(valid);
   assert.equal(order.neededBy, undefined);
-  assert.equal(order.phone, undefined);
+  assert.equal(order.phone, '(508) 555-0123');
   assert.equal(order.quantity, 2);
 });
 
@@ -49,4 +49,10 @@ test('invalid orders are rejected', () => {
   assert.equal(OrderInputSchema.safeParse({ ...valid, email: 'nope' }).success, false);
   assert.equal(OrderInputSchema.safeParse({ ...valid, personalization: '   ' }).success, false);
   assert.equal(OrderInputSchema.safeParse({ ...valid, neededBy: '12/15/2026' }).success, false);
+});
+
+test('a WhatsApp number is required', () => {
+  assert.equal(OrderInputSchema.safeParse({ ...valid, phone: '' }).success, false);
+  assert.equal(OrderInputSchema.safeParse({ ...valid, phone: '555-0123' }).success, false);
+  assert.equal(OrderInputSchema.safeParse({ ...valid, phone: '+55 11 91234-5678' }).success, true);
 });

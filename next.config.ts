@@ -1,10 +1,19 @@
 import type { NextConfig } from "next";
 
+// `next dev` runs on plain http://localhost. Safari applies upgrade-insecure-requests
+// and HSTS even there, so CSS/JS would be requested over https and fail to load.
+// Development gets the same policy minus those https-only rules.
+const isDev = process.env.NODE_ENV === 'development';
+
 const securityHeaders = [
-  {
-    key: 'Strict-Transport-Security',
-    value: 'max-age=63072000; includeSubDomains; preload',
-  },
+  ...(isDev
+    ? []
+    : [
+        {
+          key: 'Strict-Transport-Security',
+          value: 'max-age=63072000; includeSubDomains; preload',
+        },
+      ]),
   {
     key: 'X-Content-Type-Options',
     value: 'nosniff',
@@ -31,20 +40,25 @@ const securityHeaders = [
       "frame-ancestors 'none'",
       "form-action 'self'",
       // React needs eval() for dev tooling only; production stays without 'unsafe-eval'.
-      process.env.NODE_ENV === 'development' ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'" : "script-src 'self' 'unsafe-inline'",
+      isDev ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'" : "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https://res.cloudinary.com https://d8j0ntlcm91z4.cloudfront.net https://i.scdn.co",
       "font-src 'self' data:",
       "media-src 'self' https://res.cloudinary.com https://d8j0ntlcm91z4.cloudfront.net",
       "frame-src https://open.spotify.com",
-      "connect-src 'self' https://www.thiagao.io https://thiagao.io",
-      "upgrade-insecure-requests",
-    ].join('; '),
+      // Dev hot reload uses a WebSocket; older Safari does not treat ws: as 'self'.
+      isDev ? "connect-src 'self' ws://localhost:* https://www.thiagao.io https://thiagao.io" : "connect-src 'self' https://www.thiagao.io https://thiagao.io",
+      isDev ? null : "upgrade-insecure-requests",
+    ]
+      .filter(Boolean)
+      .join('; '),
   },
 ];
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  // Lets `FARMZ3D_HOSTS=farmz3d.localhost npm run farmz3d:local` preview the store domain in dev.
+  allowedDevOrigins: ['farmz3d.localhost'],
   reactCompiler: true,
   images: {
     formats: ['image/avif', 'image/webp'],

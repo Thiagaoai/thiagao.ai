@@ -27,7 +27,7 @@ export function buildTriageQuestions() {
       type: 'noul',
       instructions: {
         question: 'Does `order.personalization` give every detail listed in `product.required_details`?',
-        focus: 'Check each listed detail. Details that `product.required_details` says are requested later by email are not required.',
+        focus: 'Check each listed detail. Details that `product.required_details` says are attached or sent later (email/WhatsApp) are not required in the text.',
       },
       criteria: {
         true: {

@@ -10,6 +10,7 @@ import { getAdminDashboardData } from '@/lib/farmz3d/admin-data';
 import { isTypeSafeConfigured } from '@/lib/typesafe/client';
 import { getMediations, getOrderTriage, getPositions } from '@/lib/typesafe/store';
 import { formatUsd } from '@/lib/farmz3d/catalog';
+import { toWhatsappDigits, whatsappLink } from '@/lib/farmz3d/contact';
 import { DecisionCard, DeciderSwitch, OrderStatusSelect, OrderTriageCell, type DecisionView } from './AdminFarmz3dClient';
 
 export const dynamic = 'force-dynamic';
@@ -210,11 +211,42 @@ export default async function AdminFarmz3dPage() {
                       <td className="max-w-[220px] whitespace-pre-wrap px-4 py-3 text-zinc-300">
                         {order.personalization}
                         {order.notes && <p className="mt-1 text-xs text-zinc-500">Nota: {order.notes}</p>}
+                        {order.image_path && (
+                          <a
+                            href={`/api/admin/farmz3d/orders/image?order=${order.order_number}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2 block w-fit"
+                            title="Abrir imagem do cliente"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element -- private, auth-protected image */}
+                            <img
+                              src={`/api/admin/farmz3d/orders/image?order=${order.order_number}`}
+                              alt={`Imagem enviada no pedido ${order.order_number}`}
+                              className="h-20 w-20 rounded-lg border border-white/10 object-cover"
+                              loading="lazy"
+                            />
+                            <span className="text-[11px] text-cyan-300">Imagem do cliente ↗</span>
+                          </a>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <p>{order.customer_name}</p>
                         <a href={`mailto:${order.customer_email}`} className="text-xs text-cyan-300">{order.customer_email}</a>
                         {order.customer_phone && <p className="text-xs text-zinc-500">{order.customer_phone}</p>}
+                        {toWhatsappDigits(order.customer_phone) && (
+                          <a
+                            href={whatsappLink(
+                              toWhatsappDigits(order.customer_phone)!,
+                              `Hi ${order.customer_name}! This is Bruna from Farmz3D about your order ${order.order_number} (${order.product_name}).`,
+                            )}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-1 inline-flex rounded-full bg-[#25D366]/15 px-2.5 py-1 text-[11px] font-semibold text-[#6BE39A] hover:bg-[#25D366]/25"
+                          >
+                            WhatsApp do cliente
+                          </a>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-xs text-zinc-300">
                         {order.fulfillment === 'shipping' ? `Envio · ZIP ${order.shipping_zip}` : 'Retirada'}
