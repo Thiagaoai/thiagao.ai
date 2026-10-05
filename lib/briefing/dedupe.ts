@@ -43,7 +43,7 @@ export function titleTokens(title: string) {
     title
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
+      .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, ' ')
       .split(' ')
       .filter((token) => token.length >= 3 && !STOPWORDS.has(token)),
