@@ -20,6 +20,17 @@ export type BriefingSource = {
   publishedAt?: string;
 };
 
+export type EditionItemKind = 'lead' | 'story' | 'tool';
+
+export type EditionItem = {
+  kind: EditionItemKind;
+  title: string;
+  summary: string;
+  whyItMatters: string;
+  category: BriefingTag;
+  source: BriefingSource;
+};
+
 export type BriefingPost = {
   id: string;
   slug: string;
@@ -31,6 +42,9 @@ export type BriefingPost = {
   category: BriefingTag;
   tags: string[];
   sources: BriefingSource[];
+  items: EditionItem[];
+  subject: string | null;
+  shareText: string | null;
   relevanceScore: number;
   readingMinutes: number;
   publishedAt: string | null;
@@ -50,7 +64,7 @@ export type SubscriberInput = {
 };
 
 export type NewsletterEventInput = {
-  eventType: 'page_view' | 'cta_click' | 'subscribe_success' | 'subscribe_blocked' | 'chat_question' | 'admin_login';
+  eventType: 'page_view' | 'cta_click' | 'subscribe_success' | 'subscribe_blocked' | 'chat_question' | 'admin_login' | 'unsubscribe';
   path?: string;
   source?: string;
   email?: string;

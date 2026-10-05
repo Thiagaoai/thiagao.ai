@@ -721,6 +721,9 @@ function groupIntoDrafts(items: SourceItem[], theme: DailyTheme) {
       publisher: item.publisher,
       publishedAt: item.publishedAt,
     })),
+    items: [],
+    subject: null,
+    shareText: null,
     relevanceScore: averageScore,
     readingMinutes: 5,
   };
@@ -747,6 +750,9 @@ function groupIntoDrafts(items: SourceItem[], theme: DailyTheme) {
           publishedAt: item.publishedAt,
         },
       ],
+      items: [],
+      subject: null,
+      shareText: null,
       relevanceScore: item.score,
       readingMinutes: 3 + index,
     };

@@ -30,6 +30,7 @@ function defaults(table: string): Row {
   if (table === 'farmz3d_orders') return { ...base, status: 'new', shipping_cents: 0, updated_at: now };
   if (table === 'business_decisions') return { ...base, decided_at: now };
   if (table === 'business_decision_positions') return { ...base, updated_at: now };
+  if (table === 'daily_digest_posts') return { ...base, status: 'draft', items: [], subject: null, share_text: null, published_at: null, updated_at: now };
   return base;
 }
 

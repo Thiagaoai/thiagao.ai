@@ -4,6 +4,7 @@ import type {
   AgentRunRecord,
   BriefingDraftInput,
   BriefingPost,
+  EditionItem,
   NewsletterAgentRun,
   NewsletterEmailLog,
   NewsletterEventInput,
@@ -22,6 +23,9 @@ type BriefingRow = {
   category: BriefingPost['category'];
   tags: string[];
   sources: BriefingPost['sources'];
+  items: EditionItem[] | null;
+  subject: string | null;
+  share_text: string | null;
   relevance_score: number;
   reading_minutes: number;
   published_at: string | null;
@@ -76,6 +80,9 @@ function toPost(row: BriefingRow): BriefingPost {
     category: row.category,
     tags: row.tags ?? [],
     sources: row.sources ?? [],
+    items: row.items ?? [],
+    subject: row.subject ?? null,
+    shareText: row.share_text ?? null,
     relevanceScore: row.relevance_score,
     readingMinutes: row.reading_minutes,
     publishedAt: row.published_at,
@@ -94,6 +101,9 @@ function toRow(post: BriefingDraftInput) {
     category: post.category,
     tags: post.tags,
     sources: post.sources,
+    items: post.items,
+    subject: post.subject,
+    share_text: post.shareText,
     relevance_score: post.relevanceScore,
     reading_minutes: post.readingMinutes,
   };
