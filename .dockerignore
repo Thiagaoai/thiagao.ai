@@ -11,3 +11,4 @@ npm-debug.log*
 out
 README.md
 *.pem
+.data

@@ -1,7 +1,9 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
-import { CheckCircle2, Loader2 } from 'lucide-react';
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
+import { CheckCircle2, ImagePlus, Loader2, X } from 'lucide-react';
+import { whatsappLink } from '@/lib/farmz3d/contact';
+import WhatsAppIcon from './WhatsAppIcon';
 
 type ProductOption = {
   id: string;
@@ -17,16 +19,19 @@ type Props = {
   defaultProductId: string;
   today: string;
   shippingCents: number;
+  whatsapp: string;
 };
 
-type Status = { state: 'idle' | 'loading' | 'error'; message?: string } | { state: 'success'; orderNumber: string; totalCents: number };
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+
+type Status = { state: 'idle' | 'loading' | 'error'; message?: string } | { state: 'success'; orderNumber: string; totalCents: number; productName: string; quantity: number };
 
 const usd = (cents: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
 
 const inputClass =
   'w-full rounded-xl border border-[#DCDDE0] bg-white px-4 py-3 text-[15px] font-normal text-[#0B0C0E] outline-none transition focus:border-[#2B5BFF] focus:ring-2 focus:ring-[#2B5BFF]/20';
 
-export default function OrderForm({ products, defaultProductId, today, shippingCents }: Props) {
+export default function OrderForm({ products, defaultProductId, today, shippingCents, whatsapp }: Props) {
   const [productId, setProductId] = useState(defaultProductId);
   const [quantity, setQuantity] = useState(1);
   const [personalization, setPersonalization] = useState('');
@@ -38,6 +43,9 @@ export default function OrderForm({ products, defaultProductId, today, shippingC
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [company, setCompany] = useState('');
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageError, setImageError] = useState('');
   const [startedAt, setStartedAt] = useState(0);
   const [status, setStatus] = useState<Status>({ state: 'idle' });
 
@@ -57,29 +65,51 @@ export default function OrderForm({ products, defaultProductId, today, shippingC
   const product = products.find((option) => option.id === productId) ?? products[0];
   const collections = Array.from(new Set(products.map((option) => option.collectionName)));
 
+  function clearImage() {
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImage(null);
+    setImagePreview(null);
+  }
+
+  function onImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] ?? null;
+    event.target.value = '';
+    setImageError('');
+    clearImage();
+    if (!file) return;
+    if (file.size > MAX_IMAGE_BYTES) {
+      setImageError('The image must be 8 MB or smaller.');
+      return;
+    }
+    setImage(file);
+    // HEIC has no preview outside Safari; the file still uploads.
+    setImagePreview(file.type.startsWith('image/') && !/hei[cf]/i.test(file.type) ? URL.createObjectURL(file) : null);
+  }
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus({ state: 'loading' });
 
+    const form = new FormData();
+    const fields: Record<string, string> = {
+      productId,
+      quantity: String(quantity),
+      personalization,
+      neededBy,
+      fulfillment,
+      shippingZip: fulfillment === 'shipping' ? shippingZip : '',
+      name,
+      email,
+      phone,
+      notes,
+      company,
+      startedAt: String(startedAt),
+    };
+    for (const [key, value] of Object.entries(fields)) form.append(key, value);
+    if (image) form.append('image', image, image.name);
+
     try {
-      const response = await fetch('/api/farmz3d/orders', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          productId,
-          quantity,
-          personalization,
-          neededBy,
-          fulfillment,
-          shippingZip: fulfillment === 'shipping' ? shippingZip : '',
-          name,
-          email,
-          phone,
-          notes,
-          company,
-          startedAt,
-        }),
-      });
+      const response = await fetch('/api/farmz3d/orders', { method: 'POST', body: form });
       const data = (await response.json().catch(() => ({}))) as {
         ok?: boolean;
         message?: string;
@@ -91,7 +121,14 @@ export default function OrderForm({ products, defaultProductId, today, shippingC
         throw new Error(data.message ?? 'Something went wrong. Please try again.');
       }
 
-      setStatus({ state: 'success', orderNumber: data.orderNumber, totalCents: data.estimatedTotalCents ?? 0 });
+      setStatus({
+        state: 'success',
+        orderNumber: data.orderNumber,
+        totalCents: data.estimatedTotalCents ?? 0,
+        productName: product?.name ?? '',
+        quantity,
+      });
+      clearImage();
     } catch (error) {
       setStatus({ state: 'error', message: error instanceof Error ? error.message : 'Something went wrong.' });
     }
@@ -109,6 +146,16 @@ export default function OrderForm({ products, defaultProductId, today, shippingC
           Estimated total {usd(status.totalCents)}. We will email you a confirmation and a payment link —
           nothing is charged until you approve it.
         </p>
+        <a
+          href={whatsappLink(whatsapp, `Hi Bruna! I just placed Farmz3D order ${status.orderNumber} (${status.productName} x${status.quantity}).`)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#25D366] px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-[#1EBE5A]"
+        >
+          <WhatsAppIcon className="h-4 w-4" /> Chat with us on WhatsApp
+        </a>
+        <p className="mt-2 text-xs text-[#8A8F97]">Faster answers, photos of your piece while it prints.</p>
+        <br />
         <button
           type="button"
           onClick={() => {
@@ -176,6 +223,38 @@ export default function OrderForm({ products, defaultProductId, today, shippingC
         <span className="text-xs font-normal text-[#8A8F97]">{product?.personalizationHint}</span>
       </label>
 
+      <div className="grid gap-2 text-sm font-semibold text-[#0B0C0E]">
+        <span>
+          Reference image <span className="font-normal text-[#8A8F97]">(optional — photo for lithophanes, your logo or a sketch)</span>
+        </span>
+        {image ? (
+          <div className="flex items-center gap-4 rounded-xl border border-[#DCDDE0] bg-white p-3">
+            {imagePreview ? (
+              // eslint-disable-next-line @next/next/no-img-element -- local blob preview, not a remote asset
+              <img src={imagePreview} alt="Selected reference" className="h-16 w-16 rounded-lg object-cover" />
+            ) : (
+              <div className="grid h-16 w-16 place-items-center rounded-lg bg-[#F2F5FF] text-[#2B5BFF]">
+                <ImagePlus className="h-6 w-6" />
+              </div>
+            )}
+            <div className="min-w-0 flex-1 font-normal">
+              <p className="truncate text-[#0B0C0E]">{image.name}</p>
+              <p className="text-xs text-[#8A8F97]">{image.size < 1024 * 1024 ? `${Math.max(1, Math.round(image.size / 1024))} KB` : `${(image.size / 1024 / 1024).toFixed(1)} MB`}</p>
+            </div>
+            <button type="button" onClick={clearImage} className="rounded-full p-2 text-[#5A5F66] transition hover:bg-[#F5F5F3]" aria-label="Remove image">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-[#C9CBD0] bg-white px-4 py-5 font-medium text-[#5A5F66] transition hover:border-[#2B5BFF] hover:text-[#2B5BFF]">
+            <ImagePlus className="h-5 w-5" /> Add a photo or logo
+            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={onImageChange} className="sr-only" />
+          </label>
+        )}
+        {imageError && <span className="text-xs font-normal text-red-600">{imageError}</span>}
+        <span className="text-xs font-normal text-[#8A8F97]">JPG, PNG or WebP up to 8 MB. Only our team sees it.</span>
+      </div>
+
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="grid gap-2 text-sm font-semibold text-[#0B0C0E]">
           <span>
@@ -236,10 +315,17 @@ export default function OrderForm({ products, defaultProductId, today, shippingC
 
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="grid gap-2 text-sm font-semibold text-[#0B0C0E]">
-          <span>
-            Phone <span className="font-normal text-[#8A8F97]">(optional)</span>
-          </span>
-          <input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} autoComplete="tel" className={inputClass} />
+          WhatsApp number
+          <input
+            type="tel"
+            value={phone}
+            onChange={(event) => setPhone(event.target.value)}
+            autoComplete="tel"
+            placeholder="(508) 555-0123"
+            className={inputClass}
+            required
+            minLength={10}
+          />
         </label>
         <label className="grid gap-2 text-sm font-semibold text-[#0B0C0E]">
           <span>

@@ -1,13 +1,4 @@
-import { timingSafeEqual } from 'node:crypto';
-
-function safeEqual(left: string, right: string) {
-  const leftBuffer = Buffer.from(left);
-  const rightBuffer = Buffer.from(right);
-
-  if (leftBuffer.length !== rightBuffer.length) return false;
-
-  return timingSafeEqual(leftBuffer, rightBuffer);
-}
+import { safeEqual } from '@/lib/shared/request-guard';
 
 export function isNewsletterAdminAuthorized({
   authorization,
@@ -25,7 +16,7 @@ export function isNewsletterAdminAuthorized({
     return true;
   }
 
-  if (apiToken && authorization?.replace(/^Bearer\s+/i, '') === apiToken) {
+  if (apiToken && authorization && /^Bearer\s+/i.test(authorization) && safeEqual(authorization.replace(/^Bearer\s+/i, ''), apiToken)) {
     return true;
   }
 

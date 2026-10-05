@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
+import { safeEqual } from '@/lib/shared/request-guard';
 import { getBriefingConfigStatus } from '@/lib/briefing/config';
 
 function isAuthorized(request: Request) {
   const token = process.env.ADMIN_API_TOKEN;
-  if (!token && process.env.NODE_ENV !== 'production') return true;
   if (!token) return false;
 
-  const bearer = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
-  return bearer === token;
+  const authorization = request.headers.get('authorization') ?? '';
+  return /^Bearer\s+/i.test(authorization) && safeEqual(authorization.replace(/^Bearer\s+/i, ''), token);
 }
 
 export async function GET(request: Request) {

@@ -11,7 +11,7 @@ import path from 'node:path';
 type Row = Record<string, unknown>;
 type Db = Record<string, Row[]>;
 
-const FILE = process.env.LOCAL_DEMO_DB_FILE || path.join(process.cwd(), '.data', 'local-db.json');
+const FILE = process.env.LOCAL_DEMO_DB_FILE || path.join(/* turbopackIgnore: true */ process.cwd(), '.data', 'local-db.json');
 
 // Mirrors the unique keys and column defaults of supabase/migrations.
 const UNIQUE_KEYS: Record<string, string[][]> = {
