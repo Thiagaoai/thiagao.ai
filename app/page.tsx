@@ -1,3 +1,4 @@
+import { categoryLabel } from '@/lib/briefing/edition';
 import { getPublishedBriefings } from '@/lib/briefing/posts';
 import HomePage, { type HomePost } from './components/home/HomePage';
 
@@ -11,7 +12,7 @@ export default async function Home() {
     slug: post.slug,
     title: post.title,
     dek: post.dek,
-    category: post.category,
+    category: categoryLabel(post.category),
     readingMinutes: post.readingMinutes,
     publishedAt: post.publishedAt,
   }));

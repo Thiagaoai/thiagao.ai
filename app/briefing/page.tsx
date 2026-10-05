@@ -23,7 +23,7 @@ import ThiagaoChat from './ThiagaoChat';
 import ToolBriefingCards from './ToolBriefingCards';
 import { BRIEFING_TAGS } from '@/lib/briefing/types';
 import { getPublishedBriefings } from '@/lib/briefing/posts';
-import { formatEditionDate } from '@/lib/briefing/edition';
+import { categoryLabel, formatEditionDate } from '@/lib/briefing/edition';
 import EditionItems from '../newsletter/EditionItems';
 
 type PageProps = {
@@ -189,7 +189,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
   }).format(new Date());
   const todayHighlights = featured
     ? [
-        `Tema principal: ${featured.category}.`,
+        `Tema principal: ${categoryLabel(featured.category)}.`,
         `Por que importa: ${featured.takeaway}`,
         `Leitura rapida: ${featured.readingMinutes} min com fontes e contexto.`,
       ]
@@ -612,7 +612,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
                 <div>
                   <div className="mb-8 flex flex-wrap items-center gap-3">
                     <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-amber-100">
-                      {featured.category}
+                      {categoryLabel(featured.category)}
                     </span>
                     <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-600">
                       Score {featured.relevanceScore} · {featured.readingMinutes} min
@@ -667,7 +667,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
                 <article id={post.slug} className="h-full scroll-mt-28 rounded-[34px] border border-zinc-800 bg-zinc-950/70 p-7 transition-all duration-500 hover:-translate-y-1 hover:border-cyan-300/35">
                   <div className="flex items-center justify-between gap-4">
                     <span className="rounded-full border border-zinc-800 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-amber-200">
-                      {post.category}
+                      {categoryLabel(post.category)}
                     </span>
                     <span className="text-xs text-zinc-600">Score {post.relevanceScore}</span>
                   </div>
@@ -808,7 +808,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="rounded-full border border-zinc-800 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-200">
-                            {post.category}
+                            {categoryLabel(post.category)}
                           </span>
                           <span className="text-xs text-zinc-600">{post.readingMinutes} min</span>
                         </div>
