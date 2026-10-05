@@ -1,4 +1,5 @@
-import { getSiteUrl } from './config';
+import { getSiteUrl } from './config.ts';
+import { editionUrl, formatEditionDate } from './edition.ts';
 import type { BriefingPost } from './types';
 
 function normalizeUrl(path: string) {
@@ -14,9 +15,27 @@ export function getSolocodandoWhatsAppUrl() {
 }
 
 export function renderBriefingWhatsApp(post: BriefingPost) {
-  const briefingUrl = normalizeUrl(`/newslatter?tag=${encodeURIComponent(post.category)}`);
-  const sourceUrl = post.sources[0]?.url;
   const groupUrl = getSolocodandoWhatsAppUrl();
+  const groupLine = groupUrl ? `Grupo Solocodando: ${groupUrl}` : 'Grupo Solocodando: peça o link no @thiagaoAi';
+
+  if (post.items.length > 0) {
+    const date = formatEditionDate(post.publishedAt, 'short');
+    return [
+      date ? `*Thiagao Ai Daily* · ${date}` : '*Thiagao Ai Daily*',
+      `*${clean(post.title)}*`,
+      '',
+      clean(post.dek),
+      '',
+      ...post.items.map((item, index) => `${index + 1}. *${clean(item.title)}* — ${clean(item.whyItMatters)}`),
+      '',
+      `*Take do dia:* ${clean(post.takeaway)}`,
+      '',
+      `Edição completa: ${editionUrl(post, { source: 'whatsapp', medium: 'group' })}`,
+      groupLine,
+    ].join('\n');
+  }
+
+  const sourceUrl = post.sources[0]?.url;
   const tags = post.tags.slice(0, 4).map((tag) => `#${tag.replace(/\s+/g, '')}`).join(' ');
 
   return [
@@ -30,8 +49,8 @@ export function renderBriefingWhatsApp(post: BriefingPost) {
     `*Contexto:* ${clean(post.brief)}`,
     '',
     sourceUrl ? `Fonte: ${sourceUrl}` : null,
-    `Briefing completo: ${briefingUrl}`,
-    groupUrl ? `Grupo Solocodando: ${groupUrl}` : 'Grupo Solocodando: peça o link no @thiagaoAi',
+    `Briefing completo: ${editionUrl(post)}`,
+    groupLine,
     tags ? `\n${tags}` : null,
   ]
     .filter(Boolean)
@@ -62,7 +81,7 @@ export function renderCustomWhatsApp({
     clean(body.replace(/<[^>]+>/g, ' ')),
     '',
     cardImageUrl ? `Card: ${cardImageUrl}` : null,
-    `Briefing: ${ctaUrl || normalizeUrl('/newslatter')}`,
+    `Briefing: ${ctaUrl || normalizeUrl('/newsletter')}`,
     groupUrl ? `Grupo Solocodando: ${groupUrl}` : 'Grupo Solocodando: peça o link no @thiagaoAi',
   ]
     .filter(Boolean)
