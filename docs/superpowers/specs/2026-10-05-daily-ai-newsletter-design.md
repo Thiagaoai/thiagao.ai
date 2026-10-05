@@ -189,7 +189,7 @@ buildUnsubscribeUrls(email): { pageUrl: string; apiUrl: string } | null
 // apiUrl  = ${site}/api/newsletter/unsubscribe?email=…&token=…  (cabeçalho List-Unsubscribe; o provedor faz POST aqui com corpo "List-Unsubscribe=One-Click")
 ```
 
-Sem segredo configurado → `null`; o email mostra "responda com SAIR".
+Sem segredo configurado → `null`; em desenvolvimento o email mostra "responda com SAIR"; em produção `sendBriefingEmail` recusa o envio (502) em vez de sair sem descadastro em um clique.
 
 ### 6.8 `lib/briefing/edition.ts`, `email-template.ts` e `email.ts`
 

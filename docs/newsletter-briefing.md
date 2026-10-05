@@ -74,7 +74,7 @@ Rodadas duplicadas do cron (21h e 22h UTC, por causa do horário de verão) são
 
 - Todo email leva um link para `/newsletter/sair?...` com email e token assinado (HMAC) e os cabeçalhos `List-Unsubscribe` (URL de `POST /api/newsletter/unsubscribe`) e `List-Unsubscribe-Post: List-Unsubscribe=One-Click` (RFC 8058).
 - `POST /api/newsletter/unsubscribe` lê `email` e `token` do corpo (JSON ou formulário) ou da query string, porque o one-click do provedor manda só `List-Unsubscribe=One-Click` no corpo. Não exige mesma origem. Com token inválido não altera nada (400, ou redirect para `state=invalid`). Com token válido marca o assinante como `unsubscribed` e registra o evento `unsubscribe`; responde JSON, ou redireciona (303) para `/newsletter/sair?state=done` quando o `Accept` pede HTML.
-- O segredo do token é `NEWSLETTER_UNSUBSCRIBE_SECRET`, ou `AGENT_CRON_SECRET` se ele não existir. Sem nenhum dos dois, os emails saem sem link de descadastro assinado.
+- O segredo do token é `NEWSLETTER_UNSUBSCRIBE_SECRET`, ou `AGENT_CRON_SECRET` se ele não existir. Use um segredo próprio: trocar o `AGENT_CRON_SECRET` invalidaria todos os links já enviados. Em produção, sem nenhum dos dois o envio é recusado (resposta 502, cron vermelho) em vez de sair sem descadastro, porque Gmail e Yahoo exigem o descadastro em um clique para remetentes em volume. Em desenvolvimento o email sai com a linha "responda com SAIR", que não tem automação por trás.
 
 ## Variáveis de ambiente
 
@@ -94,7 +94,7 @@ Redator (todas opcionais; sem chave, a edição sai pelo fallback):
 
 Outras opcionais:
 
-- `NEWSLETTER_UNSUBSCRIBE_SECRET`: segredo do token de descadastro (padrão: `AGENT_CRON_SECRET`).
+- `NEWSLETTER_UNSUBSCRIBE_SECRET`: segredo do token de descadastro (recomendado; sem ele usa `AGENT_CRON_SECRET`, e sem nenhum dos dois a produção não envia).
 - `PERPLEXITY_API_KEY` (e `PERPLEXITY_MODEL`): pesquisa fresca.
 - `X_BEARER_TOKEN` (ou `TWITTER_BEARER_TOKEN`): sinais do X.
 - `LANGSMITH_API_KEY`, `LANGSMITH_TRACING=true`: tracing.
@@ -186,7 +186,8 @@ O último passo do job roda `gh workflow enable daily-briefing.yml` com o `githu
 3. Definir no Dokploy as variáveis do redator (`NEWSLETTER_WRITER_API_KEY` ou `DEEPSEEK_API_KEY`) e conferir `RESEND_API_KEY`, `AGENT_CRON_SECRET`, `ADMIN_API_TOKEN` e `ADMIN_DASHBOARD_TOKEN`.
 4. Mesclar o PR (o deploy sai pelo workflow "Build & Deploy").
 5. Reativar o cron: `gh workflow enable daily-briefing.yml` (ou pela aba Actions). O passo de keep-enabled evita nova desativação.
-6. Opcional: definir `NEWSLETTER_UNSUBSCRIBE_SECRET` no Dokploy (sem ele, usa `AGENT_CRON_SECRET`).
+6. Recomendado: definir `NEWSLETTER_UNSUBSCRIBE_SECRET` no Dokploy com um valor aleatório próprio (sem ele, usa `AGENT_CRON_SECRET`; sem nenhum dos dois, a produção recusa o envio).
+7. Entrega parcial conta como enviada: a resposta traz `email.failed` e cada destinatário fica em `newsletter_email_logs`; os que falharam não são reenviados automaticamente.
 7. Conferir `/api/admin/newsletter/status` e rodar uma prévia pelo painel antes da primeira edição real.
 
 Nunca commite `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `ADMIN_API_TOKEN`, `AGENT_CRON_SECRET` nem chaves de LLM.

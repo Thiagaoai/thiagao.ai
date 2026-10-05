@@ -19,6 +19,18 @@ export type BriefingEmailResult = {
 export async function sendBriefingEmail(post: BriefingPost, options: { campaign?: string } = {}): Promise<BriefingEmailResult> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return { sent: false, skipped: true, attempted: 0, delivered: 0, failed: 0, reason: 'RESEND_API_KEY is required.' };
+  // Bulk-sender rules (Gmail, Yahoo) require one-click unsubscribe, and nothing handles a "SAIR" reply, so a
+  // production send without the secret is a configuration error, not a degraded mode.
+  if (!hasUnsubscribeSecret() && process.env.NODE_ENV === 'production') {
+    return {
+      sent: false,
+      skipped: false,
+      attempted: 0,
+      delivered: 0,
+      failed: 0,
+      reason: 'NEWSLETTER_UNSUBSCRIBE_SECRET (or AGENT_CRON_SECRET) is required to send with one-click unsubscribe.',
+    };
+  }
   const subscribers = await getActiveSubscribers();
   if (subscribers.length === 0) return { sent: false, skipped: true, attempted: 0, delivered: 0, failed: 0, reason: 'No active subscribers yet.' };
 

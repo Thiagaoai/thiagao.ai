@@ -91,7 +91,10 @@ export async function POST(request: Request) {
     }
     const post = await publishBriefingPost(stored.id);
     refreshPages();
-    return sendAndRespond(post, { writer: result.writer, notes: result.run.notes });
+    // Things the cron log should show first: a collector that failed, a memory lookup that was skipped
+    // (no-repeat guarantee weakened), or the template fallback instead of the LLM.
+    const warnings = result.run.notes.filter((note) => /failed|skipped|fell back/i.test(note));
+    return sendAndRespond(post, { writer: result.writer, warnings, notes: result.run.notes });
   } catch (error) {
     return NextResponse.json({ ok: false, message: error instanceof Error ? error.message : 'Agent failed.' }, { status: 500 });
   }

@@ -226,13 +226,13 @@ export async function getAdjacentEditions(post: BriefingPost): Promise<{ previou
 export async function findEditionsForDate(dateKey: string) {
   const supabase = getSupabaseAdmin();
   if (!supabase) return [] as BriefingPost[];
-  // Slug range instead of `like`: `-` sorts before `.`, so this covers `daily-<date>` and `daily-<date>-hhmm`
-  // and excludes the next day. It works on PostgREST and on the local demo DB (which has no `like`).
+  // LIKE is a byte-wise pattern match, so it does not depend on the database collation (a slug range such as
+  // gte 'daily-D' / lt 'daily-D.' would, and glibc en_US ignores punctuation at the first level). The local demo DB
+  // ignores operators it does not know and returns every row; the filter below is what narrows it there.
   const { data, error } = await supabase
     .from('daily_digest_posts')
     .select('*')
-    .gte('slug', `daily-${dateKey}`)
-    .lt('slug', `daily-${dateKey}.`)
+    .like('slug', `daily-${dateKey}%`)
     .order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
   return (data as BriefingRow[]).map(toPost).filter((post) => post.slug === `daily-${dateKey}` || post.slug.startsWith(`daily-${dateKey}-`));
@@ -358,91 +358,6 @@ export async function saveAgentDrafts(posts: BriefingDraftInput[], run: AgentRun
     draftCount: data?.length ?? posts.length,
     drafts: (data as BriefingRow[] | null)?.map(toPost) ?? [],
   };
-}
-
-function getTimeZoneParts(date: Date, timeZone: string) {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hourCycle: 'h23',
-  }).formatToParts(date);
-
-  const value = (type: string) => Number(parts.find((part) => part.type === type)?.value ?? 0);
-
-  return {
-    year: value('year'),
-    month: value('month'),
-    day: value('day'),
-    hour: value('hour'),
-    minute: value('minute'),
-    second: value('second'),
-  };
-}
-
-function zonedTimeToUtc({
-  year,
-  month,
-  day,
-  hour = 0,
-  minute = 0,
-  second = 0,
-  timeZone,
-}: {
-  year: number;
-  month: number;
-  day: number;
-  hour?: number;
-  minute?: number;
-  second?: number;
-  timeZone: string;
-}) {
-  const utcGuess = Date.UTC(year, month - 1, day, hour, minute, second);
-  const zonedGuess = getTimeZoneParts(new Date(utcGuess), timeZone);
-  const zonedGuessAsUtc = Date.UTC(
-    zonedGuess.year,
-    zonedGuess.month - 1,
-    zonedGuess.day,
-    zonedGuess.hour,
-    zonedGuess.minute,
-    zonedGuess.second,
-  );
-
-  return new Date(utcGuess - (zonedGuessAsUtc - utcGuess));
-}
-
-export async function getSuccessfulAgentRunForToday(timeZone = 'America/New_York') {
-  const supabase = getSupabaseAdmin();
-  if (!supabase) return null;
-
-  const today = getTimeZoneParts(new Date(), timeZone);
-  const tomorrowUtcDate = new Date(Date.UTC(today.year, today.month - 1, today.day + 1));
-  const tomorrow = {
-    year: tomorrowUtcDate.getUTCFullYear(),
-    month: tomorrowUtcDate.getUTCMonth() + 1,
-    day: tomorrowUtcDate.getUTCDate(),
-  };
-  const start = zonedTimeToUtc({ ...today, hour: 0, minute: 0, second: 0, timeZone });
-  const end = zonedTimeToUtc({ ...tomorrow, hour: 0, minute: 0, second: 0, timeZone });
-
-  const { data, error } = await supabase
-    .from('agent_runs')
-    .select('*')
-    .eq('status', 'success')
-    .gte('created_at', start.toISOString())
-    .lt('created_at', end.toISOString())
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) throw new Error(error.message);
-  if (!data) return null;
-
-  return toAgentRun(data as AgentRunRow);
 }
 
 export async function publishBriefingPost(id: string) {

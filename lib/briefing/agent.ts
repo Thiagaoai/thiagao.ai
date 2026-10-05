@@ -102,7 +102,8 @@ async function fetchFeed(source: FeedSource): Promise<Candidate[]> {
 
   return itemBlocks.slice(0, 10).map((itemXml) => {
     const title = readTag(itemXml, 'title') || 'Untitled update';
-    const url = readTag(itemXml, 'link') || itemXml.match(/<link[^>]+href="([^"]+)"/i)?.[1] || source.url;
+    const rawUrl = readTag(itemXml, 'link') || decodeXml(itemXml.match(/<link[^>]+href="([^"]+)"/i)?.[1] ?? '') || source.url;
+    const url = /^https?:\/\//i.test(rawUrl) ? rawUrl : source.url;
     const summary = readTag(itemXml, 'description') || readTag(itemXml, 'summary') || readTag(itemXml, 'content') || title;
     const publishedAt = readTag(itemXml, 'pubDate') || readTag(itemXml, 'published') || readTag(itemXml, 'updated');
 

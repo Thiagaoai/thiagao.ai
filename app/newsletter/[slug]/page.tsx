@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -9,13 +10,16 @@ import ShareButtons from './ShareButtons';
 import { formatEditionDate, shareLinks } from '@/lib/briefing/edition';
 import { getAdjacentEditions, getPublishedBriefingBySlug } from '@/lib/briefing/posts';
 
+// generateMetadata and the page both need the post; React's cache() dedupes the read within one request.
+const loadEdition = cache((slug: string) => getPublishedBriefingBySlug(slug));
+
 export const revalidate = 1800;
 
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPublishedBriefingBySlug(slug);
+  const post = await loadEdition(slug);
   if (!post) return { title: 'Edição não encontrada - Thiagao Ai Daily' };
   return {
     title: `${post.title} - Thiagao Ai Daily`,
@@ -41,7 +45,7 @@ const editionCard = 'rounded-[26px] border border-white/10 p-5 transition-colors
 
 export default async function EditionPage({ params }: Props) {
   const { slug } = await params;
-  const post = await getPublishedBriefingBySlug(slug);
+  const post = await loadEdition(slug);
   if (!post) notFound();
   const { previous, next } = await getAdjacentEditions(post);
   const links = shareLinks(post, 'page');

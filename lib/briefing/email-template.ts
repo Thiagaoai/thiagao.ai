@@ -11,7 +11,7 @@ function normalizeUrl(path: string) {
   return `${getSiteUrl().replace(/\/$/, '')}${path}`;
 }
 
-export function renderRichText(value: string) {
+function renderRichText(value: string) {
   return escapeHtml(value)
     .split(/\n{2,}/)
     .map((paragraph) => `<p style="margin:0 0 14px;color:#d4d4d8;font-size:16px;line-height:1.75;">${paragraph.replace(/\n/g, '<br />')}</p>`)
