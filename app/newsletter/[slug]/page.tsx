@@ -33,7 +33,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-const pill = 'inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-cyan-200';
+const pill =
+  'inline-block max-w-full break-words rounded-[18px] border border-white/10 bg-white/5 px-4 py-2 text-[10px] font-bold uppercase leading-relaxed tracking-[0.14em] text-cyan-200 sm:rounded-full sm:text-xs sm:tracking-[0.24em]';
 const navButton =
   'inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-bold text-white transition-colors hover:border-cyan-300/40';
 const editionCard = 'rounded-[26px] border border-white/10 p-5 transition-colors hover:border-cyan-300/40';
@@ -53,20 +54,29 @@ export default async function EditionPage({ params }: Props) {
           <nav className="flex items-center justify-between gap-4">
             <Link href="/" className="flex items-center gap-3">
               <BrandMark className="h-10 w-10 rounded-2xl" />
-              <span className="text-xl font-bold tracking-tight">Thiagao Ai</span>
+              <span className="hidden text-xl font-bold tracking-tight sm:inline">Thiagao Ai</span>
             </Link>
             <div className="flex items-center gap-2">
-              <Link href="/newsletter#briefings" className={navButton}>
-                Todas as edições
+              <Link href="/newsletter#briefings" className={`${navButton} whitespace-nowrap`}>
+                <span className="sm:hidden">Edições</span>
+                <span className="hidden sm:inline">Todas as edições</span>
               </Link>
-              <a href="#assinar" className={navButton}>
+              <a href="#assinar" className={`${navButton} whitespace-nowrap`}>
                 Assinar
               </a>
             </div>
           </nav>
 
           <header className="mt-16">
-            <p className={pill}>Thiagao Ai Daily · {formatEditionDate(post.publishedAt)}</p>
+            <p className={pill}>
+              {/* One span per word so the pill wraps between words only, never inside "segunda-feira". */}
+              {`Thiagao Ai Daily · ${formatEditionDate(post.publishedAt)}`.split(' ').map((word, index) => (
+                <span key={index}>
+                  {index > 0 ? ' ' : null}
+                  <span className="whitespace-nowrap">{word}</span>
+                </span>
+              ))}
+            </p>
             <h1
               className="mt-6 text-[40px] font-normal leading-[1.02] tracking-tight sm:text-[64px]"
               style={{ fontFamily: 'var(--font-display)' }}
@@ -98,30 +108,32 @@ export default async function EditionPage({ params }: Props) {
             </div>
           </section>
 
-          <nav className="mt-10 grid gap-3 sm:grid-cols-2" aria-label="Outras edições">
-            {previous ? (
-              <Link href={`/newsletter/${previous.slug}`} className={editionCard} aria-label={`Edição anterior: ${previous.title}`}>
-                <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">
-                  <ArrowLeft className="h-4 w-4" /> Edição anterior
-                </span>
-                <span className="mt-2 block text-lg font-semibold text-white">{previous.title}</span>
-              </Link>
-            ) : (
-              <span />
-            )}
-            {next ? (
-              <Link href={`/newsletter/${next.slug}`} className={`${editionCard} text-right`} aria-label={`Próxima edição: ${next.title}`}>
-                <span className="flex items-center justify-end gap-2 text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">
-                  Próxima edição <ArrowRight className="h-4 w-4" />
-                </span>
-                <span className="mt-2 block text-lg font-semibold text-white">{next.title}</span>
-              </Link>
-            ) : null}
-          </nav>
+          {previous || next ? (
+            <nav className="mt-10 grid gap-3 sm:grid-cols-2" aria-label="Outras edições">
+              {previous ? (
+                <Link href={`/newsletter/${previous.slug}`} className={editionCard} aria-label={`Edição anterior: ${previous.title}`}>
+                  <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">
+                    <ArrowLeft className="h-4 w-4" /> Edição anterior
+                  </span>
+                  <span className="mt-2 block text-lg font-semibold text-white">{previous.title}</span>
+                </Link>
+              ) : null}
+              {next ? (
+                <Link href={`/newsletter/${next.slug}`} className={`${editionCard} text-right sm:col-start-2`} aria-label={`Próxima edição: ${next.title}`}>
+                  <span className="flex items-center justify-end gap-2 text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">
+                    Próxima edição <ArrowRight className="h-4 w-4" />
+                  </span>
+                  <span className="mt-2 block text-lg font-semibold text-white">{next.title}</span>
+                </Link>
+              ) : null}
+            </nav>
+          ) : null}
 
           <section id="assinar" className="mt-16 scroll-mt-28">
             <p className={pill}>Receba todo dia</p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight">Uma edição por dia, às 17h de Nova York.</h2>
+            <h2 className="mt-4 text-3xl font-normal tracking-tight sm:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+              Uma edição por dia, às 17h de Nova York.
+            </h2>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-400">
               Cinco a sete notícias de IA explicadas sem hype, com fontes e um take prático.
             </p>
@@ -129,6 +141,18 @@ export default async function EditionPage({ params }: Props) {
               <SubscribeForm source="edition-page" />
             </div>
           </section>
+
+          <footer className="mt-16 flex flex-col gap-4 border-t border-white/10 pt-6 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
+            <p>Thiagao Ai Daily · IA, agentes e ferramentas, todo dia às 17h de Nova York.</p>
+            <div className="flex gap-5">
+              <Link href="/" className="font-bold text-zinc-400 transition-colors hover:text-cyan-200">
+                Home
+              </Link>
+              <Link href="/newsletter#briefings" className="font-bold text-zinc-400 transition-colors hover:text-cyan-200">
+                Todas as edições
+              </Link>
+            </div>
+          </footer>
         </div>
       </div>
     </main>

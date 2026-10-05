@@ -36,20 +36,20 @@ export default function ShareButtons({ links }: ShareButtonsProps) {
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
-      <a href={links.whatsapp} target="_blank" rel="noreferrer" className={button}>
+      <a href={links.whatsapp} target="_blank" rel="noreferrer" aria-label="Compartilhar no WhatsApp" className={button}>
         <MessageCircle className="h-4 w-4" />
         WhatsApp
       </a>
-      <a href={links.x} target="_blank" rel="noreferrer" className={button}>
+      <a href={links.x} target="_blank" rel="noreferrer" aria-label="Compartilhar no X" className={button}>
         <XIcon className="h-4 w-4" />X
       </a>
-      <a href={links.linkedin} target="_blank" rel="noreferrer" className={button}>
+      <a href={links.linkedin} target="_blank" rel="noreferrer" aria-label="Compartilhar no LinkedIn" className={button}>
         <LinkedinIcon className="h-4 w-4" />
         LinkedIn
       </a>
-      <button type="button" onClick={copyLink} className={button} aria-live="polite">
+      <button type="button" onClick={copyLink} className={button}>
         {copied ? <Check className="h-4 w-4 text-cyan-200" /> : <Link2 className="h-4 w-4" />}
-        {copied ? 'Copiado' : 'Copiar link'}
+        <span aria-live="polite">{copied ? 'Copiado' : 'Copiar link'}</span>
       </button>
     </div>
   );
