@@ -47,7 +47,7 @@ X        vs 14 dias  memória     ou fallback      publicado na hora    + log po
 
 Tudo continua dentro de `runDailyBriefingAgent()` (LangGraph com três nós: `collect`, `rank`, `write`). O nó `write` substitui `synthesize`. A rota `daily-digest` passa a ser idempotente por edição do dia e reenvia uma edição publicada que ainda não foi enviada.
 
-Convenção de código que esta spec exige: os módulos testados por `node --experimental-strip-types --test` (`sources`, `dedupe`, `ranking`, `writer`, `memory`, `unsubscribe`, `edition`, `email-template`, `whatsapp`, `config`) usam imports relativos **com extensão `.ts`** (`./config.ts`) e nunca importam `./posts`, `./supabase` nem o alias `@/` em import de valor (só em `import type`). É o padrão já usado por `lib/typesafe/decision-mediation.ts`.
+Convenção de código que esta spec exige: os módulos testados por `node --experimental-strip-types --test` (`sources`, `dedupe`, `ranking`, `writer`, `memory`, `daily-action`, `unsubscribe`, `edition`, `email-template`, `whatsapp`, `config`) usam imports relativos **com extensão `.ts`** (`./config.ts`) e nunca importam `./posts`, `./supabase` nem o alias `@/` em import de valor (só em `import type`). É o padrão já usado por `lib/typesafe/decision-mediation.ts`.
 
 ## 5. Modelo de dados
 
@@ -114,11 +114,12 @@ ageHours(candidate, now): number   // sem data: Perplexity 36h (passa na janela 
 sourceKey(candidate): string       // hostname da URL (sem www); é a chave dos tetos "por fonte"
 scoreCandidate(c, memory, now): number
 // reliability (0–99) + até 21 pontos de sinal (7 por palavra inteira de SIGNAL_PATTERN: launch, release, open source, model, agent, benchmark, funding, regulation, api, lança, anuncia...)
-// + frescor (≤24h: +20, ≤48h: +14, ≤7d: decai até 0) − tópico repetido nas últimas 5 edições (1: −12, 2: −30, 3: −50, ≥4: −70)
-// − baixo sinal (−40) − desconto X/HN/arXiv (−15). Resultado 0–99; 0 exclui.
+// + frescor (≤24h: +20, ≤48h: +14, ≤7d: decai de 8 até 3) − tópico repetido nas últimas 5 edições (1: −12, 2: −30, 3: −50, ≥4: −70)
+// − baixo sinal (−40) − desconto X/HN/arXiv (−15). Piso 0 (0 exclui); sem teto, para que reliability continue desempatando itens com muito sinal.
 selectPool(candidates, memory, now, { minPool = 8, maxPool = 24 }): { pool: Candidate[]; window: '48h'|'7d'; notes: string[] }
 // para a janela de 48h: filtra general sem IA → filtra idade → dedupeCandidates → remove isRepeat → conta;
-// se sobrar menos que minPool, repete com 7 dias. Depois: score, ordena, tetos: 2 por sourceKey (1 para Hacker News e X), 3 para o tópico openai, 24 no total.
+// se sobrar menos que minPool, repete com 7 dias. Depois: score, ordena, tetos: 2 por sourceKey (hostname), 1 por publisher para Hacker News e X
+// (os links do HN apontam para sites variados, então o teto deles é pelo nome do feed), 3 para o tópico openai, 24 no total.
 ```
 
 Confiabilidade e categoria de itens sem feed: Perplexity `reliability 74`, `publisher = hostname`, `category = guessCategory`; X `reliability 55`, só posts com engajamento ≥ 50, `category = guessCategory`.
@@ -140,11 +141,11 @@ writeEdition(input): Promise<{ mode: 'llm'|'fallback'; edition; notes }>
 // até 2 tentativas (a 2ª recebe os erros de validação); 401/403 interrompe; senão fallbackEdition. Sem chave ou pool vazio → fallback direto.
 ```
 
-Chave: `NEWSLETTER_WRITER_API_KEY || DEEPSEEK_API_KEY`; modelo: `NEWSLETTER_WRITER_MODEL || 'deepseek-chat'`.
+Chave: `NEWSLETTER_WRITER_API_KEY || DEEPSEEK_API_KEY`; modelo: `NEWSLETTER_WRITER_MODEL || 'deepseek-chat'`. Os limites do schema (headline ≤ 90, subject ≤ 80, shareText ≤ 200) são de propósito mais folgados que os pedidos no prompt (≤ 80/70/180): folga para o modelo errar por pouco sem derrubar a edição.
 
 ### 6.5 `lib/briefing/agent.ts` (reescrito, fino)
 
-Mantém `fetchFeed` (10 itens por feed, `reliability` e `general` do catálogo), `fetchPerplexity` (pergunta "o que aconteceu em IA nas últimas 24 horas", `search_recency_filter: 'day'`, sem filtro de domínio) e `fetchXSignals` (48h, query ampla). Nós: `collect` (Promise.allSettled dos feeds + Perplexity + X), `rank` (memória via `posts.getRecentEditionMemory` + `selectPool`), `write` (`writeEdition` + `composeDraftInput`; com menos de 3 itens devolve `draft: null`). `runDailyBriefingAgent({ now?, slug? })` retorna `{ draft | null, writer: 'llm'|'fallback', run }` com `run.notes` incluindo janela usada, tamanho do pool, modo do redator e falhas de feed. Exporta `getNewYorkDateKey(now)` e `getNewYorkDateLabel(now)`.
+Mantém `fetchFeed` (10 itens por feed, `reliability` e `general` do catálogo), `fetchPerplexity` (pergunta "o que aconteceu em IA nas últimas 24 horas", `search_recency_filter: 'day'`, sem filtro de domínio; o endpoint `https://api.perplexity.ai/v1/sonar` continua, pois a documentação da Perplexity lista tanto ele quanto `/chat/completions`; uma falha vira nota em `run.notes`, nunca derruba a execução) e `fetchXSignals` (48h, query ampla, engajamento = likes + 2×reposts + replies + quotes, mínimo 50). Nós: `collect` (Promise.allSettled dos feeds + Perplexity + X), `rank` (memória via `posts.getRecentEditionMemory` + `selectPool`), `write` (`writeEdition` + `composeDraftInput`; com menos de 3 itens devolve `draft: null`). `runDailyBriefingAgent({ now?, slug? })` retorna `{ draft | null, writer: 'llm'|'fallback', run }` com `run.notes` incluindo janela usada, tamanho do pool, modo do redator e falhas de feed. Exporta `getNewYorkDateKey(now)` e `getNewYorkDateLabel(now)`.
 
 ### 6.6 `lib/briefing/memory.ts` (novo, puro) e `lib/briefing/posts.ts` (estendido)
 
@@ -153,12 +154,28 @@ Mantém `fetchFeed` (10 itens por feed, `reliability` e `general` do catálogo),
 `posts.ts`:
 
 - `toPost`/`toRow` mapeiam `items`, `subject`, `share_text`.
-- `getPublishedBriefingBySlug(slug)`: Supabase nulo **ou com erro** → procura em `fallbackBriefings` (mesmo comportamento de `getPublishedBriefings`, para os links da home e do arquivo nunca quebrarem).
+- `getPublishedBriefingBySlug(slug)`: Supabase nulo, com erro **ou sem linha para o slug** → procura em `fallbackBriefings` (mesmo comportamento de `getPublishedBriefings`, para os links da home e do arquivo nunca quebrarem).
 - `getAdjacentEditions(post)` → `{ previous, next }` (slug + title), com fallback ordenando `fallbackBriefings`.
-- `findEditionsForDate(dateKey)` → posts (qualquer status) cujo slug é `daily-<dateKey>` ou começa com `daily-<dateKey>-`; `null` sem Supabase.
+- `findEditionsForDate(dateKey)` → posts (qualquer status, mais recentes primeiro) cujo slug é `daily-<dateKey>` ou começa com `daily-<dateKey>-`. A consulta usa intervalo de slug (`gte 'daily-<dateKey>'` e `lt 'daily-<dateKey>.'`, já que `-` ordena antes de `.`) e não `like`, porque o banco local de demo ignora operadores que não conhece. Devolve `[]` sem Supabase.
 - `getRecentEditionMemory({ days = 14 })` → `EditionMemory & { note }` a partir dos publicados nos últimos `days` dias (até 60), via `buildRecentMemory`.
 - `unsubscribeSubscriber(email)` → status `unsubscribed`; `{ updated }`.
 - `getActiveSubscribers()` pagina com `.range()` de 1000 em 1000 (PostgREST limita a 1000 por chamada).
+
+### 6.6b `lib/briefing/daily-action.ts` (novo, puro)
+
+```ts
+type DailyEdition = { slug: string; status: BriefingStatus };
+type DailyAction =
+  | { kind: 'create'; slug: string }            // nada para o dia (ou force): rodar o agente com esse slug
+  | { kind: 'publish-and-send'; slug: string }  // draft órfão de uma execução que morreu entre inserir e publicar
+  | { kind: 'resend'; slug: string }            // publicada mas nunca enviada
+  | { kind: 'skip'; slug: string; reason: string };
+decideDailyAction({ dateKey, editions, sentSlugs, force, hhmm }): DailyAction
+// force → create daily-<dateKey>-<hhmm>; sem edições → create daily-<dateKey>;
+// publicada sem envio (a mais recente) → resend; senão draft → publish-and-send; senão skip (enviada ou arquivada).
+```
+
+A chave de campanha de uma edição é **sempre o seu slug**, então a edição regular e a forçada nunca compartilham chave e `hasSentCampaign(slug)` responde por cada uma.
 
 ### 6.7 `lib/briefing/unsubscribe.ts` (novo)
 
@@ -193,22 +210,23 @@ Usuário: data por extenso, lista numerada de candidatos (publisher, categoria, 
 ## 8. Rotas e páginas
 
 - `POST /api/agent/daily-digest` (`maxDuration = 300`): autoriza por `AGENT_CRON_SECRET` (como hoje, com `safeEqual`) ou sessão admin (`isAdminRequestAuthorized`, que exige mesma origem para cookie). Corpo `{ force?, dryRun? }`. Fluxo:
-  1. `dateKey` de New York; `campaign = daily-<dateKey>`.
+  1. `dateKey` de New York.
   2. `dryRun`: roda o agente (inclusive o redator, que custa uma chamada ao DeepSeek) e devolve `{ draft, writer, run }` sem gravar.
-  3. Sem `force`: `findEditionsForDate(dateKey)`. Se existe edição publicada e `hasSentCampaign(seu slug)` é falso → reenvia essa edição (`sendBriefingEmail`) e responde `{ ok, resent: true }`. Se existe e já foi enviada → `{ skipped: true }`. Se não existe → segue.
-  4. `force`: slug `daily-<dateKey>-<hhmm>`; cria e envia uma edição nova para todos os assinantes (entrega dupla é intencional e documentada; o painel pede confirmação).
-  5. Roda o agente; sem draft → 500 com `notes`. Salva um único draft, publica, envia. Status 200 quando publicou (mesmo com `email.skipped`), 502 quando o Resend falhou (`sent: false, skipped: false`), para o cron ficar vermelho.
+  3. `editions = force ? [] : findEditionsForDate(dateKey)`; `sentSlugs` = as que têm `hasSentCampaign(slug)`; `action = decideDailyAction(...)` (6.6b).
+  4. `skip` → `{ ok: true, skipped: true, reason, campaign }`. `resend` → envia a edição existente com `campaign = slug` e responde `{ resent: true }`. `publish-and-send` → publica o draft órfão, envia, responde `{ recovered: true }`. `create` → roda o agente com o slug decidido; sem draft → 500 com `notes`; salva um único draft, publica, envia com `campaign = slug`.
+  5. Depois de publicar, `revalidatePath('/')`, `revalidatePath('/newsletter')` e `revalidatePath('/newsletter/[slug]', 'page')`, para a home, o arquivo e os links anterior/próxima das edições vizinhas não esperarem o `revalidate`.
+  6. Status 200 quando publicou ou reenviou (mesmo com `email.skipped`), 502 quando o Resend falhou (`sent: false, skipped: false`), para o cron ficar vermelho. `force` cria e envia uma edição nova para todos os assinantes (entrega dupla é intencional e documentada; o painel pede confirmação).
 - `POST /api/newsletter/unsubscribe`: lê `email` e `token` do corpo (JSON ou form) **ou da query string** (one-click RFC 8058 manda só `List-Unsubscribe=One-Click` no corpo). Não usa `isSameOriginRequest` (a chamada vem do provedor de email). Verifica o token; marca `unsubscribed`; registra evento `unsubscribe`; responde JSON, ou redireciona 303 para `/newsletter/sair?state=done|invalid` quando o `Accept` pede HTML (formulário).
 - `GET /newsletter/sair`: página com confirmação (formulário HTML que faz POST na rota acima) e estados `done`/`invalid`. `robots: noindex`.
 - `GET /newsletter/[slug]`: página da edição (server component, `revalidate = 1800`): nav com marca, data, manchete, intro, itens, "Para testar hoje", take do dia, botões compartilhar (WhatsApp, X, LinkedIn, copiar link — client component pequeno), anterior/próxima, formulário de assinatura (`source: 'edition-page'`). `generateMetadata` com título, descrição (dek), OG `article`, canonical. 404 só quando nem Supabase nem `fallbackBriefings` têm o slug.
-- `GET /newsletter`: o arquivo é `app/briefing/page.tsx` (`app/newsletter/page.tsx` só reexporta; `/briefing` é alias com canonical `/newsletter`). O destaque mostra data, manchete, intro e a lista de títulos dos itens com link para a edição; cards do arquivo e "Dias anteriores" viram links para `/newsletter/[slug]`; a caixa "Recorrência semanal" vira "O que vem em cada edição" (Manchete, Notícias do dia, Para testar hoje, Take do dia, Compartilhar). O hero continua "Edição diária às 5 PM New York".
+- `GET /newsletter`: o arquivo é `app/briefing/page.tsx` (`app/newsletter/page.tsx` só reexporta; `/briefing` é alias com canonical `/newsletter`). O destaque mostra data, manchete, intro e a lista de títulos dos itens com link para a edição; cards do arquivo e "Dias anteriores" viram links para `/newsletter/[slug]`; a caixa "Recorrência semanal" vira "O que vem em cada edição" (Manchete, Notícias, Para testar hoje, Take do dia, Compartilhar). O hero continua "Edição diária às 5 PM New York". A seção estática "Weekly News" (cards de agentes e placar, conteúdo fixo) fica como está: não depende do pipeline e não faz parte deste trabalho.
 - Home (`app/components/home/HomePage.tsx`): os cards "Novidades" linkam para `/newsletter/[slug]` (única alteração nesse arquivo).
 - `app/sitemap.ts`: inclui as edições publicadas (até 60) com `lastModified = publishedAt`.
 - Admin (`AdminNewsletterClient`): botões "Pré-visualizar edição de hoje" (`dryRun`, avisa que usa o redator) e "Gerar, publicar e enviar agora" (`force`, com `confirm()` avisando que envia para todos); o card de draft mostra assunto e quantidade de itens.
 
 ## 9. Agendamento e resiliência
 
-- `daily-briefing.yml`: mantém cron 17h NY; `permissions: { contents: read, actions: write }`; input `force` explícito (default `false`) em vez de implicar `force` em todo `workflow_dispatch`; curl com `--max-time 300`; último passo `gautamkrishnar/keepalive-workflow@v2` com `use_api: true` e `if: always()` para o GitHub não desativar o cron por inatividade.
+- `daily-briefing.yml`: mantém cron 17h NY; `permissions: { contents: read, actions: write }`; input `force` explícito (default `false`) em vez de implicar `force` em todo `workflow_dispatch`; curl com `--max-time 300`; último passo, com `if: always()`, roda `gh workflow enable daily-briefing.yml` com o `github.token` do próprio job, para o cron não ficar desativado por inatividade. (A action `gautamkrishnar/keepalive-workflow` não serve: o repositório dela está bloqueado no GitHub desde abril de 2025 e o job falharia no setup.)
 - Idempotência por edição do dia (slug `daily-<data>` ou `daily-<data>-*`) e reenvio quando a edição existe mas o email não saiu. Rodadas duplicadas do cron (21h e 22h UTC) continuam seguras.
 - Falhas parciais de feed nunca derrubam a execução (`allSettled`). Perplexity e X ausentes só geram nota.
 - Writer: timeout, retry único, fallback estruturado. Sem assinantes ou sem `RESEND_API_KEY`: publica no site e responde `email.skipped=true` (HTTP 200).
@@ -225,7 +243,7 @@ Novas (todas opcionais): `NEWSLETTER_WRITER_API_KEY`, `NEWSLETTER_WRITER_BASE_UR
 
 - JSON inválido do LLM → retry com erros → fallback. Nunca lança.
 - Feed com XML inválido → item ignorado; feed fora → nota.
-- Supabase indisponível → `saveAgentDrafts` lança; a rota responde 500 com a mensagem (comportamento atual), sem enviar email.
+- Supabase não configurado → `saveAgentDrafts` devolve `{ stored: false }`; Supabase com erro → lança. Nos dois casos a rota responde 500 sem enviar email.
 - Token de descadastro inválido → 400 JSON ou redirect para `state=invalid`; nunca altera status.
 - Evento `unsubscribe` só grava depois da migration 009 (antes, `logNewsletterEvent` engole o erro do check, como hoje).
 
@@ -236,6 +254,7 @@ Novas (todas opcionais): `NEWSLETTER_WRITER_API_KEY`, `NEWSLETTER_WRITER_BASE_UR
 - `tests/ranking.test.mts`: `ageHours` sem data/inválida; janela 48h→7d medida após dedup; tetos por fonte/openai; penalidade de tópico repetido; baixo sinal; `general` sem IA excluído.
 - `tests/writer.test.mts`: mensagens contêm candidatos numerados e lista de evitados; `parseEditionDraft` com cerca e lixo; validação rejeita índice repetido, fora do intervalo, >2 OpenAI, mesma fonte, lead fora do 1º, menos itens que o mínimo; `writeEdition` com fetch simulado válido → `llm`; inválido duas vezes → `fallback`; sem chave → `fallback` sem chamar fetch; `composeDraftInput` gera slug/brief/tags/minutos.
 - `tests/edition-memory.test.mts`: `buildRecentMemory` coleta URLs normalizadas, títulos e contagem por edição.
+- `tests/daily-action.test.mts`: `decideDailyAction` cobre criar, forçar, pular, reenviar, recuperar draft órfão e arquivada.
 - `tests/unsubscribe.test.mts`: token ida e volta, token errado, segredo ausente, URLs de página e API.
 - `tests/email-template.test.mts`: HTML e texto contêm itens, link da edição com UTM, descadastro escapado; post sem itens renderiza `brief`; `shareText` escapado.
 - `tests/whatsapp.test.mts`: formato com itens e link da edição.
