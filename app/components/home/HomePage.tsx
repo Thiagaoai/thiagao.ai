@@ -31,6 +31,8 @@ import SubscribeForm from '../../briefing/SubscribeForm';
 import LazyVideo from './LazyVideo';
 import Lighthouse from './Lighthouse';
 import NightSky from './NightSky';
+import HandsJourney from './HandsJourney';
+import StackGlossary, { type StackGroup } from './StackGlossary';
 
 // Home built on a cinematic brief: one fullscreen looping video gives the hero
 // all of its depth, navigation and buttons are liquid glass, headings are
@@ -117,22 +119,63 @@ const stats = [
   { value: '1', label: 'briefing de IA por dia' },
 ];
 
-const stackGroups = [
+// Each tool carries a one-line explanation (what it is, what Thiago uses it for)
+// that StackGlossary reveals on hover or tap.
+const stackGroups: StackGroup[] = [
   {
     title: 'Dev',
-    items: ['Next.js', 'TypeScript', 'Bun', 'Python', 'Node.js', 'Nodes', 'VS Code', 'Cursor', 'Terminal'],
+    items: [
+      { name: 'Next.js', about: 'Framework React para sites e apps web com renderização no servidor e rotas de API. É a base deste site e das landing pages que entrego.' },
+      { name: 'TypeScript', about: 'JavaScript com tipos. Pega erro antes de rodar e deixa o código de sites, agentes e integrações mais seguro de manter.' },
+      { name: 'Java', about: 'Linguagem robusta e tipada, muito usada em sistemas corporativos e Android. Uso em backends e integrações que pedem estabilidade e escala.' },
+      { name: 'Bun', about: 'Runtime JavaScript rápido, com gerenciador de pacotes e bundler embutidos. Uso para scripts, servidores leves e builds mais ágeis.' },
+      { name: 'Python', about: 'Linguagem versátil e fácil de ler. Minha escolha para automações, scripts, raspagem de dados, APIs e tudo que envolve IA e dados.' },
+      { name: 'Node.js', about: 'JavaScript rodando no servidor. Sustenta APIs, bots, webhooks e as automações que precisam ficar no ar 24/7.' },
+      { name: 'Nodes', about: 'Nós customizados para n8n: quando um passo não existe pronto, eu escrevo o nó em código e ele vira peça reutilizável nos fluxos.' },
+      { name: 'VS Code', about: 'Editor de código onde eu trabalho, com agentes de IA integrados ao projeto para revisar, refatorar e testar.' },
+      { name: 'Cursor', about: 'Editor baseado no VS Code com IA nativa. Uso para prototipar rápido e para edições guiadas em bases grandes.' },
+      { name: 'Terminal', about: 'Linha de comando: deploy, logs, servidores, git e agentes de código. É onde a maior parte do trabalho real acontece.' },
+    ],
   },
   {
     title: 'Automação',
-    items: ['n8n', 'Make', 'Maker', 'GHL', 'APIs', 'Webhooks', 'CRM', 'Telegram Bots', 'Sites', 'Automation'],
+    items: [
+      { name: 'n8n', about: 'Plataforma de automação visual e open source que conecta APIs, bancos e IA em fluxos. Meu orquestrador principal: captura de lead, CRM, follow-up e agentes.' },
+      { name: 'Make', about: 'Automação visual na nuvem (ex-Integromat). Uso em cenários mais simples ou quando o cliente já opera nele.' },
+      { name: 'GHL', about: 'GoHighLevel: CRM com funis, agendamento, SMS e e-mail para negócios locais. Conecto automações e IA por cima dele.' },
+      { name: 'APIs', about: 'Interfaces que deixam sistemas conversarem entre si. Integro as existentes e crio APIs próprias para expor dados e ações.' },
+      { name: 'Webhooks', about: 'Avisos automáticos que um sistema envia quando algo acontece: novo lead, pagamento, mensagem. São o gatilho de quase toda automação.' },
+      { name: 'CRM', about: 'Sistema de relacionamento com clientes. Monto e integro CRMs para que lead, conversa e venda fiquem registrados e acionáveis.' },
+      { name: 'Telegram Bots', about: 'Bots que recebem comandos e mensagens no Telegram. Uso para alertas, aprovações, atendimento e controle de automações pelo celular.' },
+      { name: 'Sites', about: 'Sites e landing pages conectados à operação: o formulário entra no CRM, dispara automação e alimenta o funil.' },
+    ],
   },
   {
     title: 'IA / Agents',
-    items: ['OpenAI', 'Claude Code', 'Claude Cowork', 'Gemini', 'LangGraph', 'LangSmith', 'LLM', 'Fine-tune', 'Agents'],
+    items: [
+      { name: 'OpenAI', about: 'Modelos GPT e o Agents SDK. Uso em chatbots, classificação, extração de dados e agentes com ferramentas.' },
+      { name: 'Claude Code', about: 'Agente de programação da Anthropic que trabalha direto no repositório. É com ele que eu construo e mantenho boa parte dos projetos.' },
+      { name: 'Claude Cowork', about: 'Versão do Claude para trabalhar em pastas e documentos, fora do código. Uso para pesquisa, planejamento e material de cliente.' },
+      { name: 'Gemini', about: 'Modelos do Google, fortes em contexto longo, imagem e vídeo. Uso em análise de documentos e geração multimodal.' },
+      { name: 'LangGraph', about: 'Biblioteca para montar agentes como grafos com estado, ramificações e retomada. Serve para fluxos de IA que precisam ir para produção.' },
+      { name: 'LangSmith', about: 'Observabilidade para apps de IA: rastreia cada passo do agente, avalia respostas e ajuda a depurar comportamento.' },
+      { name: 'LLM', about: 'Modelo de linguagem grande, o motor por trás de ChatGPT, Claude e Gemini. Escolho o modelo certo para cada tarefa e custo.' },
+      { name: 'Fine-tune', about: 'Treinar um modelo com exemplos do próprio negócio para ele responder no tom e no formato certos.' },
+      { name: 'Agents', about: 'Sistemas de IA que planejam, usam ferramentas e executam tarefas em vez de só responder. É o centro do que eu entrego hoje.' },
+    ],
   },
   {
     title: 'Labs / Infra',
-    items: ['OpenClaw', 'Hermes Nous', 'Manus', 'ComfyUI', 'Pinokio', 'VPS', 'Railway', 'MCP'],
+    items: [
+      { name: 'OpenClaw', about: 'Agente de IA open source que roda na sua própria máquina ou VPS e conversa por WhatsApp, Telegram e outros canais. Testo como assistente pessoal e operacional.' },
+      { name: 'Hermes Nous', about: 'Agente open source da Nous Research, com memória e habilidades que evoluem com o uso. Estou explorando para tarefas autônomas longas.' },
+      { name: 'Manus', about: 'Agente autônomo que executa tarefas de ponta a ponta na web: pesquisa, navega e entrega o resultado. Uso em pesquisa e prototipagem.' },
+      { name: 'ComfyUI', about: 'Editor em nós para geração de imagem e vídeo com IA. Uso para criar material visual e automatizar pipelines criativos.' },
+      { name: 'Pinokio', about: 'Instalador de apps de IA locais com um clique. Deixa testar modelos e ferramentas no próprio computador sem configurar nada na mão.' },
+      { name: 'VPS', about: 'Servidor virtual próprio onde rodam n8n, bots e agentes 24/7, com controle total de custo e dados.' },
+      { name: 'Railway', about: 'Plataforma de deploy que sobe apps, bancos e workers a partir do GitHub. Uso para publicar APIs e serviços rápido.' },
+      { name: 'MCP', about: 'Model Context Protocol: padrão aberto para conectar agentes de IA a ferramentas e dados. Construo servidores MCP para os agentes acessarem sistemas reais.' },
+    ],
   },
 ];
 
@@ -382,9 +425,13 @@ function FloatingWhatsAppButton() {
 }
 
 export default function HomePage({ posts }: { posts: HomePost[] }) {
+  // The page background lives on <body>: the starfield and the hands sit at a
+  // negative z-index, under every section's text, and a background here would
+  // paint over them.
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen text-foreground">
       <NightSky />
+      <HandsJourney />
       <FloatingWhatsAppButton />
 
       <div id="top" className="relative flex min-h-screen flex-col overflow-hidden">
@@ -445,24 +492,11 @@ export default function HomePage({ posts }: { posts: HomePost[] }) {
             </div>
             <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
               Por área: o que entra no dia a dia de dev, automação, IA, agentes, labs e infra. Sem lista de
-              vitrine, só o que uso em projeto.
+              vitrine, só o que uso em projeto. Toque em qualquer ferramenta para ver o que é e para que eu uso.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {stackGroups.map((group) => (
-              <div key={group.title} className={`${cardClass} p-5`}>
-                <p className="mb-4 text-xs uppercase tracking-[0.22em] text-muted-foreground">{group.title}</p>
-                <div className="flex flex-wrap gap-2">
-                  {group.items.map((item) => (
-                    <span key={item} className={chipClass}>
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+          <StackGlossary groups={stackGroups} cardClass={cardClass} chipClass={chipClass} />
         </div>
       </section>
 
@@ -487,19 +521,28 @@ export default function HomePage({ posts }: { posts: HomePost[] }) {
       </section>
 
       <section id="agentes" className="relative overflow-hidden border-t border-white/10">
-        <div className="absolute inset-0 z-0">
+        {/* Wide screens: the clip is the backdrop of the whole section, kept clear on the left and darkened toward
+            the copy. Below lg the section is several times taller than it is wide, and object-cover would crop the
+            2.4:1 scene to a ~12% sliver of sky, so phones get their own framed copy of the clip inside the grid. */}
+        <div className="absolute inset-0 z-0 hidden lg:block">
           <LazyVideo
             src={media.agents.src}
             poster={media.agents.poster}
             className="h-full w-full object-cover object-[0%_center]"
           />
-          {/* Phones read the copy over the whole scene; wide screens keep the left clear and darken toward the text. */}
-          <div className="absolute inset-0 bg-background/70 lg:hidden" />
-          <div className="absolute inset-0 hidden bg-gradient-to-r from-transparent via-background/75 to-background/95 lg:block" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-background/75 to-background/95" />
           <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent" />
         </div>
 
         <div className="relative z-10 mx-auto grid max-w-7xl gap-10 px-6 py-32 lg:min-h-[820px] lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+          {/* Phones and tablets: the clip sits above the copy, framed on Thiago and the sphere (left 40% of the frame). */}
+          <div className="relative aspect-[4/5] overflow-hidden rounded-[32px] border border-white/10 sm:aspect-[16/10] lg:hidden">
+            <LazyVideo
+              src={media.agents.src}
+              poster={media.agents.poster}
+              className="h-full w-full object-cover object-[20%_center] sm:object-[10%_center]"
+            />
+          </div>
           <div className="hidden lg:block" />
           <div>
             <SectionLabel>O que está movendo dev + IA</SectionLabel>
@@ -678,13 +721,26 @@ export default function HomePage({ posts }: { posts: HomePost[] }) {
         id="projects"
         className="relative flex min-h-[960px] flex-col justify-end overflow-hidden border-t border-white/10 px-6 py-32"
       >
-        <div className="absolute inset-0 z-0 overflow-hidden">
+        {/* Wide screens: the still is the backdrop. Below lg it would be a blurry 9% sliver of sky (same crop
+            problem as the agents clip), so it gets a framed block above the heading instead. */}
+        <div className="absolute inset-0 z-0 hidden overflow-hidden lg:block">
           <Image src={media.wide} alt="" fill sizes="100vw" className="kenburns object-cover object-top" />
           <div className="absolute inset-0 bg-background/70" />
           <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background to-transparent" />
         </div>
 
         <div className="relative z-10 mx-auto w-full max-w-7xl">
+          <div className="relative mb-14 aspect-[4/5] overflow-hidden rounded-[32px] border border-white/10 sm:aspect-[16/10] lg:hidden">
+            {/* Framed on the lighthouse, the house and Thiago at the laptop (right 60% of the frame). The box is
+                taller than the 2.4:1 still, so the image renders ~2.4x the box height wide: ask for a wide candidate. */}
+            <Image
+              src={media.wide}
+              alt="Praia de Cape Cod à noite, com o farol, a casa e Thiago trabalhando no notebook"
+              fill
+              sizes="(min-width: 640px) 160vw, 250vw"
+              className="kenburns object-cover object-[64%_center] sm:object-[70%_center]"
+            />
+          </div>
           <SectionLabel>Projetos e canais</SectionLabel>
           <Heading className="max-w-4xl">
             Onde estou
@@ -857,6 +913,18 @@ export default function HomePage({ posts }: { posts: HomePost[] }) {
           </div>
         </div>
 
+      </section>
+
+      {/* Where the hands meet: the closing line fades in over the last stretch of the scroll (.hands-reveal). */}
+      <section id="encontro" aria-label="Humano e IA" className="relative border-t border-white/10">
+        <div className="hands-reveal mx-auto max-w-5xl px-6 py-36 text-center sm:py-44">
+          <SectionLabel>Humano + IA</SectionLabel>
+          <p className="font-display mt-8 text-4xl leading-[1.05] tracking-[-0.03em] text-foreground [text-shadow:0_2px_24px_hsl(var(--background))] sm:text-6xl">
+            Quando a mão humana e a IA se encontram,
+            <br className="hidden sm:block" /> nasce algo <em className="not-italic text-glow">superior</em>:
+            <br className="hidden sm:block" /> software que trabalha com você.
+          </p>
+        </div>
       </section>
 
       <footer className="relative overflow-hidden border-t border-white/10">
