@@ -458,10 +458,12 @@ body {
   transform: translate(-50%, -50%);
 }
 
-/* Phones: wider than the screen, so the hands start off the edges and enter as they approach. */
+/* Phones: a little wider than the screen so the hands read larger, but not so
+   wide that they sit off the edges: at 125% the fingertips start just outside
+   the viewport and enter within the first few percent of the scroll. */
 @media (max-width: 767px) {
   .hands-journey-frame {
-    width: 170%;
+    width: 125%;
   }
 }
 
