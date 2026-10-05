@@ -345,7 +345,8 @@ body {
 .night-sky {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  /* Below the sections' text (see .hands-journey for why negative works here). */
+  z-index: -1;
   pointer-events: none;
 }
 
@@ -430,5 +431,112 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .kenburns {
     animation: none;
+  }
+}
+
+/* Hands journey: a fixed layer behind the whole home (HandsJourney.tsx). The
+   negative z-index paints it under every section's text and cards while the
+   page background, which lives on <body>, still shows behind it. The hero video
+   (z-index 0) covers it on the first screen; the hands appear as the hero
+   scrolls away, far apart, and meet at the bottom of the page. */
+.hands-journey {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.92;
+}
+
+.hands-journey-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  aspect-ratio: 3;
+  transform: translate(-50%, -50%);
+}
+
+/* Phones: wider than the screen, so the hands start off the edges and enter as they approach. */
+@media (max-width: 767px) {
+  .hands-journey-frame {
+    width: 170%;
+  }
+}
+
+.hands-journey-canvas,
+.hands-journey-poster {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hands-journey-canvas,
+.hands-journey[data-ready='true'] .hands-journey-poster {
+  opacity: 0;
+}
+
+.hands-journey[data-ready='true'] .hands-journey-canvas {
+  opacity: 1;
+}
+
+.hands-journey-source {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+/* Energy gathering where the fingertips will meet (about 30% down the frame),
+   growing with --hands-progress, and a spark once they touch. */
+.hands-journey-glow {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  width: 72vmin;
+  height: 72vmin;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsl(var(--glow) / 0.42) 0%, hsl(var(--glow) / 0.12) 36%, transparent 70%);
+  filter: blur(22px);
+  opacity: calc(var(--hands-progress, 0) * var(--hands-progress, 0));
+  transform: translate(-50%, -50%) scale(calc(0.35 + var(--hands-progress, 0) * 0.9));
+}
+
+.hands-journey-spark {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: white;
+  box-shadow:
+    0 0 22px 10px hsl(var(--glow) / 0.9),
+    0 0 90px 34px hsl(var(--glow) / 0.45);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.4);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+}
+
+.hands-journey[data-contact='true'] .hands-journey-spark {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* The closing line fades in over the last stretch of the scroll, as the hands
+   touch. Without JavaScript the variable is unset and the line is simply visible. */
+.hands-reveal {
+  opacity: clamp(0, (var(--hands-progress, 1) - 0.72) * 4, 1);
+  transform: translateY(calc((1 - clamp(0, (var(--hands-progress, 1) - 0.72) * 4, 1)) * 24px));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hands-journey-spark {
+    transition: none;
   }
 }
