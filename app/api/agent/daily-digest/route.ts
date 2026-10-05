@@ -21,7 +21,7 @@ function isCronAuthorized(request: Request) {
   return safeEqual(bearer, secret) || safeEqual(header, secret);
 }
 
-// `skipped` is optional so this compiles against the current `sendBriefingEmail` too (Task 10 adds the field).
+// 200 when the edition is out (sent, or send skipped for a benign reason); 502 when Resend itself failed, so the cron goes red.
 function statusFor(email: { sent: boolean; skipped?: boolean }) {
   return email.sent || email.skipped ? 200 : 502;
 }
