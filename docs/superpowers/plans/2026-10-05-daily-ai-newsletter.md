@@ -1605,7 +1605,8 @@ function isCronAuthorized(request: Request) {
   return safeEqual(bearer, secret) || safeEqual(header, secret);
 }
 
-function statusFor(email: { sent: boolean; skipped: boolean }) {
+// `skipped` is optional so this compiles against the current `sendBriefingEmail` too (Task 10 adds the field).
+function statusFor(email: { sent: boolean; skipped?: boolean }) {
   return email.sent || email.skipped ? 200 : 502;
 }
 
@@ -1938,7 +1939,16 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { renderBriefingWhatsApp } from '../lib/briefing/whatsapp.ts';
 import type { BriefingPost } from '../lib/briefing/types.ts';
-// copy the same `post` fixture as in tests/email-template.test.mts (keep the tests independent)
+
+const post: BriefingPost = {
+  id: '1', slug: 'daily-2026-10-05', status: 'published', title: 'GPT-6 em preview e Codestral aberto', dek: 'Dia de lançamentos.',
+  brief: 'texto legado', takeaway: 'Teste uma coisa hoje.', category: 'AI', tags: ['AI', 'Daily'], sources: [], relevanceScore: 90, readingMinutes: 4,
+  publishedAt: '2026-10-05T21:00:00Z', createdAt: '2026-10-05T21:00:00Z', subject: 'GPT-6 em preview', shareText: 'O dia em IA hoje',
+  items: [
+    { kind: 'lead', title: 'GPT-6 em preview', summary: 'A OpenAI liberou.', whyItMatters: 'Muda o teto.', category: 'AI', source: { title: 'Introducing GPT-6', url: 'https://openai.com/gpt6', publisher: 'OpenAI' } },
+    { kind: 'tool', title: 'Cursor 3', summary: 'Roda testes.', whyItMatters: 'Teste hoje.', category: 'DevTools', source: { title: 'Cursor 3', url: 'https://cursor.com/3', publisher: 'The Verge AI' } },
+  ],
+};
 
 test('whatsapp text lists items with the edition link', () => {
   const text = renderBriefingWhatsApp(post);
@@ -1974,7 +1984,7 @@ Text version: header, date, headline, intro, `N. title` / summary / `Por que imp
 
 - [ ] **Step 5: Update `sendBriefingEmail` in `lib/briefing/email.ts`**
 
-Imports: `renderEditionEmail`, `renderEditionText`, `escapeHtml` from `./email-template`; `buildUnsubscribeUrls`, `unsubscribeToken` from `./unsubscribe`.
+Imports: `renderEditionEmail`, `renderEditionText`, `escapeHtml` from `./email-template`; `buildUnsubscribeUrls`, `hasUnsubscribeSecret` from `./unsubscribe`.
 
 ```ts
 const UNSUB_PLACEHOLDER = '%%UNSUBSCRIBE_URL%%';
@@ -1999,7 +2009,7 @@ export async function sendBriefingEmail(post: BriefingPost, options: { campaign?
   const replyTo = getNewsletterReplyTo();
   const subject = post.subject?.trim() || post.title;
   const campaign = options.campaign ?? post.slug;
-  const hasTokens = Boolean(unsubscribeToken('probe@example.com'));
+  const hasTokens = hasUnsubscribeSecret();
   // Render once; the per-recipient unsubscribe link is substituted below.
   const html = renderEditionEmail(post, { unsubscribeUrl: hasTokens ? UNSUB_PLACEHOLDER : null });
   const text = renderEditionText(post, { unsubscribeUrl: hasTokens ? UNSUB_PLACEHOLDER : null });
@@ -2096,7 +2106,7 @@ git commit -m "Render the daily edition email with share and unsubscribe; send i
 
 - [ ] **Step 1: `app/components/SocialIcons.tsx`**
 
-Move the four icon components out of `app/briefing/page.tsx` unchanged and export them; update the imports in `app/briefing/page.tsx`.
+Move the four icon components out of `app/briefing/page.tsx` unchanged, together with the `IconProps` type they use (`app/briefing/page.tsx:40-42`), and export the components; update the imports in `app/briefing/page.tsx` (`import { FacebookIcon, InstagramIcon, LinkedinIcon, XIcon } from '../components/SocialIcons';`).
 
 - [ ] **Step 2: `app/newsletter/EditionItems.tsx`** (server component, no hooks)
 
