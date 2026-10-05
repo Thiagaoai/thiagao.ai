@@ -107,7 +107,7 @@ function ThreeDBar({
 }
 
 export const metadata = {
-  title: 'Admin Newsletter - ThigaoA.i',
+  title: 'Admin Newsletter - Thiagao Ai',
   robots: {
     index: false,
     follow: false,

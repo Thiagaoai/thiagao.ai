@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -9,7 +9,16 @@ const inter = Inter({
   preload: true,
 });
 
-const brandName = "ThigaoA.i";
+// Display serif used by the newsletter pages through var(--font-display).
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  weight: "400",
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const brandName = "Thiagao Ai";
 const siteUrl = "https://thiagao.io";
 
 export const metadata: Metadata = {
@@ -38,10 +47,10 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/brand/thigaoai-logo.png",
-        width: 1024,
-        height: 1024,
-        alt: `${brandName} logo`,
+        url: "/og/home.jpg",
+        width: 1200,
+        height: 630,
+        alt: `${brandName}: IA e automação feitas à mão`,
       },
     ],
   },
@@ -49,7 +58,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${brandName} - Dev, Automação, LangGraph & IA Customizada`,
     description: "Newsletter e dev log sobre IA aplicada, LangGraph, LangSmith, automações, sites e soluções customizadas.",
-    images: ["/brand/thigaoai-logo.png"],
+    images: ["/og/home.jpg"],
   },
   robots: {
     index: true,
@@ -69,13 +78,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className="scroll-smooth">
+    <html lang="pt-BR" className={`${inter.variable} ${instrumentSerif.variable} scroll-smooth`}>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
-      <body className={`${inter.variable} antialiased`}>
+      <body className="antialiased">
         {children}
       </body>
     </html>

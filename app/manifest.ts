@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'ThigaoA.i',
-    short_name: 'ThigaoA.i',
+    name: 'Thiagao Ai',
+    short_name: 'Thiagao Ai',
     description: 'Dev log, automação, agentes de IA, LangGraph, LangSmith, n8n e sites customizados.',
     start_url: '/',
     scope: '/',

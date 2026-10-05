@@ -3,7 +3,7 @@ import { ArrowLeft } from 'lucide-react';
 import LoginForm from './LoginForm';
 
 export const metadata = {
-  title: 'Login Admin - ThigaoA.i',
+  title: 'Login Admin - Thiagao Ai',
   robots: {
     index: false,
     follow: false,
@@ -27,7 +27,7 @@ export default function AdminLoginPage() {
         <section className="grid flex-1 items-center gap-10 py-12 lg:grid-cols-[1fr_440px]">
           <div>
             <p className="mb-5 inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-cyan-200">
-              ThigaoA.i cockpit
+              Thiagao Ai cockpit
             </p>
             <h2 className="text-render-premium max-w-3xl text-[46px] font-semibold leading-[1.04] sm:text-[76px]">
               Controle a operação da newsletter.

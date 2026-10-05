@@ -222,7 +222,9 @@ const recurringCadence = [
 ];
 
 export const metadata = {
-  title: 'ThigaoA.i Briefing - AI Operator Newsletter',
+  // /briefing and /newsletter serve this same page; search engines get one URL.
+  alternates: { canonical: '/newsletter' },
+  title: 'Thiagao Ai Briefing - AI Operator Newsletter',
   description:
     'Newsletter sobre IA, big tech, ferramentas, novidades e tendencias explicadas para curiosos, novatos, entusiastas e builders.',
 };
@@ -273,7 +275,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
               className="hidden text-3xl tracking-tight sm:inline"
               style={{ fontFamily: 'var(--font-display)' }}
             >
-              ThigaoA.i
+              Thiagao Ai
             </span>
           </Link>
 
@@ -320,7 +322,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
         <section className="relative z-10 flex min-h-0 flex-col items-center justify-start px-4 pb-16 pt-14 text-center sm:px-6 sm:pb-24 sm:pt-24 md:min-h-[calc(100vh-96px)] md:justify-center md:pb-40 md:pt-32">
           <p className="animate-fade-rise mb-5 inline-flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-full border border-white/10 bg-black/15 px-3 py-2 text-[10px] font-bold uppercase leading-relaxed tracking-[0.16em] text-zinc-200 backdrop-blur-sm sm:mb-8 sm:gap-3 sm:px-4 sm:text-xs sm:tracking-[0.24em]">
             <span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_18px_rgba(110,231,183,0.8)]" />
-            ThigaoA.i Briefing · IA · Big Tech · Novidades
+            Thiagao Ai Briefing · IA · Big Tech · Novidades
           </p>
 
           <h1
@@ -642,7 +644,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
 
           <div className="mb-10 flex flex-wrap gap-3">
             <Link
-              href="/newslatter"
+              href="/newsletter"
               className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] transition-colors ${!selectedTag ? 'border-cyan-300/40 bg-cyan-300/10 text-cyan-100' : 'border-zinc-800 text-zinc-500 hover:text-white'}`}
             >
               Todos
@@ -650,7 +652,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
             {BRIEFING_TAGS.map((tag) => (
               <Link
                 key={tag}
-                href={`/newslatter?tag=${encodeURIComponent(tag)}`}
+                href={`/newsletter?tag=${encodeURIComponent(tag)}`}
                 className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] transition-colors ${selectedTag === tag ? 'border-cyan-300/40 bg-cyan-300/10 text-cyan-100' : 'border-zinc-800 text-zinc-500 hover:text-white'}`}
               >
                 {tag}
@@ -699,7 +701,7 @@ export default async function BriefingPage({ searchParams }: PageProps) {
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {remainingPosts.map((post) => (
-              <article key={post.id} className="group rounded-[34px] border border-zinc-800 bg-zinc-950/70 p-7 transition-all duration-500 hover:-translate-y-1 hover:border-cyan-300/35">
+              <article id={post.slug} key={post.id} className="group scroll-mt-28 rounded-[34px] border border-zinc-800 bg-zinc-950/70 p-7 transition-all duration-500 hover:-translate-y-1 hover:border-cyan-300/35">
                 <div className="flex items-center justify-between gap-4">
                   <span className="rounded-full border border-zinc-800 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-amber-200">
                     {post.category}

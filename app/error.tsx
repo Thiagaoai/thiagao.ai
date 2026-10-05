@@ -18,7 +18,7 @@ export default function Error({
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="text-center max-w-md">
-        <h2 className="text-2xl font-bold text-foreground mb-4">
+        <h2 className="font-display text-3xl text-foreground mb-4">
           Algo deu errado!
         </h2>
         <p className="text-muted-foreground mb-6">
@@ -27,13 +27,13 @@ export default function Error({
         <div className="flex gap-4 justify-center">
           <button
             onClick={reset}
-            className="px-6 py-3 bg-accent text-background font-medium rounded-lg hover:bg-accent-hover transition-colors"
+            className="liquid-glass rounded-full px-6 py-3 text-foreground transition-transform hover:scale-[1.03]"
           >
             Tentar novamente
           </button>
           <Link
             href="/"
-            className="px-6 py-3 border border-border text-foreground font-medium rounded-lg hover:bg-muted transition-colors"
+            className="rounded-full border border-white/10 px-6 py-3 text-foreground transition-colors hover:bg-white/5"
           >
             Voltar ao início
           </Link>

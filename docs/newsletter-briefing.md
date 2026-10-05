@@ -1,4 +1,4 @@
-# ThigaoA.i Briefing
+# Thiagao Ai Briefing
 
 Esta e a versao B do site. A landing atual continua intacta em `/`; o teste editorial fica em `/briefing`.
 
@@ -30,7 +30,7 @@ Resend nao e obrigatorio para publicar no site. Ele so e necessario para enviar 
 
 Remetente padrao do projeto:
 
-- `NEWSLETTER_FROM="ThigaoA.i Briefing <dockplus@dockplusai.com>"`
+- `NEWSLETTER_FROM="Thiagao Ai Briefing <dockplus@dockplusai.com>"`
 - `NEWSLETTER_REPLY_TO=dockplus@dockplusai.com`
 
 Passos:
@@ -48,7 +48,7 @@ Passos:
 
 Se preferir separar marca pessoal do email da empresa depois, use:
 
-- `NEWSLETTER_FROM="ThigaoA.i Briefing <briefing@thiagao.io>"`
+- `NEWSLETTER_FROM="Thiagao Ai Briefing <briefing@thiagao.io>"`
 
 Nesse caso, o dominio verificado no Resend precisa ser `thiagao.io`.
 

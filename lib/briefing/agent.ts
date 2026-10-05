@@ -449,7 +449,7 @@ function scoreItem(
 async function fetchFeed(source: FeedSource): Promise<SourceItem[]> {
   const response = await fetch(source.url, {
     headers: {
-      'user-agent': 'ThigaoAiBriefingBot/1.0 (+https://thiagao.io)',
+      'user-agent': 'ThiagaoAiBriefingBot/1.0 (+https://thiagao.io)',
     },
     next: { revalidate: 0 },
   });

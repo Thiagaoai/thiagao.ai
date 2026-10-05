@@ -1,4 +1,4 @@
-export const DEFAULT_NEWSLETTER_FROM = 'ThigaoA.i Briefing <dockplus@dockplusai.com>';
+export const DEFAULT_NEWSLETTER_FROM = 'Thiagao Ai Briefing <dockplus@dockplusai.com>';
 export const DEFAULT_NEWSLETTER_REPLY_TO = 'dockplus@dockplusai.com';
 export const DEFAULT_SITE_URL = 'https://www.thiagao.io';
 

@@ -165,7 +165,7 @@ export default function ThiagaoChat() {
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-200" />
         <p>
           O Chat pode cometer erros. Confira fatos importantes em fontes oficiais antes de
-          publicar, investir, decidir ou compartilhar. O ThigaoA.i nao se responsabiliza por
+          publicar, investir, decidir ou compartilhar. O Thiagao Ai nao se responsabiliza por
           decisoes tomadas apenas com base nas respostas.
         </p>
       </div>

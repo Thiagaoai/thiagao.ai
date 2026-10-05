@@ -10,14 +10,14 @@ type PageProps = {
 
 const newsletterUrl = 'https://www.thiagao.io/newsletter';
 const shareText =
-  'Entrei no ThigaoA.i Briefing: uma newsletter curta sobre IA, big tech e ferramentas novas.';
+  'Entrei no Thiagao Ai Briefing: uma newsletter curta sobre IA, big tech e ferramentas novas.';
 const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${newsletterUrl}`)}`;
 const xShareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(newsletterUrl)}`;
 const linkedInShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(newsletterUrl)}`;
 
 export const metadata = {
-  title: 'Você está dentro - ThigaoA.i Briefing',
-  description: 'Confirmação de inscrição no ThigaoA.i Briefing.',
+  title: 'Você está dentro - Thiagao Ai Briefing',
+  description: 'Confirmação de inscrição no Thiagao Ai Briefing.',
 };
 
 export default async function NewsletterObrigadoPage({ searchParams }: PageProps) {
@@ -32,7 +32,7 @@ export default async function NewsletterObrigadoPage({ searchParams }: PageProps
           <nav className="flex items-center justify-between gap-4">
             <Link href="/" className="flex items-center gap-3">
               <BrandMark className="h-10 w-10 rounded-2xl" />
-              <span className="text-xl font-bold tracking-tight">ThigaoA.i</span>
+              <span className="text-xl font-bold tracking-tight">Thiagao Ai</span>
             </Link>
             <Link
               href="/newsletter"

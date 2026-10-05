@@ -25,7 +25,7 @@ export function renderBriefingText(post: BriefingPost) {
   const sources = post.sources.map((source) => `${source.publisher}: ${source.url}`).join('\n');
 
   return [
-    'ThigaoA.i Daily News',
+    'Thiagao Ai Daily News',
     '',
     post.title,
     '',
@@ -92,10 +92,10 @@ export function renderBriefingEmail(post: BriefingPost) {
                       <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                         <tr>
                           <td valign="top" style="width:96px;">
-                            <img src="${logoUrl}" width="82" height="82" alt="ThigaoA.i" style="display:block;width:82px;height:82px;border-radius:20px;border:1px solid #263241;object-fit:cover;background:#050505;" />
+                            <img src="${logoUrl}" width="82" height="82" alt="Thiagao Ai" style="display:block;width:82px;height:82px;border-radius:20px;border:1px solid #263241;object-fit:cover;background:#050505;" />
                           </td>
                           <td valign="top" style="padding-left:16px;">
-                            <div style="color:#38bdf8;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px;">ThigaoA.i Daily News</div>
+                            <div style="color:#38bdf8;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px;">Thiagao Ai Daily News</div>
                             <div style="color:#94a3b8;font-size:13px;line-height:1.5;">IA, agentes, automação e software para quem constrói.</div>
                           </td>
                         </tr>
@@ -161,7 +161,7 @@ export function renderBriefingEmail(post: BriefingPost) {
             </tr>
             <tr>
               <td style="padding:22px 30px 30px;border-top:1px solid #20242c;background:#07080b;color:#71717a;font-size:12px;line-height:1.65;">
-                Você recebeu este email porque está inscrito no ThigaoA.i Daily News. Responda este email para falar com o Thiago.
+                Você recebeu este email porque está inscrito no Thiagao Ai Daily News. Responda este email para falar com o Thiago.
               </td>
             </tr>
           </table>

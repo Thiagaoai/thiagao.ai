@@ -5,12 +5,17 @@ import { ArrowRight, Loader2, Mail } from 'lucide-react';
 
 type SubmitState = 'idle' | 'loading' | 'success' | 'error';
 
-export default function SubscribeForm() {
+type SubscribeFormProps = {
+  // Recorded with the subscriber so the admin can see where sign-ups come from.
+  source?: string;
+};
+
+export default function SubscribeForm({ source = 'briefing-page' }: SubscribeFormProps) {
   const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
   const [startedAt, setStartedAt] = useState(0);
   const [state, setState] = useState<SubmitState>('idle');
-  const [message, setMessage] = useState('Sem spam. Briefing curto, pratico e com fontes.');
+  const [message, setMessage] = useState('Sem spam. Briefing curto, prático e com fontes.');
 
   useEffect(() => {
     setStartedAt(Date.now());
@@ -28,7 +33,7 @@ export default function SubscribeForm() {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           email: submittedEmail,
-          source: 'briefing-page',
+          source,
           company,
           startedAt,
         }),
@@ -36,20 +41,20 @@ export default function SubscribeForm() {
       const data = (await response.json()) as { ok?: boolean; stored?: boolean; message?: string };
 
       if (!response.ok || !data.ok) {
-        throw new Error(data.message ?? 'Nao foi possivel assinar agora.');
+        throw new Error(data.message ?? 'Não foi possível assinar agora.');
       }
 
       setState('success');
       setMessage(
         data.stored
-          ? 'Assinatura registrada. Proximo passo: aprovar os briefings e ativar o envio.'
-          : 'Preview ativo. Configure o Supabase para gravar assinantes em producao.',
+          ? 'Assinatura registrada. Próximo passo: aprovar os briefings e ativar o envio.'
+          : 'Preview ativo. Configure o Supabase para gravar assinantes em produção.',
       );
       setEmail('');
       window.location.assign(`/newsletter/obrigado?email=${encodeURIComponent(submittedEmail)}`);
     } catch (error) {
       setState('error');
-      setMessage(error instanceof Error ? error.message : 'Nao foi possivel assinar agora.');
+      setMessage(error instanceof Error ? error.message : 'Não foi possível assinar agora.');
     }
   }
 
@@ -67,7 +72,7 @@ export default function SubscribeForm() {
       <div className="liquid-glass flex flex-col gap-3 rounded-[24px] p-3 sm:flex-row">
         <label className="flex flex-1 items-center gap-3 rounded-full bg-white/[0.04] px-5 py-4 text-left text-sm text-zinc-500">
           <Mail className="h-4 w-4 text-cyan-300" />
-          <span className="sr-only">Email para assinar o ThigaoA.i Briefing</span>
+          <span className="sr-only">Email para assinar o Thiagao Ai Briefing</span>
           <input
             value={email}
             onChange={(event) => setEmail(event.target.value)}

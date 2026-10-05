@@ -77,6 +77,14 @@ const nextConfig: NextConfig = {
   // Performance optimizations
   compress: true,
   poweredByHeader: false,
+  async redirects() {
+    return [
+      // The home used to live at /rebrand-preview; the newsletter had a misspelled twin.
+      { source: '/rebrand-preview', destination: '/', permanent: true },
+      { source: '/newslatter', destination: '/newsletter', permanent: true },
+      { source: '/newslatter/obrigado', destination: '/newsletter/obrigado', permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

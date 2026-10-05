@@ -156,8 +156,8 @@ export async function sendCustomNewsletterEmail({
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:680px;border:1px solid rgba(255,255,255,.12);border-radius:28px;overflow:hidden;background:#0b0f14;">
             <tr>
               <td style="padding:34px 30px 20px;">
-                <img src="https://thiagao.io/brand/thigaoai-logo.png" width="74" height="74" alt="ThigaoA.i" style="display:block;border-radius:18px;margin-bottom:22px;" />
-                <div style="font-size:12px;text-transform:uppercase;letter-spacing:.22em;color:#67e8f9;font-weight:800;">ThigaoA.i Breaking Briefing</div>
+                <img src="https://thiagao.io/brand/thigaoai-logo.png" width="74" height="74" alt="Thiagao Ai" style="display:block;border-radius:18px;margin-bottom:22px;" />
+                <div style="font-size:12px;text-transform:uppercase;letter-spacing:.22em;color:#67e8f9;font-weight:800;">Thiagao Ai Breaking Briefing</div>
                 <h1 style="margin:14px 0 0;font-size:34px;line-height:1.05;color:#ffffff;">${headline}</h1>
                 <p style="margin:16px 0 0;font-size:16px;line-height:1.7;color:#a1a1aa;">${preheader}</p>
               </td>

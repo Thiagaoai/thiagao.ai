@@ -47,7 +47,7 @@ export function unauthorizedNewsletterAdminResponse() {
   return new Response('Authentication required.', {
     status: 401,
     headers: {
-      'WWW-Authenticate': 'Basic realm="ThigaoA.i Newsletter Admin", charset="UTF-8"',
+      'WWW-Authenticate': 'Basic realm="Thiagao Ai Newsletter Admin", charset="UTF-8"',
     },
   });
 }

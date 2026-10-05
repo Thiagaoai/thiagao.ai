@@ -51,44 +51,38 @@ O site estará disponível em `http://localhost:3002`
 
 ```
 app/
-├── components/          # Componentes React
-│   ├── Navigation.tsx   # Navegação principal
-│   ├── Hero.tsx         # Seção hero
-│   ├── About.tsx        # Seção sobre
-│   ├── Businesses.tsx   # Seção empresas
-│   ├── Skills.tsx       # Seção habilidades
-│   ├── FaithPurpose.tsx # Seção fé e propósito
-│   ├── Contact.tsx      # Formulário de contato
-│   └── Footer.tsx       # Rodapé
-├── globals.css          # Estilos globais
-├── layout.tsx          # Layout principal
-├── page.tsx             # Página inicial
-├── loading.tsx          # Estado de carregamento
-├── error.tsx            # Tratamento de erros
-└── not-found.tsx        # Página 404
+├── page.tsx                     # Home (server component: busca posts e renderiza HomePage)
+├── components/
+│   ├── home/HomePage.tsx        # Seções da home (client component)
+│   ├── home/LazyVideo.tsx       # Vídeos abaixo da dobra carregados sob demanda
+│   ├── hands-hero/              # Hero com as mãos (WebGL) portado de vikod3/handstouch
+│   └── BrandMark.tsx            # Logo e wordmark
+├── briefing/                    # Newsletter (servida em /newsletter; /briefing é alias)
+├── farmz3d/                     # Loja Farmz3D
+├── reviews-machine/             # Produto DockPlus: Reviews Machine + Missed-Call Text-Back
+├── admin/                       # Painéis (newsletter, Farmz3D)
+├── api/                         # Rotas de API
+├── globals.css                  # Estilos globais
+└── layout.tsx                   # Layout, fontes (next/font) e metadata
+lib/                             # Regras de negócio (briefing, dockplus, farmz3d, typesafe)
+public/media/hands/              # Vídeo e poster do hero
+docs/brand/                      # Fontes do logo (SVG e kit)
 ```
 
 ## 🎨 Personalização
 
-### Cores
+### Marca
 
-As cores podem ser personalizadas em `app/globals.css`:
+Nome e wordmark em `app/components/BrandMark.tsx` (`BRAND_NAME`) e `app/layout.tsx` (`brandName`).
 
-```css
-:root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --accent: #d4a574;
-  --accent-hover: #c49564;
-  --muted: #1a1a1a;
-  --muted-foreground: #a0a0a0;
-  --border: #2a2a2a;
-}
-```
+### Fontes
+
+Carregadas com `next/font` em `app/layout.tsx` (Inter, Instrument Serif) e `app/components/hands-hero/fonts.ts` (Outfit).
+Não usar `@import` do Google Fonts: a CSP do site bloqueia.
 
 ### Conteúdo
 
-O conteúdo pode ser editado diretamente nos componentes em `app/components/`.
+Textos da home em `app/components/home/HomePage.tsx`. Os cards de "Novidades" vêm dos briefings publicados.
 
 ## 🔧 Configuração
 
@@ -108,12 +102,9 @@ images: {
 }
 ```
 
-### Formulário de Contato
+### Newsletter
 
-O formulário de contato atualmente simula o envio. Para integrar com um backend real:
-
-1. Crie uma API route em `app/api/contact/route.ts`
-2. Atualize a função `handleSubmit` em `app/components/Contact.tsx`
+O formulário da home e da página de newsletter grava em `/api/newsletter/subscribe` (Supabase). Veja `docs/newsletter-briefing.md`.
 
 ## 📱 Responsividade
 

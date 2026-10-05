@@ -27,7 +27,7 @@ export default function AdminNewsletterClient({
   const [adminForm, setAdminForm] = useState({ name: '', email: '', password: '' });
   const [mailForm, setMailForm] = useState({
     mode: 'designer' as 'designer' | 'html',
-    subject: 'Breaking: atualização importante da ThigaoA.i',
+    subject: 'Breaking: atualização importante da Thiagao Ai',
     headline: 'Uma notícia importante acabou de entrar no radar.',
     preheader: 'Resumo rápido, contexto e próximos passos para você agir sem perder tempo.',
     cardImageUrl: '',
@@ -361,7 +361,7 @@ export default function AdminNewsletterClient({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={mailForm.cardImageUrl} alt="" className="mb-4 aspect-[16/9] w-full rounded-2xl object-cover" />
                 ) : null}
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">ThigaoA.i Breaking Briefing</p>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">Thiagao Ai Breaking Briefing</p>
                 <h3 className="mt-2 text-2xl font-semibold leading-tight text-white">{mailForm.headline}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-zinc-400">{mailForm.preheader}</p>
               </div>
