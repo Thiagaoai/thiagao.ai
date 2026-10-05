@@ -487,19 +487,28 @@ export default function HomePage({ posts }: { posts: HomePost[] }) {
       </section>
 
       <section id="agentes" className="relative overflow-hidden border-t border-white/10">
-        <div className="absolute inset-0 z-0">
+        {/* Wide screens: the clip is the backdrop of the whole section, kept clear on the left and darkened toward
+            the copy. Below lg the section is several times taller than it is wide, and object-cover would crop the
+            2.4:1 scene to a ~12% sliver of sky, so phones get their own framed copy of the clip inside the grid. */}
+        <div className="absolute inset-0 z-0 hidden lg:block">
           <LazyVideo
             src={media.agents.src}
             poster={media.agents.poster}
             className="h-full w-full object-cover object-[0%_center]"
           />
-          {/* Phones read the copy over the whole scene; wide screens keep the left clear and darken toward the text. */}
-          <div className="absolute inset-0 bg-background/70 lg:hidden" />
-          <div className="absolute inset-0 hidden bg-gradient-to-r from-transparent via-background/75 to-background/95 lg:block" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-background/75 to-background/95" />
           <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent" />
         </div>
 
         <div className="relative z-10 mx-auto grid max-w-7xl gap-10 px-6 py-32 lg:min-h-[820px] lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+          {/* Phones and tablets: the clip sits above the copy, framed on Thiago and the sphere (left 40% of the frame). */}
+          <div className="relative aspect-[4/5] overflow-hidden rounded-[32px] border border-white/10 sm:aspect-[16/10] lg:hidden">
+            <LazyVideo
+              src={media.agents.src}
+              poster={media.agents.poster}
+              className="h-full w-full object-cover object-[20%_center] sm:object-[10%_center]"
+            />
+          </div>
           <div className="hidden lg:block" />
           <div>
             <SectionLabel>O que está movendo dev + IA</SectionLabel>
@@ -678,13 +687,26 @@ export default function HomePage({ posts }: { posts: HomePost[] }) {
         id="projects"
         className="relative flex min-h-[960px] flex-col justify-end overflow-hidden border-t border-white/10 px-6 py-32"
       >
-        <div className="absolute inset-0 z-0 overflow-hidden">
+        {/* Wide screens: the still is the backdrop. Below lg it would be a blurry 9% sliver of sky (same crop
+            problem as the agents clip), so it gets a framed block above the heading instead. */}
+        <div className="absolute inset-0 z-0 hidden overflow-hidden lg:block">
           <Image src={media.wide} alt="" fill sizes="100vw" className="kenburns object-cover object-top" />
           <div className="absolute inset-0 bg-background/70" />
           <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background to-transparent" />
         </div>
 
         <div className="relative z-10 mx-auto w-full max-w-7xl">
+          <div className="relative mb-14 aspect-[4/5] overflow-hidden rounded-[32px] border border-white/10 sm:aspect-[16/10] lg:hidden">
+            {/* Framed on the lighthouse, the house and Thiago at the laptop (right 60% of the frame). The box is
+                taller than the 2.4:1 still, so the image renders ~2.4x the box height wide: ask for a wide candidate. */}
+            <Image
+              src={media.wide}
+              alt="Praia de Cape Cod à noite, com o farol, a casa e Thiago trabalhando no notebook"
+              fill
+              sizes="(min-width: 640px) 160vw, 250vw"
+              className="kenburns object-cover object-[64%_center] sm:object-[70%_center]"
+            />
+          </div>
           <SectionLabel>Projetos e canais</SectionLabel>
           <Heading className="max-w-4xl">
             Onde estou
