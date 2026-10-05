@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR" class="sub">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Skills | Thiagao Ai</title>
+<meta name="description" content="Skills de dev para automatizar tudo: automação de processos, agentes de IA, LangGraph, sites, chatbots e a stack completa que Thiago do Carmo usa.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js" } }</script>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body class="sub" data-shapes="sphere,T" data-x="0.2">
+<div id="cursor"></div>
+<header id="hdr">
+  <a class="brand" href="index.html" aria-label="Thiagao Ai"><img class="mark" src="logo-t.svg" alt=""><span><i>Thiagao</i><b>Ai</b></span></a>
+  <nav class="navpill" id="sitenav" aria-label="Primary"><a href="skills.html">Skills</a><a href="casos.html">Casos</a><a href="projetos.html">Projetos</a><a href="newsletter.html">Newsletter</a><a href="contato.html">Contato</a></nav>
+  <a class="cta" href="https://wa.me/17742077924" target="_blank" rel="noopener"><span class="arr"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 11.8 11.8 4.2M11.8 4.2H5.6M11.8 4.2v6.2"/></svg></span><span class="pill">Começar um projeto</span></a>
+  <button class="navtoggle" id="navToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="sitenav"><span></span><span></span><span></span></button>
+</header>
+<canvas id="stage"></canvas>
+<main class="page">
+
+<section class="hero-s wrap">
+  <p class="eyebrow fade">Skills principais</p>
+  <h1 class="disp"><span class="rv">Skills de dev para</span><span class="rv" data-dot="1" data-d="140">automatizar tudo.</span></h1>
+  <p class="lead fade" data-d="200">Eu faço automação, site, agentes de IA, chatbot, integração, LangGraph, LangSmith e demais soluções customizadas. A proposta é simples: transformar operação manual em software útil.</p>
+</section>
+<section class="blk"><div class="wrap">
+  <div class="md">
+    <ol class="md-list" id="mdList"></ol>
+    <div class="md-detail glass fade" id="mdDetail">
+      <p class="eyebrow" id="mdN"></p><h3 id="mdT"></h3><p id="mdP"></p><div class="chips" id="mdC"></div>
+      <div class="md-bar"><i id="mdBar"></i></div>
+    </div>
+  </div>
+</div></section>
+<section class="blk" id="ferramentas"><div class="wrap">
+  <div class="head"><div><p class="eyebrow">Stack completo</p><h2 class="disp"><span class="rv" data-dot="1">Ferramentas que uso</span><span class="rv" data-dot="1" data-d="140">para criar soluções.</span></h2></div>
+  <p class="lead fade">Por área: o que entra no dia a dia de dev, automação, IA, agentes, labs e infra. Sem lista de vitrine, só o que uso em projeto. Toque em qualquer ferramenta para ver o que é e para que eu uso.</p></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="chips-cloud" id="cloud"></div>
+  <div class="about glass" id="about"><h4 id="abN"></h4><p id="abP"></p></div>
+</div></section>
+
+</main>
+<footer class="site"><div class="wrap">
+  <div class="cols">
+    <div class="about-f"><a class="brand" href="index.html"><img class="mark" src="logo-t.svg" alt=""><span><i>Thiagao</i><b>Ai</b></span></a>
+      <p>Dev log, newsletter e base pública das minhas skills em IA, automação, web e operação.</p>
+      <span class="made">Feito à noite, em Cape Cod, MA</span></div>
+    <div class="links"><div><h5>Site</h5><a href="skills.html">Skills</a><a href="casos.html">Casos</a><a href="projetos.html">Projetos</a><a href="newsletter.html">Newsletter</a></div><div><h5>Canais</h5><a href="https://instagram.com/thiagaoAi">@thiagaoAi</a><a href="https://instagram.com/solocodando">@solocodando</a><a href="https://dockplusai.io">DockPlus AI</a></div><div><h5>Contato</h5><a href="https://wa.me/17742077924">WhatsApp</a><a href="https://t.me/thiagaoai">Telegram</a><a href="mailto:dockplus@dockplusai.com">Email</a><a href="https://instagram.com/thiagaoAi">Instagram</a></div><div><h5>Stack</h5><a href="skills.html#ferramentas">LangGraph</a><a href="skills.html#ferramentas">LangSmith</a><a href="skills.html#ferramentas">Next.js</a><a href="skills.html#ferramentas">n8n</a></div></div>
+  </div>
+  <div class="copy"><span>© <span id="yr">2026</span> Thiagao Ai by Thiago do Carmo. Todos os direitos reservados.</span>
+    <nav><a href="https://instagram.com/thiagaoAi">Instagram</a><a href="https://instagram.com/solocodando">Solo Codando</a><a href="https://dockplusai.io">DockPlus AI</a></nav></div>
+</div></footer>
+<script src="shared.js"></script>
+<script>
+
+(function(){
+var SK=[{"title": "Automação de processos", "text": "Crio fluxos que tiram trabalho repetitivo da operação: entrada de lead, qualificação, follow-up, CRM, planilhas e notificações.", "points": ["n8n avançado", "Make / Maker", "GoHighLevel / GHL", "Telegram Bots e WhatsApp"]}, {"title": "Agentes de IA", "text": "Desenho agentes com ferramentas, memória, guardrails e handoffs. A IA não fica só no chat: ela executa tarefas em sistemas reais.", "points": ["OpenAI Agents SDK", "Claude Code / Cowork", "Gemini / Manus / OpenClaw", "RAG, LLM e fine-tune"]}, {"title": "LangGraph + LangSmith", "text": "Monto fluxos agentic com estado, ramificações, observabilidade, tracing, avaliação e debugging para sair do protótipo e ir para produção.", "points": ["LangGraph workflows", "LangSmith tracing", "Evals e datasets", "Monitoramento de agentes"]}, {"title": "Sites e landing pages", "text": "Faço sites modernos com copy, design, performance e integração com automação. Cada página vira uma peça do funil.", "points": ["Next.js / React", "Bun / Node.js", "VPS / Railway", "Formulários conectados"]}, {"title": "Chatbots customizados", "text": "Construo assistentes para atendimento, vendas, FAQ, captação e suporte, treinados no contexto de cada negócio.", "points": ["WhatsApp e Telegram", "Webchat no site", "Qualificação de leads", "Escalação humana"]}, {"title": "Integrações e backend", "text": "Conecto ferramentas que normalmente ficam soltas: banco de dados, dashboards, CRM, pagamentos, arquivos e APIs.", "points": ["Python / TypeScript", "Terminal / VS Code / Cursor", "Nodes customizados", "Jobs e filas leves"]}, {"title": "Soluções customizadas", "text": "Além de automação e site, desenho soluções sob medida para operação, vendas, dados, conteúdo e atendimento.", "points": ["Dashboards e BI", "Scraping e enrichment", "SEO + conteúdo", "Treinamentos e SOPs"]}], SG=[{"title": "Dev", "items": [{"name": "Next.js", "about": "Framework React para sites e apps web com renderização no servidor e rotas de API. É a base deste site e das landing pages que entrego."}, {"name": "TypeScript", "about": "JavaScript com tipos. Pega erro antes de rodar e deixa o código de sites, agentes e integrações mais seguro de manter."}, {"name": "Java", "about": "Linguagem robusta e tipada, muito usada em sistemas corporativos e Android. Uso em backends e integrações que pedem estabilidade e escala."}, {"name": "Bun", "about": "Runtime JavaScript rápido, com gerenciador de pacotes e bundler embutidos. Uso para scripts, servidores leves e builds mais ágeis."}, {"name": "Python", "about": "Linguagem versátil e fácil de ler. Minha escolha para automações, scripts, raspagem de dados, APIs e tudo que envolve IA e dados."}, {"name": "Node.js", "about": "JavaScript rodando no servidor. Sustenta APIs, bots, webhooks e as automações que precisam ficar no ar 24/7."}, {"name": "Nodes", "about": "Nós customizados para n8n: quando um passo não existe pronto, eu escrevo o nó em código e ele vira peça reutilizável nos fluxos."}, {"name": "VS Code", "about": "Editor de código onde eu trabalho, com agentes de IA integrados ao projeto para revisar, refatorar e testar."}, {"name": "Cursor", "about": "Editor baseado no VS Code com IA nativa. Uso para prototipar rápido e para edições guiadas em bases grandes."}, {"name": "Terminal", "about": "Linha de comando: deploy, logs, servidores, git e agentes de código. É onde a maior parte do trabalho real acontece."}]}, {"title": "Automação", "items": [{"name": "n8n", "about": "Plataforma de automação visual e open source que conecta APIs, bancos e IA em fluxos. Meu orquestrador principal: captura de lead, CRM, follow-up e agentes."}, {"name": "Make", "about": "Automação visual na nuvem (ex-Integromat). Uso em cenários mais simples ou quando o cliente já opera nele."}, {"name": "GHL", "about": "GoHighLevel: CRM com funis, agendamento, SMS e e-mail para negócios locais. Conecto automações e IA por cima dele."}, {"name": "APIs", "about": "Interfaces que deixam sistemas conversarem entre si. Integro as existentes e crio APIs próprias para expor dados e ações."}, {"name": "Webhooks", "about": "Avisos automáticos que um sistema envia quando algo acontece: novo lead, pagamento, mensagem. São o gatilho de quase toda automação."}, {"name": "CRM", "about": "Sistema de relacionamento com clientes. Monto e integro CRMs para que lead, conversa e venda fiquem registrados e acionáveis."}, {"name": "Telegram Bots", "about": "Bots que recebem comandos e mensagens no Telegram. Uso para alertas, aprovações, atendimento e controle de automações pelo celular."}, {"name": "Sites", "about": "Sites e landing pages conectados à operação: o formulário entra no CRM, dispara automação e alimenta o funil."}]}, {"title": "IA / Agents", "items": [{"name": "OpenAI", "about": "Modelos GPT e o Agents SDK. Uso em chatbots, classificação, extração de dados e agentes com ferramentas."}, {"name": "Claude Code", "about": "Agente de programação da Anthropic que trabalha direto no repositório. É com ele que eu construo e mantenho boa parte dos projetos."}, {"name": "Claude Cowork", "about": "Versão do Claude para trabalhar em pastas e documentos, fora do código. Uso para pesquisa, planejamento e material de cliente."}, {"name": "Gemini", "about": "Modelos do Google, fortes em contexto longo, imagem e vídeo. Uso em análise de documentos e geração multimodal."}, {"name": "LangGraph", "about": "Biblioteca para montar agentes como grafos com estado, ramificações e retomada. Serve para fluxos de IA que precisam ir para produção."}, {"name": "LangSmith", "about": "Observabilidade para apps de IA: rastreia cada passo do agente, avalia respostas e ajuda a depurar comportamento."}, {"name": "LLM", "about": "Modelo de linguagem grande, o motor por trás de ChatGPT, Claude e Gemini. Escolho o modelo certo para cada tarefa e custo."}, {"name": "Fine-tune", "about": "Treinar um modelo com exemplos do próprio negócio para ele responder no tom e no formato certos."}, {"name": "Agents", "about": "Sistemas de IA que planejam, usam ferramentas e executam tarefas em vez de só responder. É o centro do que eu entrego hoje."}]}, {"title": "Labs / Infra", "items": [{"name": "OpenClaw", "about": "Agente de IA open source que roda na sua própria máquina ou VPS e conversa por WhatsApp, Telegram e outros canais. Testo como assistente pessoal e operacional."}, {"name": "Hermes Nous", "about": "Agente open source da Nous Research, com memória e habilidades que evoluem com o uso. Estou explorando para tarefas autônomas longas."}, {"name": "Manus", "about": "Agente autônomo que executa tarefas de ponta a ponta na web: pesquisa, navega e entrega o resultado. Uso em pesquisa e prototipagem."}, {"name": "ComfyUI", "about": "Editor em nós para geração de imagem e vídeo com IA. Uso para criar material visual e automatizar pipelines criativos."}, {"name": "Pinokio", "about": "Instalador de apps de IA locais com um clique. Deixa testar modelos e ferramentas no próprio computador sem configurar nada na mão."}, {"name": "VPS", "about": "Servidor virtual próprio onde rodam n8n, bots e agentes 24/7, com controle total de custo e dados."}, {"name": "Railway", "about": "Plataforma de deploy que sobe apps, bancos e workers a partir do GitHub. Uso para publicar APIs e serviços rápido."}, {"name": "MCP", "about": "Model Context Protocol: padrão aberto para conectar agentes de IA a ferramentas e dados. Construo servidores MCP para os agentes acessarem sistemas reais."}]}];
+var $=function(s){return document.querySelector(s)};
+var list=$('#mdList'),cur=0,timer=null,auto=true;
+SK.forEach(function(s,i){
+  var li=document.createElement('li'),b=document.createElement('button');
+  b.className='md-item';b.type='button';b.innerHTML='<span class="n">&lt;p&gt;<b>0'+(i+1)+'</b>&lt;/p&gt;</span><span class="t"></span>';
+  b.querySelector('.t').textContent=s.title;
+  b.addEventListener('click',function(){auto=false;select(i)});
+  b.addEventListener('pointerenter',function(e){if(e.pointerType==='mouse'){auto=false;select(i)}});
+  li.appendChild(b);list.appendChild(li);
+});
+function select(i){
+  cur=i;var s=SK[i];
+  list.querySelectorAll('.md-item').forEach(function(b,k){b.classList.toggle('on',k===i)});
+  $('#mdN').textContent='<p>0'+(i+1)+'</p>';$('#mdT').textContent=s.title;$('#mdP').textContent=s.text;
+  var c=$('#mdC');c.innerHTML='';s.points.forEach(function(p){var x=document.createElement('span');x.className='chip';x.textContent=p;c.appendChild(x)});
+  var bar=$('#mdBar');bar.classList.remove('run');void bar.offsetWidth;if(auto)bar.classList.add('run');
+}
+select(0);
+setInterval(function(){if(auto)select((cur+1)%SK.length)},4200);
+/* glossary */
+var tabs=$('#tabs'),cloud=$('#cloud'),gi=0;
+SG.forEach(function(g,i){var b=document.createElement('button');b.type='button';b.className='chip';b.textContent=g.title;b.addEventListener('click',function(){group(i)});tabs.appendChild(b)});
+function group(i){
+  gi=i;tabs.querySelectorAll('.chip').forEach(function(b,k){b.classList.toggle('on',k===i)});
+  cloud.innerHTML='';
+  SG[i].items.forEach(function(it,k){var b=document.createElement('button');b.type='button';b.className='chip';b.textContent=it.name;b.addEventListener('click',function(){tool(it,b)});cloud.appendChild(b)});
+  tool(SG[i].items[0],cloud.firstChild);
+}
+function tool(it,btn){cloud.querySelectorAll('.chip').forEach(function(b){b.classList.toggle('on',b===btn)});$('#abN').textContent=it.name;$('#abP').textContent=it.about}
+group(0);
+})();
+</script>
+<script type="module" src="stage.js"></script>
+</body>
+</html>

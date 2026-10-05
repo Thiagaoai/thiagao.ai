@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR" class="sub">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Newsletter | Thiagao Ai</title>
+<meta name="description" content="Newsletter de automação e IA: dev log direto sobre o que Thiago do Carmo está criando com IA, automações, sites e agentes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js" } }</script>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body class="sub" data-shapes="rings,T" data-x="0.2">
+<div id="cursor"></div>
+<header id="hdr">
+  <a class="brand" href="index.html" aria-label="Thiagao Ai"><img class="mark" src="logo-t.svg" alt=""><span><i>Thiagao</i><b>Ai</b></span></a>
+  <nav class="navpill" id="sitenav" aria-label="Primary"><a href="skills.html">Skills</a><a href="casos.html">Casos</a><a href="projetos.html">Projetos</a><a href="newsletter.html">Newsletter</a><a href="contato.html">Contato</a></nav>
+  <a class="cta" href="https://wa.me/17742077924" target="_blank" rel="noopener"><span class="arr"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 11.8 11.8 4.2M11.8 4.2H5.6M11.8 4.2v6.2"/></svg></span><span class="pill">Começar um projeto</span></a>
+  <button class="navtoggle" id="navToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="sitenav"><span></span><span></span><span></span></button>
+</header>
+<canvas id="stage"></canvas>
+<main class="page">
+
+<section class="hero-s wrap" style="justify-content:center">
+  <div class="nl">
+    <div>
+      <p class="eyebrow fade">Diário de bordo</p>
+      <h1 class="disp"><span class="rv">Newsletter de</span><span class="rv" data-dot="1" data-d="140">automação e IA.</span></h1>
+      <p class="lead fade" data-d="200">Um dev log direto sobre o que estou criando com IA, automações, sites, agentes, DockPlus AI e Solo Codando. Conteúdo para quem quer construir, não só consumir hype.</p>
+      <form class="form glass fade" id="nlForm" data-d="300" novalidate>
+        <input class="hp" type="text" id="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="row"><input type="email" id="em" required placeholder="seu@email.com" aria-label="Email para assinar o Thiagao Ai Briefing"><button class="btn-w" id="sub" type="submit">Assinar <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 11.8 11.8 4.2M11.8 4.2H5.6M11.8 4.2v6.2"/></svg></button></div>
+        <p class="msg" id="msg">Sem spam. Briefing curto, prático e com fontes.</p>
+      </form>
+    </div>
+    <div class="term glass fade" data-d="150"><div class="bar"><i></i><i></i><i></i><span>briefing --topics</span></div><ul><li>prompts úteis para devs e founders</li><li>fluxos n8n explicados sem enrolação</li><li>Make, GHL, Railway, VPS e deploy real</li><li>templates de landing page + automação</li><li>LangGraph, LangSmith, MCP, RAG e tool calling</li><li>bastidores da DockPlus AI e Solo Codando</li></ul></div>
+  </div>
+</section>
+<section class="blk"><div class="wrap">
+  <p class="eyebrow">Diário de bordo</p>
+  <p class="quote rv" style="display:block;white-space:normal" id="quote">Bastidores do que estou montando, quebrando e melhorando.</p>
+  <p style="margin-top:36px"><a class="linkrow" href="https://thiagao.io/newsletter">Ver todas as edições <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 11.8 11.8 4.2M11.8 4.2H5.6M11.8 4.2v6.2"/></svg></a></p>
+</div></section>
+
+</main>
+<footer class="site"><div class="wrap">
+  <div class="cols">
+    <div class="about-f"><a class="brand" href="index.html"><img class="mark" src="logo-t.svg" alt=""><span><i>Thiagao</i><b>Ai</b></span></a>
+      <p>Dev log, newsletter e base pública das minhas skills em IA, automação, web e operação.</p>
+      <span class="made">Feito à noite, em Cape Cod, MA</span></div>
+    <div class="links"><div><h5>Site</h5><a href="skills.html">Skills</a><a href="casos.html">Casos</a><a href="projetos.html">Projetos</a><a href="newsletter.html">Newsletter</a></div><div><h5>Canais</h5><a href="https://instagram.com/thiagaoAi">@thiagaoAi</a><a href="https://instagram.com/solocodando">@solocodando</a><a href="https://dockplusai.io">DockPlus AI</a></div><div><h5>Contato</h5><a href="https://wa.me/17742077924">WhatsApp</a><a href="https://t.me/thiagaoai">Telegram</a><a href="mailto:dockplus@dockplusai.com">Email</a><a href="https://instagram.com/thiagaoAi">Instagram</a></div><div><h5>Stack</h5><a href="skills.html#ferramentas">LangGraph</a><a href="skills.html#ferramentas">LangSmith</a><a href="skills.html#ferramentas">Next.js</a><a href="skills.html#ferramentas">n8n</a></div></div>
+  </div>
+  <div class="copy"><span>© <span id="yr">2026</span> Thiagao Ai by Thiago do Carmo. Todos os direitos reservados.</span>
+    <nav><a href="https://instagram.com/thiagaoAi">Instagram</a><a href="https://instagram.com/solocodando">Solo Codando</a><a href="https://dockplusai.io">DockPlus AI</a></nav></div>
+</div></footer>
+<script src="shared.js"></script>
+<script>
+
+(function(){
+var f=document.getElementById('nlForm'),em=document.getElementById('em'),msg=document.getElementById('msg'),btn=document.getElementById('sub');
+var t0=Date.now(),API=/(^|\.)thiagao\.io$/.test(location.hostname)?'/api/newsletter/subscribe':'https://thiagao.io/api/newsletter/subscribe';
+function say(t,c){msg.textContent=t;msg.className='msg '+(c||'')}
+f.addEventListener('submit',function(ev){
+  ev.preventDefault();var email=em.value.trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){say('Digite um email válido.','err');em.focus();return}
+  btn.disabled=true;say('Conectando com o briefing...');
+  fetch(API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:email,source:'newsletter-page',company:document.getElementById('hp').value,startedAt:t0})})
+  .then(function(r){return r.json().then(function(d){return{r:r,d:d}})})
+  .then(function(x){
+    if(!x.r.ok||!x.d.ok)throw new Error(x.d.message||'Não foi possível assinar agora.');
+    say(x.d.stored?'Assinatura registrada. Próximo passo: aprovar os briefings e ativar o envio.':'Preview ativo. Configure o Supabase para gravar assinantes em produção.','ok');
+    em.value='';setTimeout(function(){location.href='https://thiagao.io/newsletter/obrigado?email='+encodeURIComponent(email)},900);
+  })
+  .catch(function(err){
+    if(err instanceof TypeError){say('Não consegui enviar daqui. Assine direto em thiagao.io/#newsletter.','err');setTimeout(function(){window.open('https://thiagao.io/#newsletter','_blank','noopener')},600)}
+    else say(err.message,'err');
+  }).then(function(){btn.disabled=false});
+});
+var q=document.getElementById('quote');q.classList.remove('rv');q.classList.add('fade');window.KCUI.observe(q);
+})();
+</script>
+<script type="module" src="stage.js"></script>
+</body>
+</html>

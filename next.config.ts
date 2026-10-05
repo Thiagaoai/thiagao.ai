@@ -115,6 +115,33 @@ const nextConfig: NextConfig = {
         headers: securityHeaders,
       },
       {
+        // Standalone Thiagao Ai landing pages (public/kernelcode) load three.js from jsDelivr and the
+        // Schibsted Grotesk font from Google Fonts, so they get a CSP that allows exactly those hosts.
+        // Declared after the global rule so this value wins for the same header key.
+        source: '/kernelcode/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "base-uri 'self'",
+              "object-src 'none'",
+              "frame-ancestors 'none'",
+              "form-action 'self'",
+              "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "img-src 'self' data: blob: https://d8j0ntlcm91z4.cloudfront.net",
+              "font-src 'self' data: https://fonts.gstatic.com",
+              "media-src 'self'",
+              "connect-src 'self' https://thiagao.io https://www.thiagao.io",
+              isDev ? null : 'upgrade-insecure-requests',
+            ]
+              .filter(Boolean)
+              .join('; '),
+          },
+        ],
+      },
+      {
         // Pages only (anything without a dot, outside /api and /_next). Browsers must
         // revalidate the HTML on every visit: the ISR default (s-maxage with a year of
         // stale-while-revalidate) let Chrome keep showing the previous deploy and only
