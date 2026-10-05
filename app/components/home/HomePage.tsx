@@ -813,7 +813,7 @@ export default function HomePage({ posts }: { posts: HomePost[] }) {
                   transition={{ delay: index * 0.08, duration: 0.5 }}
                   className="group rounded-[28px] border border-white/10 bg-white/[0.04] transition-colors hover:bg-white/[0.07]"
                 >
-                  <a href={`/newsletter#${post.slug}`} className="block p-8">
+                  <a href={`/newsletter/${post.slug}`} className="block p-8">
                     <div className="flex items-center justify-between gap-4">
                       <span className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">
                         {post.category}

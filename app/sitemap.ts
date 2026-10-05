@@ -1,8 +1,14 @@
 import type { MetadataRoute } from 'next';
+import { getPublishedBriefings } from '@/lib/briefing/posts';
 
 const siteUrl = 'https://thiagao.io';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+// The sitemap is otherwise frozen at build time (the Docker build has no Supabase env), so new editions
+// would never appear; revalidating hourly makes it pick them up.
+export const revalidate = 3600;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const { posts } = await getPublishedBriefings({ limit: 60 });
   return [
     {
       url: siteUrl,
@@ -28,5 +34,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.7,
     },
+    ...posts.map((post) => ({
+      url: `${siteUrl}/newsletter/${post.slug}`,
+      lastModified: new Date(post.publishedAt ?? post.createdAt),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    })),
   ];
 }

@@ -23,6 +23,8 @@ import ThiagaoChat from './ThiagaoChat';
 import ToolBriefingCards from './ToolBriefingCards';
 import { BRIEFING_TAGS } from '@/lib/briefing/types';
 import { getPublishedBriefings } from '@/lib/briefing/posts';
+import { formatEditionDate } from '@/lib/briefing/edition';
+import EditionItems from '../newsletter/EditionItems';
 
 type PageProps = {
   searchParams?: Promise<{
@@ -156,32 +158,12 @@ const weeklyNewsSources = [
   { label: 'OpenClaw: análise de risco', href: 'https://arxiv.org/abs/2604.04759' },
 ];
 
-const recurringCadence = [
-  {
-    day: 'Segunda',
-    title: 'Radar IA e big tech',
-    text: 'Modelos, updates de plataformas e sinais fortes para começar a semana.',
-  },
-  {
-    day: 'Terça',
-    title: 'Ferramentas e automação',
-    text: 'Apps, agentes, no-code, devtools e workflows que valem teste real.',
-  },
-  {
-    day: 'Quarta',
-    title: 'Aplicação prática',
-    text: 'Como transformar novidade em conteúdo, funil, produto, pesquisa ou operação.',
-  },
-  {
-    day: 'Quinta',
-    title: 'Mercado e criadores',
-    text: 'Movimentos de startups, big tech, social, mídia e oportunidades para builders.',
-  },
-  {
-    day: 'Sexta',
-    title: 'Resumo da semana',
-    text: 'O que ficou, o que foi barulho e quais links merecem entrar na lista.',
-  },
+const editionAnatomy = [
+  { label: 'Manchete', title: 'O fato do dia', text: 'A notícia que puxa a edição, com contexto e fonte.' },
+  { label: 'Notícias', title: '5 a 7 histórias, fontes diferentes', text: 'Modelos, open source, agentes, ferramentas, mercado, hardware e regulação. Nunca só ChatGPT.' },
+  { label: 'Para testar hoje', title: 'Uma ferramenta', text: 'Algo que você consegue abrir e experimentar no mesmo dia.' },
+  { label: 'Take do dia', title: 'O que fazer com isso', text: 'Uma ou duas frases acionáveis para dev, criador ou negócio.' },
+  { label: 'Compartilhar', title: 'Pronto para encaminhar', text: 'Link da edição e texto curto para WhatsApp, X e LinkedIn.' },
 ];
 
 export const metadata = {
@@ -635,12 +617,25 @@ export default async function BriefingPage({ searchParams }: PageProps) {
                     <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-600">
                       Score {featured.relevanceScore} · {featured.readingMinutes} min
                     </span>
+                    {featured.publishedAt ? (
+                      <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">
+                        {formatEditionDate(featured.publishedAt)}
+                      </span>
+                    ) : null}
                   </div>
                   <h3 className="max-w-4xl text-4xl font-semibold leading-tight tracking-tight text-white md:text-5xl">
                     {featured.title}
                   </h3>
                   <p className="mt-6 max-w-3xl text-lg leading-relaxed text-zinc-300">{featured.dek}</p>
-                  <p className="mt-6 max-w-3xl text-base leading-relaxed text-zinc-500">{featured.brief}</p>
+                  <div className="mt-6 max-w-3xl">
+                    <EditionItems post={featured} compact />
+                  </div>
+                  <Link
+                    href={`/newsletter/${featured.slug}`}
+                    className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-cyan-200 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/60"
+                  >
+                    Ler a edição completa <ArrowRight className="h-4 w-4" />
+                  </Link>
                 </div>
                 <div className="rounded-[30px] border border-zinc-800 bg-black/45 p-6">
                   <Gauge className="h-7 w-7 text-cyan-200" />
@@ -664,19 +659,25 @@ export default async function BriefingPage({ searchParams }: PageProps) {
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {remainingPosts.map((post) => (
-              <article id={post.slug} key={post.id} className="group scroll-mt-28 rounded-[34px] border border-zinc-800 bg-zinc-950/70 p-7 transition-all duration-500 hover:-translate-y-1 hover:border-cyan-300/35">
-                <div className="flex items-center justify-between gap-4">
-                  <span className="rounded-full border border-zinc-800 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-amber-200">
-                    {post.category}
-                  </span>
-                  <span className="text-xs text-zinc-600">Score {post.relevanceScore}</span>
-                </div>
-                <h3 className="mt-8 text-3xl font-semibold leading-tight tracking-tight text-white">{post.title}</h3>
-                <p className="mt-5 text-base leading-relaxed text-zinc-400">{post.dek}</p>
-                <div className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-cyan-200">
-                  Ler briefing <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </div>
-              </article>
+              <Link
+                key={post.id}
+                href={`/newsletter/${post.slug}`}
+                className="group block rounded-[34px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/60"
+              >
+                <article id={post.slug} className="h-full scroll-mt-28 rounded-[34px] border border-zinc-800 bg-zinc-950/70 p-7 transition-all duration-500 hover:-translate-y-1 hover:border-cyan-300/35">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="rounded-full border border-zinc-800 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-amber-200">
+                      {post.category}
+                    </span>
+                    <span className="text-xs text-zinc-600">Score {post.relevanceScore}</span>
+                  </div>
+                  <h3 className="mt-8 text-3xl font-semibold leading-tight tracking-tight text-white">{post.title}</h3>
+                  <p className="mt-5 text-base leading-relaxed text-zinc-400">{post.dek}</p>
+                  <div className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-cyan-200">
+                    Ler edição <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </div>
+                </article>
+              </Link>
             ))}
           </div>
         </div>
@@ -793,28 +794,33 @@ export default async function BriefingPage({ searchParams }: PageProps) {
             <div className="grid gap-3">
               {footerEditions.length > 0 ? (
                 footerEditions.map((post, index) => (
-                  <article
+                  <Link
                     key={post.id}
-                    className="grid grid-cols-[auto_1fr] gap-4 rounded-[26px] border border-white/10 bg-zinc-950/70 p-4 transition-colors hover:border-cyan-300/35"
+                    href={`/newsletter/${post.slug}`}
+                    className="group block rounded-[26px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/60"
                   >
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/20 bg-cyan-300/10 text-sm font-black text-cyan-100">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-full border border-zinc-800 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-200">
-                          {post.category}
-                        </span>
-                        <span className="text-xs text-zinc-600">{post.readingMinutes} min</span>
+                    <article
+                      className="grid grid-cols-[auto_1fr] gap-4 rounded-[26px] border border-white/10 bg-zinc-950/70 p-4 transition-colors group-hover:border-cyan-300/35"
+                    >
+                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-cyan-300/20 bg-cyan-300/10 text-sm font-black text-cyan-100">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="rounded-full border border-zinc-800 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-200">
+                            {post.category}
+                          </span>
+                          <span className="text-xs text-zinc-600">{post.readingMinutes} min</span>
+                        </div>
+                        <h3 className="mt-3 text-xl font-semibold leading-tight text-white">
+                          {post.title}
+                        </h3>
+                        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-zinc-400">
+                          {post.dek}
+                        </p>
                       </div>
-                      <h3 className="mt-3 text-xl font-semibold leading-tight text-white">
-                        {post.title}
-                      </h3>
-                      <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-zinc-400">
-                        {post.dek}
-                      </p>
-                    </div>
-                  </article>
+                    </article>
+                  </Link>
                 ))
               ) : (
                 <div className="rounded-[28px] border border-white/10 bg-zinc-950/70 p-6 text-sm leading-relaxed text-zinc-400">
@@ -828,21 +834,21 @@ export default async function BriefingPage({ searchParams }: PageProps) {
           <div className="rounded-[34px] border border-white/10 bg-zinc-950/70 p-6 shadow-[0_30px_90px_rgba(0,0,0,0.38)]">
             <div className="mb-6">
               <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200">
-                Recorrência semanal
+                Recorrência diária
               </p>
               <h3 className="mt-3 text-3xl font-semibold leading-tight tracking-tight text-white">
-                O que entra nos próximos dias.
+                O que vem em cada edição.
               </h3>
             </div>
             <div className="grid gap-3">
-              {recurringCadence.map((item) => (
+              {editionAnatomy.map((item) => (
                 <div
-                  key={item.day}
+                  key={item.label}
                   className="rounded-[22px] border border-white/10 bg-white/[0.035] p-4"
                 >
                   <div className="flex items-center justify-between gap-4">
                     <span className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">
-                      {item.day}
+                      {item.label}
                     </span>
                     <Clock3 className="h-4 w-4 text-cyan-200" />
                   </div>
