@@ -42,3 +42,6 @@ next-env.d.ts
 
 # local demo database (npm run farmz3d:local)
 /.data/
+
+# git worktrees (superpowers)
+/.worktrees
