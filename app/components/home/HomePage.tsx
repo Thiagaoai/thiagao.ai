@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   ArrowRight,
   Bot,
@@ -794,9 +795,9 @@ export default function HomePage({ posts }: { posts: HomePost[] }) {
                 do briefing.
               </Heading>
             </div>
-            <a href="/newsletter" className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground">
+            <Link href="/newsletter" className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground">
               Ver todas as edições <ArrowRight className="h-4 w-4" />
-            </a>
+            </Link>
           </div>
 
           {posts.length === 0 ? (
