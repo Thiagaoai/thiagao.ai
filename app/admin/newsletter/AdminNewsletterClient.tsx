@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { ChangeEvent, FormEvent } from 'react';
 import { CheckCircle2, Copy, Eye, FileCode2, ImagePlus, KeyRound, Loader2, MessageCircle, Radio, Send, Sparkles, UserPlus } from 'lucide-react';
 import type { AdminUser } from '@/lib/briefing/admin-users';
@@ -15,6 +16,7 @@ export default function AdminNewsletterClient({
   initialAdmins: AdminUser[];
   adminsReady: boolean;
 }) {
+  const router = useRouter();
   const [drafts, setDrafts] = useState(initialDrafts);
   const [admins, setAdmins] = useState(initialAdmins);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -24,6 +26,8 @@ export default function AdminNewsletterClient({
   const [uploadBusy, setUploadBusy] = useState(false);
   const [whatsappBusyId, setWhatsappBusyId] = useState<string | null>(null);
   const [whatsappText, setWhatsappText] = useState('');
+  const [editionBusy, setEditionBusy] = useState<'preview' | 'send' | null>(null);
+  const [editionResult, setEditionResult] = useState('');
   const [adminForm, setAdminForm] = useState({ name: '', email: '', password: '' });
   const [mailForm, setMailForm] = useState({
     mode: 'designer' as 'designer' | 'html',
@@ -32,7 +36,7 @@ export default function AdminNewsletterClient({
     preheader: 'Resumo rápido, contexto e próximos passos para você agir sem perder tempo.',
     cardImageUrl: '',
     ctaLabel: 'Ler briefing completo',
-    ctaUrl: 'https://www.thiagao.io/newslatter',
+    ctaUrl: 'https://www.thiagao.io/newsletter',
     html:
       '<p>Esta é uma comunicação especial enviada fora do briefing diário.</p><p><strong>Contexto:</strong> explique aqui o que aconteceu, por que importa e qual ação você recomenda.</p>',
   });
@@ -64,6 +68,37 @@ export default function AdminNewsletterClient({
       setMessage(error instanceof Error ? error.message : 'Falha ao publicar.');
     } finally {
       setBusyId(null);
+    }
+  }
+
+  async function runEdition(mode: 'preview' | 'send') {
+    if (mode === 'send' && !window.confirm('Isso cria uma edição nova agora e envia o email para TODOS os assinantes ativos, mesmo que a edição de hoje já tenha saído. Continuar?')) return;
+    setEditionBusy(mode);
+    setEditionResult('');
+    try {
+      const response = await fetch('/api/agent/daily-digest', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(mode === 'preview' ? { dryRun: true } : { force: true }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.message ?? data.email?.reason ?? 'Falhou.');
+      const draft = data.draft ?? data.post;
+      const lines = [
+        `Redator: ${data.writer}`,
+        `Manchete: ${draft?.title ?? '-'}`,
+        `Assunto: ${draft?.subject ?? '-'}`,
+        ...((draft?.items ?? []) as { title: string; source: { publisher: string } }[]).map((item, index) => `${index + 1}. ${item.title} (${item.source.publisher})`),
+        ...(data.email ? [`Email: ${data.email.sent ? `${data.email.delivered} enviados` : data.email.reason}`] : []),
+        '',
+        ...((data.notes ?? data.run?.notes ?? []) as string[]),
+      ];
+      setEditionResult(lines.join('\n'));
+      if (mode === 'send') router.refresh();
+    } catch (error) {
+      setEditionResult(error instanceof Error ? error.message : 'Falhou.');
+    } finally {
+      setEditionBusy(null);
     }
   }
 
@@ -404,6 +439,39 @@ export default function AdminNewsletterClient({
         </div>
       </section>
 
+      <section className="mb-8 rounded-[30px] border border-white/10 bg-zinc-950/70 p-6">
+        <div className="mb-5">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-200">Newsletter diária</p>
+          <h2 className="mt-2 text-2xl font-semibold text-white">Edição de hoje</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-zinc-400">
+            A pré-visualização roda o coletor e o redator (uma chamada ao DeepSeek) sem gravar nada. A geração pode levar alguns minutos; se o painel der timeout, confira em /newsletter antes de repetir.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => runEdition('preview')}
+            disabled={editionBusy !== null}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/5 disabled:opacity-60"
+          >
+            {editionBusy === 'preview' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
+            Pré-visualizar edição de hoje
+          </button>
+          <button
+            type="button"
+            onClick={() => runEdition('send')}
+            disabled={editionBusy !== null}
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-cyan-300 px-5 py-3 text-sm font-bold text-black transition-colors hover:bg-cyan-200 disabled:opacity-60"
+          >
+            {editionBusy === 'send' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            Gerar, publicar e enviar agora
+          </button>
+        </div>
+        {editionResult ? (
+          <pre className="mt-5 whitespace-pre-wrap rounded-2xl border border-white/10 bg-black/40 p-4 text-xs leading-relaxed text-zinc-300">{editionResult}</pre>
+        ) : null}
+      </section>
+
       <div className="grid gap-5">
         {drafts.length === 0 ? (
           <div className="rounded-[30px] border border-zinc-800 bg-zinc-950/70 p-8 text-zinc-400">
@@ -426,6 +494,8 @@ export default function AdminNewsletterClient({
                 <h2 className="max-w-4xl text-3xl font-semibold leading-tight text-white">{draft.title}</h2>
                 <p className="mt-4 max-w-3xl text-base leading-relaxed text-zinc-400">{draft.dek}</p>
                 <p className="mt-4 max-w-3xl text-sm leading-relaxed text-zinc-500">{draft.takeaway}</p>
+                {draft.subject ? <p className="mt-4 text-xs font-bold text-zinc-500">Assunto: {draft.subject}</p> : null}
+                <p className="mt-1 text-xs font-bold uppercase tracking-[0.18em] text-zinc-600">{`${draft.items?.length ?? 0} notícias`}</p>
               </div>
               <div className="flex shrink-0 flex-col gap-3">
                 <button
