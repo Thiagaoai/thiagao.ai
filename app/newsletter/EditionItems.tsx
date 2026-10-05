@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ExternalLink } from 'lucide-react';
 import type { BriefingPost } from '@/lib/briefing/types';
+import { categoryLabel } from '@/lib/briefing/edition';
 
 type EditionItemsProps = {
   post: BriefingPost;
@@ -38,7 +39,7 @@ export default function EditionItems({ post, compact = false }: EditionItemsProp
                 {String(n).padStart(2, '0')}
               </span>
               <div className="min-w-0">
-                <span className={categoryPill}>{item.category}</span>
+                <span className={categoryPill}>{categoryLabel(item.category)}</span>
                 <Link
                   href={`/newsletter/${post.slug}#item-${n}`}
                   className="mt-2 block font-semibold leading-snug text-white transition-colors hover:text-cyan-200"
@@ -64,7 +65,7 @@ export default function EditionItems({ post, compact = false }: EditionItemsProp
               <span className="text-3xl leading-none text-cyan-200" style={{ fontFamily: 'var(--font-display)' }}>
                 {String(n).padStart(2, '0')}
               </span>
-              <span className={categoryPill}>{item.category}</span>
+              <span className={categoryPill}>{categoryLabel(item.category)}</span>
               {item.kind === 'tool' ? (
                 <span className="inline-flex rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-amber-100">
                   Para testar hoje
