@@ -35,7 +35,9 @@ button{font:inherit;color:inherit}
 
 /* HEADER */
 header{position:fixed;top:0;left:0;right:0;z-index:120;height:calc(var(--nav-h) + var(--sat));padding:var(--sat) max(var(--pad),var(--sar)) 0 max(var(--pad),var(--sal));display:flex;align-items:center;touch-action:manipulation}
-.brand{font-size:var(--fs-logo);letter-spacing:-.045em;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand{display:flex;align-items:center;gap:.42em;min-width:0;font-size:var(--fs-logo);letter-spacing:-.045em;line-height:1;white-space:nowrap}
+.brand span{overflow:hidden;text-overflow:ellipsis}
+.brand .mark{height:1.25em;width:auto;flex:none;display:block}
 .brand i{font-style:normal;color:rgba(255,255,255,.60)}
 .brand b{font-weight:400;color:#fff;margin-left:.22em}
 .navpill{position:absolute;left:50%;top:calc(var(--sat) + var(--nav-h)/2);transform:translate(-50%,-50%);height:42px;display:flex;align-items:stretch;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.09);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);overflow-x:auto;overflow-y:hidden;scrollbar-width:none;touch-action:pan-x}
@@ -224,7 +226,7 @@ button.chip:hover,.chip.on{background:#fff;color:#000;border-color:#fff}
 footer.site{border-top:1px solid var(--hair);padding:clamp(50px,9vh,90px) 0 40px;position:relative;z-index:2;background:rgba(0,0,0,.72)}
 footer.site .cols{display:flex;justify-content:space-between;gap:48px;flex-wrap:wrap}
 footer.site .about-f{max-width:340px}
-footer.site .about-f .brand{font-size:28px;display:block;margin-bottom:18px}
+footer.site .about-f .brand{font-size:28px;margin-bottom:18px}
 footer.site .about-f p{margin:0 0 14px;font-size:14px;line-height:1.5;font-weight:500;color:rgba(255,255,255,.7)}
 footer.site .made{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.55)}
 footer.site .links{display:grid;grid-template-columns:repeat(4,auto);gap:clamp(24px,4vw,64px)}
