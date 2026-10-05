@@ -51,6 +51,10 @@ function decodeXml(value: string) {
     .replaceAll('&gt;', '>')
     .replaceAll('&quot;', '"')
     .replaceAll('&#39;', "'")
+    .replace(/&#(?:x([0-9a-f]+)|(\d+));/gi, (entity, hex: string | undefined, decimal: string | undefined) => {
+      const code = hex ? Number.parseInt(hex, 16) : Number(decimal);
+      return Number.isInteger(code) && code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : entity;
+    })
     .replace(/<[^>]+>/g, '')
     .replace(/\s+/g, ' ')
     .trim();
@@ -86,6 +90,7 @@ async function fetchFeed(source: FeedSource): Promise<Candidate[]> {
       'user-agent': 'ThiagaoAiBriefingBot/1.0 (+https://thiagao.io)',
     },
     next: { revalidate: 0 },
+    signal: AbortSignal.timeout(15_000),
   });
 
   if (!response.ok) {
@@ -149,6 +154,7 @@ async function fetchPerplexity(): Promise<CollectionResult> {
       return_images: false,
       max_tokens: 900,
     }),
+    signal: AbortSignal.timeout(30_000),
   });
 
   if (!response.ok) {
@@ -192,7 +198,7 @@ async function fetchPerplexity(): Promise<CollectionResult> {
   };
 }
 
-async function fetchXSignals(): Promise<CollectionResult> {
+async function fetchXSignals(now: Date): Promise<CollectionResult> {
   const bearerToken = process.env.X_BEARER_TOKEN || process.env.TWITTER_BEARER_TOKEN;
   if (!bearerToken) {
     return {
@@ -201,7 +207,7 @@ async function fetchXSignals(): Promise<CollectionResult> {
     };
   }
 
-  const startTime = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString().replace(/\.\d{3}Z$/, 'Z');
+  const startTime = new Date(now.getTime() - 48 * 60 * 60 * 1000).toISOString().replace(/\.\d{3}Z$/, 'Z');
   const params = new URLSearchParams({
     query: '(AI OR LLM OR "open source model" OR agents OR OpenAI OR Anthropic OR Gemini OR DeepSeek) lang:en -is:retweet -is:reply',
     max_results: '10',
@@ -214,6 +220,7 @@ async function fetchXSignals(): Promise<CollectionResult> {
     headers: {
       authorization: `Bearer ${bearerToken}`,
     },
+    signal: AbortSignal.timeout(30_000),
   });
 
   if (!response.ok) {
@@ -265,8 +272,23 @@ async function fetchXSignals(): Promise<CollectionResult> {
   };
 }
 
-const collect = async () => {
-  const [perplexity, x, feeds] = await Promise.all([fetchPerplexity(), fetchXSignals(), Promise.allSettled(feedSources.map(fetchFeed))]);
+function errorMessage(reason: unknown) {
+  return reason instanceof Error ? reason.message : String(reason);
+}
+
+// A collector that throws (network, DNS, timeout, bad JSON) becomes a note; the run continues with the other sources.
+function settledCollection(label: string, result: PromiseSettledResult<CollectionResult>): CollectionResult {
+  return result.status === 'fulfilled' ? result.value : { items: [], notes: [`${label} failed: ${errorMessage(result.reason)}.`] };
+}
+
+const collect = async (state: typeof AgentState.State) => {
+  const [perplexityResult, xResult, feeds] = await Promise.all([
+    Promise.allSettled([fetchPerplexity()]).then(([result]) => result),
+    Promise.allSettled([fetchXSignals(new Date(state.now))]).then(([result]) => result),
+    Promise.allSettled(feedSources.map(fetchFeed)),
+  ]);
+  const perplexity = settledCollection('Perplexity', perplexityResult);
+  const x = settledCollection('X', xResult);
   const feedItems = feeds.flatMap((result) => (result.status === 'fulfilled' ? result.value : []));
   const failures = feeds
     .map((result, index) => ({ result, source: feedSources[index] }))
@@ -285,8 +307,8 @@ const collect = async () => {
 
 const rank = async (state: typeof AgentState.State) => {
   const memory = await getRecentEditionMemory();
-  const { pool, window, notes } = selectPool(state.items, memory, new Date(state.now));
-  return { pool, memory, notes: [memory.note, ...notes, `Window ${window}.`] };
+  const { pool, notes } = selectPool(state.items, memory, new Date(state.now));
+  return { pool, memory, notes: [memory.note, ...notes] };
 };
 
 const write = async (state: typeof AgentState.State) => {

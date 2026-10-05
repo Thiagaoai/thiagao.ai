@@ -61,7 +61,9 @@ export async function POST(request: Request) {
       editions,
       sentSlugs,
       force: Boolean(body.force),
-      hhmm: now.toISOString().slice(11, 16).replace(':', ''),
+      hhmm: new Intl.DateTimeFormat('en-GB', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+        .format(now)
+        .replace(':', ''),
     });
 
     if (action.kind === 'skip') {
