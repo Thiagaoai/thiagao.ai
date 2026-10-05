@@ -28,7 +28,7 @@ function renderItem(item: EditionItem, index: number) {
 
   return `
                   <tr>
-                    <td style="padding:22px;border:1px solid ${border};border-radius:22px;background:${background};">
+                    <td style="padding:16px;border:1px solid ${border};border-radius:22px;background:${background};">
                       ${toolLabel}
                       <table role="presentation" cellspacing="0" cellpadding="0" style="margin-bottom:12px;">
                         <tr>
@@ -45,8 +45,9 @@ function renderItem(item: EditionItem, index: number) {
                   <tr><td style="height:12px;line-height:12px;font-size:0;">&nbsp;</td></tr>`;
 }
 
-function shareButton(href: string, label: string) {
-  return `<a href="${escapeHtml(href)}" style="display:inline-block;margin:0 8px 8px 0;border:1px solid #334155;color:#e5e7eb;text-decoration:none;font-size:13px;font-weight:900;padding:11px 16px;border-radius:999px;">${label}</a>`;
+function shareButton(href: string, label: string, primary = false) {
+  const look = primary ? 'background:#16a34a;color:#ffffff;border:1px solid #16a34a;' : 'border:1px solid #334155;color:#e5e7eb;';
+  return `<a href="${escapeHtml(href)}" style="display:inline-block;margin:0 8px 8px 0;${look}text-decoration:none;font-size:14px;font-weight:900;padding:12px 18px;border-radius:999px;">${label}</a>`;
 }
 
 export function renderEditionEmail(post: BriefingPost, { unsubscribeUrl }: EditionRenderOptions) {
@@ -54,6 +55,10 @@ export function renderEditionEmail(post: BriefingPost, { unsubscribeUrl }: Editi
   const dateLine = formatEditionDate(post.publishedAt);
   const share = shareLinks(post, 'email');
   const siteUrl = editionUrl(post, { source: 'newsletter', medium: 'email' });
+  const shareText = post.shareText?.trim();
+  const shareQuote = shareText
+    ? `<p style="margin:0 0 14px;color:#a1a1aa;font-size:14px;line-height:1.55;font-style:italic;">“${escapeHtml(shareText)}”</p>`
+    : '';
 
   const body =
     post.items.length > 0
@@ -76,12 +81,12 @@ export function renderEditionEmail(post: BriefingPost, { unsubscribeUrl }: Editi
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
       ${escapeHtml(post.dek)}
     </div>
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#030405;padding:28px 12px;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#030405;padding:20px 8px;">
       <tr>
         <td align="center">
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:680px;border:1px solid #20242c;border-radius:28px;overflow:hidden;background:#08090d;">
             <tr>
-              <td style="padding:34px 30px 28px;background:#05070b;background-image:linear-gradient(135deg,#05070b 0%,#08111f 48%,#061a31 100%);">
+              <td style="padding:28px 24px 24px;background:#05070b;background-image:linear-gradient(135deg,#05070b 0%,#08111f 48%,#061a31 100%);">
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                   <tr>
                     <td valign="top" style="width:72px;">
@@ -98,27 +103,28 @@ export function renderEditionEmail(post: BriefingPost, { unsubscribeUrl }: Editi
               </td>
             </tr>
             <tr>
-              <td style="padding:30px;">
+              <td style="padding:18px;">
                 ${body}
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:18px;">
                   <tr>
-                    <td style="padding:22px;border:1px solid #155e75;border-radius:22px;background:#06283a;">
+                    <td style="padding:16px;border:1px solid #155e75;border-radius:22px;background:#06283a;">
                       <div style="color:#67e8f9;font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;">Take do dia</div>
                       <p style="margin:10px 0 0;color:#f8fafc;font-size:19px;line-height:1.55;font-weight:750;">${escapeHtml(post.takeaway)}</p>
                     </td>
                   </tr>
                 </table>
                 <div style="margin-top:28px;padding-top:22px;border-top:1px solid #27272a;">
-                  <p style="margin:0 0 14px;color:#f4f4f5;font-size:16px;line-height:1.6;font-weight:800;">Gostou? Manda para alguém que acompanha IA.</p>
-                  ${shareButton(share.whatsapp, 'WhatsApp')}${shareButton(share.x, 'X')}${shareButton(share.linkedin, 'LinkedIn')}
-                  <div style="margin-top:10px;">
-                    <a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:#ffffff;color:#050505;text-decoration:none;font-size:14px;font-weight:900;padding:13px 18px;border-radius:999px;">Ler no site</a>
+                  <p style="margin:0 0 8px;color:#f4f4f5;font-size:16px;line-height:1.6;font-weight:800;">Gostou? Manda para alguém que acompanha IA.</p>
+                  ${shareQuote}
+                  ${shareButton(share.whatsapp, 'WhatsApp', true)}${shareButton(share.x, 'X')}${shareButton(share.linkedin, 'LinkedIn')}
+                  <div style="margin-top:6px;">
+                    <a href="${escapeHtml(siteUrl)}" style="display:inline-block;border:1px solid #27272a;color:#a1a1aa;text-decoration:none;font-size:13px;font-weight:800;padding:10px 16px;border-radius:999px;">Ler no site</a>
                   </div>
                 </div>
               </td>
             </tr>
             <tr>
-              <td style="padding:22px 30px 30px;border-top:1px solid #20242c;background:#07080b;color:#71717a;font-size:12px;line-height:1.65;">
+              <td style="padding:20px 18px 24px;border-top:1px solid #20242c;background:#07080b;color:#71717a;font-size:12px;line-height:1.65;">
                 Você recebe o Thiagao Ai Daily porque assinou em thiagao.io. Responda este email para falar com o Thiago.<br />
                 ${unsubscribe}
               </td>
