@@ -84,7 +84,7 @@ Obrigatórias para o fluxo completo:
 - `RESEND_API_KEY`, `NEWSLETTER_FROM`, `NEWSLETTER_REPLY_TO`: envio (ver Resend abaixo).
 - `AGENT_CRON_SECRET`: autoriza o cron.
 - `ADMIN_API_TOKEN`, `ADMIN_DASHBOARD_TOKEN`: painel e diagnóstico.
-- `NEXT_PUBLIC_SITE_URL`: base dos links absolutos (padrão `https://www.thiagao.io`).
+- `NEXT_PUBLIC_SITE_URL`: base dos links absolutos (padrão `https://thiagao.io`, o mesmo canônico das páginas).
 
 Redator (todas opcionais; sem chave, a edição sai pelo fallback):
 

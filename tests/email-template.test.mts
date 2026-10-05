@@ -17,6 +17,8 @@ test('html email renders items, links, share row and unsubscribe', () => {
   const html = renderEditionEmail(post, { unsubscribeUrl: 'https://www.thiagao.io/newsletter/sair?email=a&token=b' });
   assert.match(html, /GPT-6 em preview/);
   assert.match(html, /Para testar hoje/);
+  assert.match(html, /Dev tools/); // category pills use the Portuguese display label
+  assert.match(html, />IA</);
   assert.match(html, /https:\/\/openai\.com\/gpt6/);
   assert.match(html, /utm_source=newsletter/);
   assert.match(html, /newsletter\/sair\?email=a&amp;token=b/);

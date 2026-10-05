@@ -176,6 +176,24 @@ export function validateEditionDraft(
   return errors.length ? { ok: false, errors } : { ok: true, items, chosen };
 }
 
+// Used only when the LLM is unavailable: one sentence per category instead of the same line on every item.
+const FALLBACK_WHY: Record<BriefingTag, string> = {
+  AI: 'Modelo ou pesquisa nova: vale checar se muda a qualidade ou o custo do que você já usa.',
+  Agents: 'Agentes que executam tarefas são a fronteira do momento; veja se cabe num fluxo seu.',
+  DevTools: 'Ferramenta de desenvolvimento: dá para testar hoje num projeto pequeno.',
+  Automacao: 'Automação pronta para encaixar em atendimento, vendas ou operação.',
+  Hardware: 'Chips e infraestrutura definem o custo de rodar IA nos próximos meses.',
+  BigTech: 'Movimento das grandes plataformas costuma chegar rápido ao produto que você usa.',
+  Startups: 'Dinheiro e mercado mostram para onde a demanda está indo.',
+  Infra: 'Infraestrutura muda custo, latência e o que dá para colocar em produção.',
+};
+
+function fallbackSummary(candidate: Candidate) {
+  const summary = candidate.summary.trim();
+  if (!summary || summary === candidate.title.trim()) return 'A fonte não trouxe resumo. Abra o link para o contexto completo.';
+  return truncate(summary, 320);
+}
+
 export function fallbackEdition(input: WriterInput): Edition {
   const items: EditionItem[] = [];
   const chosen: Candidate[] = [];
@@ -197,8 +215,8 @@ export function fallbackEdition(input: WriterInput): Edition {
         candidate,
         items.length === 0 ? 'lead' : 'story',
         truncate(candidate.title, 110),
-        truncate(candidate.summary || candidate.title, 320),
-        'Fonte verificável: abra, confira e decida se muda seu stack, seu conteúdo ou seu negócio.',
+        fallbackSummary(candidate),
+        FALLBACK_WHY[candidate.category] ?? 'Abra a fonte e veja se isso muda seu stack, seu conteúdo ou seu negócio.',
       ),
     );
     chosen.push(candidate);

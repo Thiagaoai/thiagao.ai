@@ -1,6 +1,6 @@
 import { escapeHtml } from '../shared/request-guard.ts';
 import { getSiteUrl } from './config.ts';
-import { editionUrl, formatEditionDate, shareLinks } from './edition.ts';
+import { categoryLabel, editionUrl, formatEditionDate, shareLinks } from './edition.ts';
 import type { BriefingPost, EditionItem } from './types';
 
 export { escapeHtml } from '../shared/request-guard.ts';
@@ -33,7 +33,7 @@ function renderItem(item: EditionItem, index: number) {
                       <table role="presentation" cellspacing="0" cellpadding="0" style="margin-bottom:12px;">
                         <tr>
                           <td style="color:#38bdf8;font-size:13px;font-weight:900;padding-right:10px;">${String(index + 1).padStart(2, '0')}</td>
-                          <td><span style="display:inline-block;padding:5px 9px;border:1px solid #1f4e66;border-radius:999px;background:#06283a;color:#bae6fd;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;">${escapeHtml(item.category)}</span></td>
+                          <td><span style="display:inline-block;padding:5px 9px;border:1px solid #1f4e66;border-radius:999px;background:#06283a;color:#bae6fd;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;">${escapeHtml(categoryLabel(item.category))}</span></td>
                         </tr>
                       </table>
                       <h2 style="margin:0;color:#ffffff;font-size:22px;line-height:1.25;font-weight:900;">${escapeHtml(item.title)}</h2>

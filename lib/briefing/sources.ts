@@ -74,7 +74,7 @@ export function looksLikeAi(text: string) {
 }
 
 const LOW_SIGNAL_PATTERN =
-  /\b(outage|is down|are down|status page|not working|incident report|we'?re hiring|hiring|job opening|webinar|sponsored|giveaway|black friday|cupom|promo[cç][aã]o|desconto|\[fixed\]|live stream|livestream)\b/i;
+  /\b(outage|is down|are down|status page|not working|incident report|we'?re hiring|job opening|webinar|sponsored|giveaway|black friday|cupom|promo[cç][aã]o|desconto|\[fixed\]|live stream|livestream)\b/i;
 
 export function isLowSignal(text: string) {
   return LOW_SIGNAL_PATTERN.test(text);

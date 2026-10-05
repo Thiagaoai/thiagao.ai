@@ -1,6 +1,7 @@
 export const DEFAULT_NEWSLETTER_FROM = 'Thiagao Ai Briefing <dockplus@dockplusai.com>';
 export const DEFAULT_NEWSLETTER_REPLY_TO = 'dockplus@dockplusai.com';
-export const DEFAULT_SITE_URL = 'https://www.thiagao.io';
+// Matches the canonical emitted by app/layout.tsx (metadataBase), so email, share and unsubscribe links agree with the pages.
+export const DEFAULT_SITE_URL = 'https://thiagao.io';
 
 export function getNewsletterFrom() {
   return process.env.NEWSLETTER_FROM || DEFAULT_NEWSLETTER_FROM;
