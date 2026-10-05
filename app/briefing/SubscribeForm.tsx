@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ArrowRight, Loader2, Mail } from 'lucide-react';
 
 type SubmitState = 'idle' | 'loading' | 'success' | 'error';
@@ -11,6 +12,7 @@ type SubscribeFormProps = {
 };
 
 export default function SubscribeForm({ source = 'briefing-page' }: SubscribeFormProps) {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
   const [startedAt, setStartedAt] = useState(0);
@@ -51,7 +53,7 @@ export default function SubscribeForm({ source = 'briefing-page' }: SubscribeFor
           : 'Preview ativo. Configure o Supabase para gravar assinantes em produção.',
       );
       setEmail('');
-      window.location.assign(`/newsletter/obrigado?email=${encodeURIComponent(submittedEmail)}`);
+      router.push(`/newsletter/obrigado?email=${encodeURIComponent(submittedEmail)}`);
     } catch (error) {
       setState('error');
       setMessage(error instanceof Error ? error.message : 'Não foi possível assinar agora.');
