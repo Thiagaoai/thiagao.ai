@@ -1,4 +1,22 @@
 import type { NextConfig } from "next";
+import { execSync } from "node:child_process";
+
+// Stamped into the footer and /api/health so anyone can tell which build a
+// browser is showing. GIT_SHA comes from the GitHub Actions image build; a
+// local build asks git; the Docker context has no .git, so the time alone
+// still identifies the build.
+function buildStamp() {
+  const when = `${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC`;
+  let sha = process.env.GIT_SHA?.slice(0, 7);
+  if (!sha) {
+    try {
+      sha = execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+    } catch {
+      sha = undefined;
+    }
+  }
+  return sha ? `${sha} · ${when}` : when;
+}
 
 // `next dev` runs on plain http://localhost. Safari applies upgrade-insecure-requests
 // and HSTS even there, so CSS/JS would be requested over https and fail to load.
@@ -57,6 +75,9 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  env: {
+    NEXT_PUBLIC_BUILD_STAMP: buildStamp(),
+  },
   // Lets `FARMZ3D_HOSTS=farmz3d.localhost npm run farmz3d:local` preview the store domain in dev.
   allowedDevOrigins: ['farmz3d.localhost'],
   reactCompiler: true,
@@ -92,6 +113,19 @@ const nextConfig: NextConfig = {
       {
         source: '/:path*',
         headers: securityHeaders,
+      },
+      {
+        // Pages only (anything without a dot, outside /api and /_next). Browsers must
+        // revalidate the HTML on every visit: the ISR default (s-maxage with a year of
+        // stale-while-revalidate) let Chrome keep showing the previous deploy and only
+        // refresh it in the background. The ETag keeps the revalidation a cheap 304.
+        source: '/((?!api/|_next/|.*\\..*).*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, must-revalidate',
+          },
+        ],
       },
       {
         source: '/:all*(svg|png|jpg|jpeg|webp|avif|ico|mp4)',

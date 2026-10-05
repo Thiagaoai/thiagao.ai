@@ -66,6 +66,7 @@ const DOCKPLUS_URL = 'https://dockplusai.io';
 // 8-second cinematic loop (local file, H.264, faststart) with a poster for first paint.
 const HERO_VIDEO = '/media/hero.mp4';
 const HERO_POSTER = '/media/hero-poster.webp';
+const BUILD_STAMP = process.env.NEXT_PUBLIC_BUILD_STAMP;
 
 const media = {
   // Second 8-second scene from the same family as the hero: the network sphere.
@@ -966,7 +967,13 @@ export default function HomePage({ posts }: { posts: HomePost[] }) {
           </div>
 
           <div className="mt-16 flex flex-col justify-between gap-6 text-sm text-muted-foreground md:flex-row md:items-center">
-            <p>© {new Date().getFullYear()} {BRAND_NAME} by Thiago do Carmo. Todos os direitos reservados.</p>
+            <p>
+              © {new Date().getFullYear()} {BRAND_NAME} by Thiago do Carmo. Todos os direitos reservados.
+              {BUILD_STAMP && (
+                // Which deploy this page came from; lets a visitor (and Thiago) tell a cached copy from the live one.
+                <span className="ml-3 whitespace-nowrap text-xs text-muted-foreground/70">build {BUILD_STAMP}</span>
+              )}
+            </p>
             <div className="flex gap-7 text-xs uppercase tracking-[0.22em]">
               <a href={INSTAGRAM_URL} className="transition-colors hover:text-glow">Instagram</a>
               <a href={SOLO_CODANDO_URL} className="transition-colors hover:text-glow">Solo Codando</a>

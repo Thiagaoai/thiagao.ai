@@ -5,5 +5,6 @@ export function GET() {
     ok: true,
     service: 'thigaoai-site',
     timestamp: new Date('2026-04-24T00:00:00.000Z').toISOString(),
+    build: process.env.NEXT_PUBLIC_BUILD_STAMP ?? null,
   });
 }
