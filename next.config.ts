@@ -108,6 +108,16 @@ const nextConfig: NextConfig = {
       { source: '/newslatter/obrigado', destination: '/newsletter/obrigado', permanent: true },
     ];
   },
+  async rewrites() {
+    return {
+      // The home is the standalone Thiagao Ai landing in public/kernelcode. The URL stays "/".
+      // beforeFiles so it wins over app/page.tsx; the store domain is already rewritten to
+      // /farmz3d by proxy.ts before this runs, so it never reaches this rule.
+      beforeFiles: [{ source: '/', destination: '/kernelcode/index.html' }],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
   async headers() {
     return [
       {
@@ -119,6 +129,32 @@ const nextConfig: NextConfig = {
         // Schibsted Grotesk font from Google Fonts, so they get a CSP that allows exactly those hosts.
         // Declared after the global rule so this value wins for the same header key.
         source: '/kernelcode/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "base-uri 'self'",
+              "object-src 'none'",
+              "frame-ancestors 'none'",
+              "form-action 'self'",
+              "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "img-src 'self' data: blob: https://d8j0ntlcm91z4.cloudfront.net",
+              "font-src 'self' data: https://fonts.gstatic.com",
+              "media-src 'self'",
+              "connect-src 'self' https://thiagao.io https://www.thiagao.io",
+              isDev ? null : 'upgrade-insecure-requests',
+            ]
+              .filter(Boolean)
+              .join('; '),
+          },
+        ],
+      },
+      {
+        // Same policy for the home, which is rewritten to public/kernelcode/index.html (headers match
+        // the incoming path, not the rewrite destination).
+        source: '/',
         headers: [
           {
             key: 'Content-Security-Policy',

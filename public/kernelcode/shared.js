@@ -6,8 +6,7 @@ var hdr=$('#hdr');
 
 /* header height + active tab */
 function syncHeader(){ document.documentElement.style.setProperty('--header-h',hdr.offsetHeight+'px'); }
-var here=(location.pathname.split('/').pop()||'index.html');
-$$('.navpill a').forEach(function(a){ if(a.getAttribute('href')===here) a.classList.add('on'); });
+$$('.navpill a').forEach(function(a){ if(a.pathname===location.pathname) a.classList.add('on'); });
 
 /* menu (short + narrow screens) */
 var toggle=$('#navToggle'), nav=$('#sitenav');
