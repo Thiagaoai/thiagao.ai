@@ -1,9 +1,11 @@
 import { fallbackBriefings } from './fallback';
+import { buildRecentMemory, type EditionMemory } from './memory';
 import { getSupabaseAdmin } from './supabase';
 import type {
   AgentRunRecord,
   BriefingDraftInput,
   BriefingPost,
+  EditionItem,
   NewsletterAgentRun,
   NewsletterEmailLog,
   NewsletterEventInput,
@@ -22,6 +24,9 @@ type BriefingRow = {
   category: BriefingPost['category'];
   tags: string[];
   sources: BriefingPost['sources'];
+  items: EditionItem[] | null;
+  subject: string | null;
+  share_text: string | null;
   relevance_score: number;
   reading_minutes: number;
   published_at: string | null;
@@ -76,6 +81,9 @@ function toPost(row: BriefingRow): BriefingPost {
     category: row.category,
     tags: row.tags ?? [],
     sources: row.sources ?? [],
+    items: row.items ?? [],
+    subject: row.subject ?? null,
+    shareText: row.share_text ?? null,
     relevanceScore: row.relevance_score,
     readingMinutes: row.reading_minutes,
     publishedAt: row.published_at,
@@ -94,6 +102,9 @@ function toRow(post: BriefingDraftInput) {
     category: post.category,
     tags: post.tags,
     sources: post.sources,
+    items: post.items,
+    subject: post.subject,
+    share_text: post.shareText,
     relevance_score: post.relevanceScore,
     reading_minutes: post.readingMinutes,
   };
@@ -179,6 +190,69 @@ export async function getPublishedBriefings({
     posts: (data as BriefingRow[]).map(toPost),
     source: 'supabase' as const,
   };
+}
+
+export async function getPublishedBriefingBySlug(slug: string) {
+  const fromFallback = () => fallbackBriefings.find((post) => post.slug === slug) ?? null;
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return fromFallback();
+  const { data, error } = await supabase.from('daily_digest_posts').select('*').eq('slug', slug).eq('status', 'published').maybeSingle();
+  if (error) {
+    console.error('Failed to load briefing by slug', error);
+    return fromFallback();
+  }
+  // No row with that slug: still try the bundled posts, so the home/archive links never 404 (spec §8).
+  return data ? toPost(data as BriefingRow) : fromFallback();
+}
+
+type EditionLink = { slug: string; title: string } | null;
+
+export async function getAdjacentEditions(post: BriefingPost): Promise<{ previous: EditionLink; next: EditionLink }> {
+  const supabase = getSupabaseAdmin();
+  if (!post.publishedAt) return { previous: null, next: null };
+  if (!supabase) {
+    const ordered = [...fallbackBriefings].sort((a, b) => (a.publishedAt ?? '').localeCompare(b.publishedAt ?? ''));
+    const index = ordered.findIndex((item) => item.slug === post.slug);
+    return { previous: ordered[index - 1] ?? null, next: ordered[index + 1] ?? null };
+  }
+  const [previous, next] = await Promise.all([
+    supabase.from('daily_digest_posts').select('slug,title').eq('status', 'published').lt('published_at', post.publishedAt).order('published_at', { ascending: false }).limit(1).maybeSingle(),
+    supabase.from('daily_digest_posts').select('slug,title').eq('status', 'published').gt('published_at', post.publishedAt).order('published_at', { ascending: true }).limit(1).maybeSingle(),
+  ]);
+  return { previous: (previous.data as EditionLink) ?? null, next: (next.data as EditionLink) ?? null };
+}
+
+// Every edition created for a New York day: `daily-<date>` plus any forced `daily-<date>-hhmm`.
+export async function findEditionsForDate(dateKey: string) {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return [] as BriefingPost[];
+  // LIKE is a byte-wise pattern match, so it does not depend on the database collation (a slug range such as
+  // gte 'daily-D' / lt 'daily-D.' would, and glibc en_US ignores punctuation at the first level). The local demo DB
+  // ignores operators it does not know and returns every row; the filter below is what narrows it there.
+  const { data, error } = await supabase
+    .from('daily_digest_posts')
+    .select('*')
+    .like('slug', `daily-${dateKey}%`)
+    .order('created_at', { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data as BriefingRow[]).map(toPost).filter((post) => post.slug === `daily-${dateKey}` || post.slug.startsWith(`daily-${dateKey}-`));
+}
+
+export async function getRecentEditionMemory({ days = 14 }: { days?: number } = {}): Promise<EditionMemory & { note: string }> {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return { ...buildRecentMemory([]), note: 'Recent edition memory skipped: Supabase is not configured.' };
+  const since = new Date(Date.now() - days * 86_400_000).toISOString();
+  const { data, error } = await supabase
+    .from('daily_digest_posts')
+    .select('*')
+    .eq('status', 'published')
+    .gte('published_at', since)
+    .order('published_at', { ascending: false })
+    .limit(60);
+  if (error) return { ...buildRecentMemory([]), note: `Recent edition memory skipped: ${error.message}.` };
+  const posts = (data as BriefingRow[]).map(toPost);
+  const memory = buildRecentMemory(posts);
+  return { ...memory, note: `Recent edition memory: ${posts.length} editions, ${memory.urls.size} urls, saturated topics: ${memory.recentTopics.join(', ') || 'none'}.` };
 }
 
 export async function getDraftBriefings({ limit = 20 }: { limit?: number } = {}) {
@@ -286,91 +360,6 @@ export async function saveAgentDrafts(posts: BriefingDraftInput[], run: AgentRun
   };
 }
 
-function getTimeZoneParts(date: Date, timeZone: string) {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hourCycle: 'h23',
-  }).formatToParts(date);
-
-  const value = (type: string) => Number(parts.find((part) => part.type === type)?.value ?? 0);
-
-  return {
-    year: value('year'),
-    month: value('month'),
-    day: value('day'),
-    hour: value('hour'),
-    minute: value('minute'),
-    second: value('second'),
-  };
-}
-
-function zonedTimeToUtc({
-  year,
-  month,
-  day,
-  hour = 0,
-  minute = 0,
-  second = 0,
-  timeZone,
-}: {
-  year: number;
-  month: number;
-  day: number;
-  hour?: number;
-  minute?: number;
-  second?: number;
-  timeZone: string;
-}) {
-  const utcGuess = Date.UTC(year, month - 1, day, hour, minute, second);
-  const zonedGuess = getTimeZoneParts(new Date(utcGuess), timeZone);
-  const zonedGuessAsUtc = Date.UTC(
-    zonedGuess.year,
-    zonedGuess.month - 1,
-    zonedGuess.day,
-    zonedGuess.hour,
-    zonedGuess.minute,
-    zonedGuess.second,
-  );
-
-  return new Date(utcGuess - (zonedGuessAsUtc - utcGuess));
-}
-
-export async function getSuccessfulAgentRunForToday(timeZone = 'America/New_York') {
-  const supabase = getSupabaseAdmin();
-  if (!supabase) return null;
-
-  const today = getTimeZoneParts(new Date(), timeZone);
-  const tomorrowUtcDate = new Date(Date.UTC(today.year, today.month - 1, today.day + 1));
-  const tomorrow = {
-    year: tomorrowUtcDate.getUTCFullYear(),
-    month: tomorrowUtcDate.getUTCMonth() + 1,
-    day: tomorrowUtcDate.getUTCDate(),
-  };
-  const start = zonedTimeToUtc({ ...today, hour: 0, minute: 0, second: 0, timeZone });
-  const end = zonedTimeToUtc({ ...tomorrow, hour: 0, minute: 0, second: 0, timeZone });
-
-  const { data, error } = await supabase
-    .from('agent_runs')
-    .select('*')
-    .eq('status', 'success')
-    .gte('created_at', start.toISOString())
-    .lt('created_at', end.toISOString())
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) throw new Error(error.message);
-  if (!data) return null;
-
-  return toAgentRun(data as AgentRunRow);
-}
-
 export async function publishBriefingPost(id: string) {
   const supabase = getSupabaseAdmin();
   if (!supabase) throw new Error('Supabase is not configured yet.');
@@ -393,16 +382,32 @@ export async function publishBriefingPost(id: string) {
 export async function getActiveSubscribers() {
   const supabase = getSupabaseAdmin();
   if (!supabase) return [] as SubscriberRow[];
+  const pageSize = 1000;
+  const rows: SubscriberRow[] = [];
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await supabase
+      .from('newsletter_subscribers')
+      .select('email')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .range(from, from + pageSize - 1);
+    if (error) throw new Error(error.message);
+    rows.push(...((data ?? []) as SubscriberRow[]));
+    if (!data || data.length < pageSize) break;
+  }
+  return rows;
+}
 
+export async function unsubscribeSubscriber(email: string) {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return { updated: false, reason: 'Supabase is not configured yet.' };
   const { data, error } = await supabase
     .from('newsletter_subscribers')
-    .select('email')
-    .eq('status', 'active')
-    .order('created_at', { ascending: false });
-
+    .update({ status: 'unsubscribed', updated_at: new Date().toISOString() })
+    .eq('email', email.trim().toLowerCase())
+    .select('email');
   if (error) throw new Error(error.message);
-
-  return (data ?? []) as SubscriberRow[];
+  return { updated: Boolean(data?.length) };
 }
 
 export async function logEmailSendEvents(

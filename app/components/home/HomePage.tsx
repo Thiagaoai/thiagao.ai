@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   ArrowRight,
   Bot,
@@ -795,9 +796,9 @@ export default function HomePage({ posts }: { posts: HomePost[] }) {
                 do briefing.
               </Heading>
             </div>
-            <a href="/newsletter" className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground">
+            <Link href="/newsletter" className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground">
               Ver todas as edições <ArrowRight className="h-4 w-4" />
-            </a>
+            </Link>
           </div>
 
           {posts.length === 0 ? (
@@ -813,7 +814,7 @@ export default function HomePage({ posts }: { posts: HomePost[] }) {
                   transition={{ delay: index * 0.08, duration: 0.5 }}
                   className="group rounded-[28px] border border-white/10 bg-white/[0.04] transition-colors hover:bg-white/[0.07]"
                 >
-                  <a href={`/newsletter#${post.slug}`} className="block p-8">
+                  <a href={`/newsletter/${post.slug}`} className="block p-8">
                     <div className="flex items-center justify-between gap-4">
                       <span className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">
                         {post.category}

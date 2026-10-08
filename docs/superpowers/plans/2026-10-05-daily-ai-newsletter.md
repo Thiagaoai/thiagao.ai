@@ -32,7 +32,7 @@
 - Create: `supabase/migrations/009_daily_edition_items.sql`
 - Modify: `lib/dev/local-db.ts:27-33` (`defaults`)
 - Modify: `lib/briefing/posts.ts:14-30` (`BriefingRow`), `:65-96` (`toPost`, `toRow`)
-- Modify: `lib/briefing/fallback.ts` (three posts), `app/api/admin/test-newsletter/route.ts:17-52` (test post)
+- Modify: `lib/briefing/fallback.ts` (three posts), `app/api/admin/test-newsletter/route.ts:17-52` (test post), `lib/briefing/agent.ts:700-750` (two `BriefingDraftInput` literals; temporary until Task 7 rewrites the file)
 
 - [ ] **Step 1: Extend the types**
 
@@ -100,7 +100,7 @@ In `lib/briefing/posts.ts`: add `items: EditionItem[] | null; subject: string | 
 
 - [ ] **Step 5: Fix literal posts**
 
-Add `items: [], subject: null, shareText: null,` to each post in `lib/briefing/fallback.ts` and to `getGpt55TestPost()` in `app/api/admin/test-newsletter/route.ts`.
+Add `items: [], subject: null, shareText: null,` to each post in `lib/briefing/fallback.ts`, to `getGpt55TestPost()` in `app/api/admin/test-newsletter/route.ts`, and to the two `BriefingDraftInput` literals in `lib/briefing/agent.ts` (`primaryDraft` near line 705 and the object returned inside `supportingDrafts` near line 728). Those two are temporary: Task 7 rewrites that file. Nothing else in the repo builds a `BriefingPost` literal.
 
 - [ ] **Step 6: Type-check and test**
 
@@ -110,7 +110,7 @@ Expected: no type errors; 36 tests pass.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add lib/briefing/types.ts supabase/migrations/009_daily_edition_items.sql lib/dev/local-db.ts lib/briefing/posts.ts lib/briefing/fallback.ts app/api/admin/test-newsletter/route.ts
+git add lib/briefing/types.ts supabase/migrations/009_daily_edition_items.sql lib/dev/local-db.ts lib/briefing/posts.ts lib/briefing/fallback.ts app/api/admin/test-newsletter/route.ts lib/briefing/agent.ts
 git commit -m "Add structured edition items to daily digest posts"
 ```
 
@@ -144,6 +144,8 @@ test('looksLikeAi gates general feeds and isLowSignal catches noise', () => {
   assert.equal(looksLikeAi('Novo iPhone chega às lojas'), false);
   assert.equal(looksLikeAi('Google lança modelo Gemini para agentes'), true);
   assert.equal(looksLikeAi('Mais vendas no varejo'), false); // "ai" inside "mais" must not match
+  assert.equal(looksLikeAi('Ele ia para casa quando choveu'), false); // the verb "ia" is not the acronym "IA"
+  assert.equal(looksLikeAi('Nova lei de IA no Brasil'), true);
   assert.equal(isLowSignal('OpenAI status: ChatGPT is down for some users'), true);
   assert.equal(isLowSignal('OpenAI releases new reasoning model'), false);
 });
@@ -229,10 +231,13 @@ export function matchTopics(text: string) {
 }
 
 const AI_PATTERN =
-  /\b(ai|ia|a\.i\.|intelig[eê]ncia artificial|artificial intelligence|llms?|gpt|chatgpt|openai|anthropic|claude|gemini|deepseek|qwen|kimi|mistral|llama|copilot|agents?|agentes?|agentic|machine learning|aprendizado de m[aá]quina|modelos? de linguagem|language models?|transformers?|diffusion|rag|mcp|codex|cursor|midjourney|sora|veo|nvidia|gpus?|inference|infer[eê]ncia|fine-?tun\w*|open[- ]weights?|rob[oô]s?|robots?|robotics|chatbots?|prompts?)\b/i;
+  /\b(ai|a\.i\.|intelig[eê]ncia artificial|artificial intelligence|llms?|gpt|chatgpt|openai|anthropic|claude|gemini|deepseek|qwen|kimi|mistral|llama|copilot|agents?|agentes?|agentic|machine learning|aprendizado de m[aá]quina|modelos? de linguagem|language models?|transformers?|diffusion|rag|mcp|codex|midjourney|sora|veo|nvidia|gpus?|inference|infer[eê]ncia|fine-?tun\w*|open[- ]weights?|rob[oô]s?|robots?|robotics|chatbots?|prompts?)\b/i;
+
+// "IA" is the Portuguese acronym, but lowercase "ia" is a common verb form ("ele ia"), so it is matched case-sensitively.
+const PT_ACRONYM = /\bIA\b/;
 
 export function looksLikeAi(text: string) {
-  return AI_PATTERN.test(text);
+  return AI_PATTERN.test(text) || PT_ACRONYM.test(text);
 }
 
 const LOW_SIGNAL_PATTERN =
@@ -374,7 +379,7 @@ export function titleTokens(title: string) {
     title
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
+      .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, ' ')
       .split(' ')
       .filter((token) => token.length >= 3 && !STOPWORDS.has(token)),
@@ -483,17 +488,27 @@ test('scoreCandidate rewards fresh signal and penalizes repeated topics and nois
 
 test('selectPool widens the window only when the deduped 48h pool is small', () => {
   const memory = emptyMemory();
-  const recent = Array.from({ length: 9 }, (_, index) =>
-    candidate({ title: `Fresh AI launch number ${index} by lab ${index}`, host: `lab${index}.com`, publishedAt: hoursAgo(index + 1) }),
-  );
-  const old = candidate({ title: 'Old AI research result', host: 'old.com', publishedAt: hoursAgo(100) });
+  const recentTitles = [
+    'Mistral opens Codestral weights for coding agents',
+    'NVIDIA ships Rubin GPUs to cloud providers',
+    'Hugging Face adds inference endpoints for robotics',
+    'DeepSeek publishes V4 technical report',
+    'Google DeepMind demos Gemini for science labs',
+    'Apple research explains on-device speech models',
+    'Brazil regulator drafts rules for automated hiring',
+    'Supabase launches vector search tier',
+    'Latent Space interviews the Cursor team',
+  ];
+  // Titles must share fewer than 60% of their tokens, otherwise dedupeCandidates collapses them.
+  const recent = recentTitles.map((title, index) => candidate({ title, host: `lab${index}.com`, publishedAt: hoursAgo(index + 1) }));
+  const old = candidate({ title: 'Old research result on protein folding', host: 'old.com', publishedAt: hoursAgo(100) });
   const wide = selectPool([...recent.slice(0, 3), old], memory, now);
   assert.equal(wide.window, '7d');
   assert.ok(wide.pool.some((item) => item.title === old.title));
   const tight = selectPool([...recent, old], memory, now);
   assert.equal(tight.window, '48h');
   assert.ok(!tight.pool.some((item) => item.title === old.title));
-  // nine near-identical titles collapse to one, so the window must widen even though 9 > minPool
+  // Nine near-identical titles collapse to one in dedupe, so the window must widen even though 9 > minPool.
   const clones = Array.from({ length: 9 }, (_, index) => candidate({ title: 'Same story about agents everywhere', host: `clone${index}.com` }));
   assert.equal(selectPool([...clones, old], memory, now).window, '7d');
 });
@@ -501,17 +516,20 @@ test('selectPool widens the window only when the deduped 48h pool is small', () 
 test('selectPool applies relevance gate, repeats, source and openai caps', () => {
   const memory = emptyMemory();
   memory.urls.add(normalizeUrl('https://example.com/seen'));
+  const openai = ['OpenAI releases GPT-6 preview', 'ChatGPT adds group chats for teams', 'Sam Altman outlines OpenAI compute plans', 'Codex agent now runs tests in the cloud'];
+  const hackerNews = ['Show HN: local photo tagger with a small vision model', 'Ask HN: best open models for coding?', 'Why I stopped paying for AI assistants'];
+  const cloudflare = ['Cloudflare launches AI gateway caching', 'Workers AI adds Mistral models', 'How we built an agent sandbox at Cloudflare'];
   const items = [
     candidate({ title: 'Novo iPhone chega às lojas', publisher: 'Tecnoblog', general: true }),
     candidate({ title: 'Already covered story about agents', url: 'https://www.example.com/seen/' }),
-    ...Array.from({ length: 4 }, (_, index) => candidate({ title: `OpenAI news ${index} GPT`, host: `outlet${index}.com` })),
-    ...Array.from({ length: 3 }, (_, index) => candidate({ title: `Hacker News thread ${index} on AI`, publisher: 'Hacker News AI', host: `hn${index}.com` })),
-    ...Array.from({ length: 3 }, (_, index) => candidate({ title: `Cloudflare AI post ${index}`, publisher: 'Cloudflare', host: 'blog.cloudflare.com' })),
+    ...openai.map((title, index) => candidate({ title, host: `outlet${index}.com` })),
+    ...hackerNews.map((title, index) => candidate({ title, publisher: 'Hacker News AI', host: `hn${index}.com` })),
+    ...cloudflare.map((title) => candidate({ title, publisher: 'Cloudflare', host: 'blog.cloudflare.com' })),
   ];
   const { pool } = selectPool(items, memory, now, { minPool: 1 });
   assert.ok(!pool.some((item) => item.title.includes('iPhone')));
   assert.ok(!pool.some((item) => item.title.includes('Already covered')));
-  assert.equal(pool.filter((item) => item.title.startsWith('OpenAI news')).length, 3);
+  assert.equal(pool.filter((item) => item.url.includes('outlet')).length, 3); // four OpenAI stories, cap 3
   assert.equal(pool.filter((item) => item.publisher === 'Hacker News AI').length, 1);
   assert.equal(pool.filter((item) => item.publisher === 'Cloudflare').length, 2);
 });
@@ -576,7 +594,8 @@ export function scoreCandidate(candidate: Candidate, memory: RecentMemory, now: 
   }
   if (isLowSignal(text)) score -= 40;
   if (candidate.provider === 'x' || /hacker news|arxiv/i.test(candidate.publisher)) score -= 15;
-  return Math.max(0, Math.min(99, Math.round(score)));
+  // No ceiling: reliabilities sit at 78–92, so a cap at 99 would make every item with two signal words tie.
+  return Math.max(0, Math.round(score));
 }
 
 export type PoolResult = { pool: Candidate[]; window: '48h' | '7d'; notes: string[] };
@@ -640,7 +659,7 @@ export function selectPool(
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `node --experimental-strip-types --no-warnings --test tests/ranking.test.mts`
-Expected: PASS (5 tests). If `tired <= other - 40` is off by a few points, adjust the penalty table in the code, not the test.
+Expected: PASS (5 tests). Reference values with the code above: `fresh` = 80 + 21 + 20 = 121, `stale` = 106, `tired` = 80 + 14 + 20 − 50 = 64, `other` = 114. If a margin is off by a few points, adjust the penalty table in the code, not the test.
 
 - [ ] **Step 5: Commit**
 
@@ -669,6 +688,7 @@ import {
   parseEditionDraft,
   validateEditionDraft,
   writeEdition,
+  type EditionDraft,
 } from '../lib/briefing/writer.ts';
 
 const realFetch = globalThis.fetch;
@@ -686,12 +706,14 @@ const pool: Candidate[] = [
   { title: 'Cursor 3 lets agents run tests', url: 'https://theverge.com/cursor-3', publisher: 'The Verge AI', category: 'DevTools', summary: 'Try it today.', provider: 'rss', reliability: 80, score: 78 },
   { title: 'ChatGPT gets group chats', url: 'https://techcrunch.com/groups', publisher: 'TechCrunch AI', category: 'BigTech', summary: 'Groups.', provider: 'rss', reliability: 78, score: 70 },
   { title: 'Brazil publishes AI bill draft', url: 'https://canaltech.com.br/ia', publisher: 'Canaltech', category: 'BigTech', summary: 'Regulation.', provider: 'rss', reliability: 68, score: 66 },
-  { title: 'OpenAI pricing update', url: 'https://openai.com/pricing', publisher: 'openai.com', category: 'AI', summary: 'Via Perplexity.', provider: 'perplexity', reliability: 74, score: 60 },
+  { title: 'OpenAI pricing update', url: 'https://openai.com/pricing', publisher: 'openai.com', category: 'BigTech', summary: 'Via Perplexity.', provider: 'perplexity', reliability: 74, score: 60 },
+  { title: 'Sam Altman says OpenAI will fund hardware startups', url: 'https://wired.com/altman-fund', publisher: 'Wired AI', category: 'Startups', summary: 'Funding.', provider: 'rss', reliability: 78, score: 58 },
 ];
 
 const input = { dateLabel: 'segunda-feira, 5 de outubro de 2026', dateKey: '2026-10-05', pool, recentTitles: ['Claude 5 launches'], recentTopics: ['OpenAI/ChatGPT (3 de 5 edições)'] };
 
-const goodDraft = {
+// Typed, otherwise `kind: 'lead'` widens to string and `npx tsc --noEmit` rejects every validateEditionDraft call below.
+const goodDraft: EditionDraft = {
   headline: 'GPT-6 chega em preview e a Mistral abre o Codestral 3',
   subject: 'GPT-6 em preview, Codestral 3 aberto e GPUs Rubin',
   intro: 'Dia de lançamentos. A OpenAI mostrou o GPT-6 e a Mistral abriu pesos de um modelo de código.',
@@ -731,15 +753,16 @@ test('validateEditionDraft enforces the editorial caps', () => {
     assert.equal(ok.items[0].category, 'AI');
   }
   const tooFew = validateEditionDraft({ ...goodDraft, items: goodDraft.items.slice(0, 4) }, pool);
-  assert.equal(tooFew.ok, false); // pool has 8 candidates, so 5 items are required
+  assert.equal(tooFew.ok, false); // pool has 9 candidates, so 5 items are required
   assert.equal(validateEditionDraft({ ...goodDraft, items: goodDraft.items.slice(0, 4) }, pool.slice(0, 6)).ok, true);
   const dup = validateEditionDraft({ ...goodDraft, items: [goodDraft.items[0], { ...goodDraft.items[1], candidate: 1 }, ...goodDraft.items.slice(2)] }, pool);
   assert.equal(dup.ok, false);
   const outOfRange = validateEditionDraft({ ...goodDraft, items: [...goodDraft.items.slice(0, 4), { ...goodDraft.items[4], candidate: 99 }] }, pool);
   assert.equal(outOfRange.ok, false);
   const sameHost = validateEditionDraft({ ...goodDraft, items: [...goodDraft.items.slice(0, 4), { ...goodDraft.items[4], candidate: 8, kind: 'story' }] }, pool);
-  assert.equal(sameHost.ok, false); // candidates 1 and 8 are both openai.com
-  const tooMuchOpenAi = validateEditionDraft({ ...goodDraft, items: [...goodDraft.items.slice(0, 3), { ...goodDraft.items[3], candidate: 6, kind: 'story' }, { ...goodDraft.items[4], candidate: 8, kind: 'story' }] }, pool);
+  assert.equal(sameHost.ok, false); // candidates 1 and 8 are both openai.com (8 is BigTech, so only the source rule trips)
+  // candidates 1, 6 and 9 are all about OpenAI but come from three hosts and three categories: only the OpenAI cap trips
+  const tooMuchOpenAi = validateEditionDraft({ ...goodDraft, items: [...goodDraft.items.slice(0, 3), { ...goodDraft.items[3], candidate: 6, kind: 'story' }, { ...goodDraft.items[4], candidate: 9, kind: 'story' }] }, pool);
   assert.equal(tooMuchOpenAi.ok, false);
   const notLeadFirst = validateEditionDraft({ ...goodDraft, items: [{ ...goodDraft.items[0], kind: 'story' }, ...goodDraft.items.slice(1)] }, pool);
   assert.equal(notLeadFirst.ok, false);
@@ -1229,7 +1252,8 @@ export async function getPublishedBriefingBySlug(slug: string) {
     console.error('Failed to load briefing by slug', error);
     return fromFallback();
   }
-  return data ? toPost(data as BriefingRow) : null;
+  // No row with that slug: still try the bundled posts, so the home/archive links never 404 (spec §8).
+  return data ? toPost(data as BriefingRow) : fromFallback();
 }
 
 type EditionLink = { slug: string; title: string } | null;
@@ -1253,10 +1277,13 @@ export async function getAdjacentEditions(post: BriefingPost): Promise<{ previou
 export async function findEditionsForDate(dateKey: string) {
   const supabase = getSupabaseAdmin();
   if (!supabase) return [] as BriefingPost[];
+  // Slug range instead of `like`: `-` sorts before `.`, so this covers `daily-<date>` and `daily-<date>-hhmm`
+  // and excludes the next day. It works on PostgREST and on the local demo DB (which has no `like`).
   const { data, error } = await supabase
     .from('daily_digest_posts')
     .select('*')
-    .like('slug', `daily-${dateKey}%`)
+    .gte('slug', `daily-${dateKey}`)
+    .lt('slug', `daily-${dateKey}.`)
     .order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
   return (data as BriefingRow[]).map(toPost).filter((post) => post.slug === `daily-${dateKey}` || post.slug.startsWith(`daily-${dateKey}-`));
@@ -1315,7 +1342,7 @@ export async function getActiveSubscribers() {
 }
 ```
 
-Note: the local demo DB (`lib/dev/local-db.ts`) must support `like` and `range`. Check `matches()`/the request parser; `like` uses PostgREST syntax `slug=like.daily-2026-10-05*` and `range` is sent as the `Range` header (`0-999`). If either is missing, add minimal support (pattern `*` → `.*` regex for `like`; honour `Range` header by slicing) and cover it in `tests/local-db.test.mts`.
+Local demo DB: nothing to change. `.range(from, to)` becomes `offset`/`limit` query params, which `lib/dev/local-db.ts` already honours, and the slug query above only uses `gte`/`lt`. (Do not use `like`: postgrest-js sends the pattern verbatim and the local DB ignores unknown operators, which would make every post match.)
 
 - [ ] **Step 6: Type-check, run all tests, commit**
 
@@ -1323,7 +1350,7 @@ Run: `npx tsc --noEmit -p tsconfig.json && npm test`
 Expected: pass.
 
 ```bash
-git add lib/briefing/memory.ts lib/briefing/posts.ts lib/dev/local-db.ts tests/edition-memory.test.mts tests/local-db.test.mts
+git add lib/briefing/memory.ts lib/briefing/posts.ts tests/edition-memory.test.mts
 git commit -m "Add edition queries, recent-edition memory and unsubscribe storage"
 ```
 
@@ -1334,7 +1361,7 @@ git commit -m "Add edition queries, recent-edition memory and unsubscribe storag
 
 - [ ] **Step 1: Replace the module**
 
-Keep from the current file: `stripCdata`, `decodeXml`, `readTag`, `parseDate`, `truncate`, `hostnameFromUrl`. Remove everything about themes, keyword lists, topic memory, scoring, `rankItems`, `groupIntoDrafts`, `collectTags`, `signalLine`, `providerLabel`.
+Keep from the current file: `stripCdata`, `decodeXml`, `readTag`, `parseDate`, `truncate`, `hostnameFromUrl`, the `PerplexitySearchResult` type and the three collectors `fetchFeed`, `fetchPerplexity`, `fetchXSignals`. Before rewriting, copy those three function bodies out of `git show HEAD:lib/briefing/agent.ts` and then apply the deltas listed below (all three lose their `theme` parameter; `fetchPerplexity`/`fetchXSignals` take no arguments). Remove everything about themes (`dailyThemes`, `getDailyTheme`), keyword lists (`signalKeywords`, `topicRules`, `lowSignalKeywords`), topic memory, scoring, `rankItems`, `groupIntoDrafts`, `collectTags`, `signalLine`, `providerLabel`, `getNewYorkDate`, `getAgeInDays`.
 
 ```ts
 import { Annotation, END, START, StateGraph } from '@langchain/langgraph';
@@ -1375,7 +1402,7 @@ const AgentState = Annotation.Root({
 - `search_recency_filter: 'day'`, no `search_domain_filter`, `max_tokens: 900`. Keep the endpoint `https://api.perplexity.ai/v1/sonar` (documented) and the `search_results`/`citations` mapping.
 - Each result → `{ title, url, publisher: hostnameFromUrl(url), publishedAt: parseDate(date || last_updated), category: guessCategory(title + snippet), summary: snippet || answer || title, provider: 'perplexity', reliability: 74, score: 0 }`.
 
-`fetchXSignals()`: 48h window; query `(AI OR LLM OR "open source model" OR agents OR OpenAI OR Anthropic OR Gemini OR DeepSeek) lang:en -is:retweet -is:reply`; keep only posts with engagement ≥ 50; `reliability: 55`, `score: 0`, `category: guessCategory(text)`.
+`fetchXSignals()`: 48h window; query `(AI OR LLM OR "open source model" OR agents OR OpenAI OR Anthropic OR Gemini OR DeepSeek) lang:en -is:retweet -is:reply`; engagement stays `likes + 2 × reposts + replies + quotes` (today's formula); keep only posts with engagement ≥ 50; `reliability: 55`, `score: 0`, `category: guessCategory(text)`, `publisher: 'X @username'` as today.
 
 Nodes:
 
@@ -1447,16 +1474,122 @@ Expected: the only errors are in `app/api/agent/daily-digest/route.ts` (it still
 ### Task 8: Daily digest route: one edition per day, resend when unsent
 
 **Files:**
+- Create: `lib/briefing/daily-action.ts`
 - Rewrite: `app/api/agent/daily-digest/route.ts`
+- Test: `tests/daily-action.test.mts`
 
-- [ ] **Step 1: Implement**
+The decision of what a run should do is the most consequential logic in the pipeline, so it lives in a pure, tested function; the route only wires it to Supabase, the agent and Resend.
+
+- [ ] **Step 1: Write the failing test for the decision**
 
 ```ts
+// tests/daily-action.test.mts
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { decideDailyAction } from '../lib/briefing/daily-action.ts';
+
+const dateKey = '2026-10-05';
+const published = (slug: string) => ({ slug, status: 'published' as const });
+const draft = (slug: string) => ({ slug, status: 'draft' as const });
+
+test('creates the daily edition when nothing exists', () => {
+  assert.deepEqual(decideDailyAction({ dateKey, editions: [], sentSlugs: new Set(), force: false, hhmm: '1700' }), { kind: 'create', slug: 'daily-2026-10-05' });
+});
+
+test('force always creates a suffixed edition', () => {
+  const action = decideDailyAction({ dateKey, editions: [published('daily-2026-10-05')], sentSlugs: new Set(['daily-2026-10-05']), force: true, hhmm: '1830' });
+  assert.deepEqual(action, { kind: 'create', slug: 'daily-2026-10-05-1830' });
+});
+
+test('skips when every published edition of the day was sent', () => {
+  const action = decideDailyAction({ dateKey, editions: [published('daily-2026-10-05-1830'), published('daily-2026-10-05')], sentSlugs: new Set(['daily-2026-10-05', 'daily-2026-10-05-1830']), force: false, hhmm: '2200' });
+  assert.equal(action.kind, 'skip');
+});
+
+test('resends the newest published edition that was never sent', () => {
+  const action = decideDailyAction({ dateKey, editions: [published('daily-2026-10-05-1830'), published('daily-2026-10-05')], sentSlugs: new Set(['daily-2026-10-05']), force: false, hhmm: '2200' });
+  assert.deepEqual(action, { kind: 'resend', slug: 'daily-2026-10-05-1830' });
+});
+
+test('publishes and sends a stranded draft instead of writing a second edition', () => {
+  const action = decideDailyAction({ dateKey, editions: [draft('daily-2026-10-05')], sentSlugs: new Set(), force: false, hhmm: '2200' });
+  assert.deepEqual(action, { kind: 'publish-and-send', slug: 'daily-2026-10-05' });
+});
+
+test('archived editions count as handled', () => {
+  const action = decideDailyAction({ dateKey, editions: [{ slug: 'daily-2026-10-05', status: 'archived' }], sentSlugs: new Set(), force: false, hhmm: '2200' });
+  assert.equal(action.kind, 'skip');
+});
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `node --experimental-strip-types --no-warnings --test tests/daily-action.test.mts`
+Expected: FAIL (module not found).
+
+- [ ] **Step 3: Implement `lib/briefing/daily-action.ts`**
+
+```ts
+import type { BriefingStatus } from './types';
+
+export type DailyEdition = { slug: string; status: BriefingStatus };
+
+export type DailyAction =
+  | { kind: 'create'; slug: string }
+  | { kind: 'publish-and-send'; slug: string }
+  | { kind: 'resend'; slug: string }
+  | { kind: 'skip'; slug: string; reason: string };
+
+// What the daily run should do, given every edition already created for the New York day
+// (newest first) and which of their slugs already have a sent email. The campaign key of an
+// edition is always its slug, so a forced edition and the regular one never share a key.
+export function decideDailyAction({
+  dateKey,
+  editions,
+  sentSlugs,
+  force,
+  hhmm,
+}: {
+  dateKey: string;
+  editions: DailyEdition[];
+  sentSlugs: Set<string>;
+  force: boolean;
+  hhmm: string;
+}): DailyAction {
+  if (force) return { kind: 'create', slug: `daily-${dateKey}-${hhmm}` };
+  if (editions.length === 0) return { kind: 'create', slug: `daily-${dateKey}` };
+
+  const unsent = editions.find((edition) => edition.status === 'published' && !sentSlugs.has(edition.slug));
+  if (unsent) return { kind: 'resend', slug: unsent.slug };
+
+  const stranded = editions.find((edition) => edition.status === 'draft');
+  if (stranded) return { kind: 'publish-and-send', slug: stranded.slug };
+
+  const handled = editions[0];
+  return {
+    kind: 'skip',
+    slug: handled.slug,
+    reason: `Edition ${handled.slug} was already ${handled.status === 'archived' ? 'archived' : 'sent'}.`,
+  };
+}
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `node --experimental-strip-types --no-warnings --test tests/daily-action.test.mts`
+Expected: PASS (6 tests).
+
+- [ ] **Step 5: Implement the route**
+
+```ts
+import { revalidatePath } from 'next/cache';
 import { NextResponse } from 'next/server';
 import { getNewYorkDateKey, runDailyBriefingAgent } from '@/lib/briefing/agent';
 import { isAdminRequestAuthorized } from '@/lib/briefing/admin-request';
+import { decideDailyAction } from '@/lib/briefing/daily-action';
 import { sendBriefingEmail } from '@/lib/briefing/email';
 import { findEditionsForDate, hasSentCampaign, publishBriefingPost, saveAgentDrafts } from '@/lib/briefing/posts';
+import type { BriefingPost } from '@/lib/briefing/types';
 import { safeEqual } from '@/lib/shared/request-guard';
 
 export const runtime = 'nodejs';
@@ -1472,8 +1605,22 @@ function isCronAuthorized(request: Request) {
   return safeEqual(bearer, secret) || safeEqual(header, secret);
 }
 
-function emailStatus(email: { sent: boolean; skipped?: boolean }) {
+// `skipped` is optional so this compiles against the current `sendBriefingEmail` too (Task 10 adds the field).
+function statusFor(email: { sent: boolean; skipped?: boolean }) {
   return email.sent || email.skipped ? 200 : 502;
+}
+
+// The newsletter page, the home cards and every edition page (prev/next links) show the new edition.
+function refreshPages() {
+  revalidatePath('/');
+  revalidatePath('/newsletter');
+  revalidatePath('/newsletter/[slug]', 'page');
+}
+
+async function sendAndRespond(post: BriefingPost, extra: Record<string, unknown>) {
+  const email = await sendBriefingEmail(post, { campaign: post.slug });
+  const status = statusFor(email);
+  return NextResponse.json({ ok: status === 200, campaign: post.slug, post, email, ...extra }, { status });
 }
 
 export async function POST(request: Request) {
@@ -1484,32 +1631,38 @@ export async function POST(request: Request) {
     const body = (await request.json().catch(() => ({}))) as { force?: boolean; dryRun?: boolean };
     const now = new Date();
     const dateKey = getNewYorkDateKey(now);
-    const campaign = `daily-${dateKey}`;
 
     if (body.dryRun) {
       const result = await runDailyBriefingAgent({ now });
-      return NextResponse.json({ ok: true, dryRun: true, campaign, writer: result.writer, draft: result.draft, run: result.run });
+      return NextResponse.json({ ok: true, dryRun: true, campaign: `daily-${dateKey}`, writer: result.writer, draft: result.draft, run: result.run });
     }
 
-    if (!body.force) {
-      const existing = await findEditionsForDate(dateKey);
-      const published = existing.find((post) => post.status === 'published');
-      if (published) {
-        if (await hasSentCampaign(published.slug)) {
-          return NextResponse.json({ ok: true, skipped: true, reason: `Edition ${published.slug} was already sent.`, campaign: published.slug });
-        }
-        // Published earlier (for example the writer ran but Resend failed): send it now instead of writing a second edition.
-        const email = await sendBriefingEmail(published, { campaign: published.slug });
-        return NextResponse.json({ ok: emailStatus(email) === 200, resent: true, campaign: published.slug, post: published, email }, { status: emailStatus(email) });
-      }
-      if (existing.length > 0) {
-        return NextResponse.json({ ok: true, skipped: true, reason: `Edition ${existing[0].slug} exists as a draft; publish it from the admin.`, campaign });
-      }
+    const editions = body.force ? [] : await findEditionsForDate(dateKey);
+    const sentSlugs = new Set<string>();
+    for (const edition of editions) if (await hasSentCampaign(edition.slug)) sentSlugs.add(edition.slug);
+    const action = decideDailyAction({
+      dateKey,
+      editions,
+      sentSlugs,
+      force: Boolean(body.force),
+      hhmm: now.toISOString().slice(11, 16).replace(':', ''),
+    });
+
+    if (action.kind === 'skip') {
+      return NextResponse.json({ ok: true, skipped: true, reason: action.reason, campaign: action.slug });
+    }
+    if (action.kind === 'resend') {
+      const post = editions.find((edition) => edition.slug === action.slug)!;
+      return sendAndRespond(post, { resent: true });
+    }
+    if (action.kind === 'publish-and-send') {
+      const stranded = editions.find((edition) => edition.slug === action.slug)!;
+      const post = await publishBriefingPost(stranded.id);
+      refreshPages();
+      return sendAndRespond(post, { recovered: true });
     }
 
-    // `force` always writes a new edition and emails every active subscriber again.
-    const slug = body.force ? `${campaign}-${now.toISOString().slice(11, 16).replace(':', '')}` : campaign;
-    const result = await runDailyBriefingAgent({ now, slug });
+    const result = await runDailyBriefingAgent({ now, slug: action.slug });
     if (!result.draft) {
       return NextResponse.json({ ok: false, message: "No edition could be built from today's sources.", notes: result.run.notes }, { status: 500 });
     }
@@ -1519,23 +1672,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, message: 'Edition was not stored.', storage, notes: result.run.notes }, { status: 500 });
     }
     const post = await publishBriefingPost(stored.id);
-    const email = await sendBriefingEmail(post, { campaign: slug });
-    const status = emailStatus(email);
-    return NextResponse.json({ ok: status === 200, campaign: slug, writer: result.writer, post, email, notes: result.run.notes }, { status });
+    refreshPages();
+    return sendAndRespond(post, { writer: result.writer, notes: result.run.notes });
   } catch (error) {
     return NextResponse.json({ ok: false, message: error instanceof Error ? error.message : 'Agent failed.' }, { status: 500 });
   }
 }
 ```
 
-`sendBriefingEmail` returns `skipped: true` when there is no API key or no subscribers (Task 10). Until Task 10 lands, add `skipped?: boolean` to its return type so this compiles, or do Tasks 8 and 10 in one go.
+Behaviour (spec §8): `dryRun` writes nothing. Without `force`: published-and-sent → `skipped`; published-and-unsent → re-sent (`resent: true`); a stranded draft (a run that died between insert and publish) → published and sent (`recovered: true`); nothing for the day → create, publish, send. `force` → new `daily-<date>-<hhmm>` and emails everyone again. HTTP 200 when published (also with `email.skipped`), 502 when Resend failed, 500 on no draft / not stored / thrown error. The campaign key is always the edition slug. `saveAgentDrafts` returns `{ stored: false }` when Supabase is not configured and throws on query errors; both end in a 500 without email. `findEditionsForDate` returns `BriefingPost[]`, which satisfies `DailyEdition[]` structurally and still carries `id` for publishing.
 
-- [ ] **Step 2: Type-check, lint, test, commit**
+- [ ] **Step 6: Type-check, lint, test, commit**
 
 Run: `npx tsc --noEmit -p tsconfig.json && npm run lint && npm test`
+Expected: clean, every test passes (the six new daily-action tests included).
 
 ```bash
-git add lib/briefing/agent.ts app/api/agent/daily-digest/route.ts
+git add lib/briefing/agent.ts lib/briefing/daily-action.ts tests/daily-action.test.mts app/api/agent/daily-digest/route.ts
 git commit -m "Rewrite the daily agent around ranking and the LLM writer; one edition per day"
 ```
 
@@ -1551,7 +1704,7 @@ git commit -m "Rewrite the daily agent around ranking and the LLM writer; one ed
 // tests/unsubscribe.test.mts
 import assert from 'node:assert/strict';
 import { afterEach, test } from 'node:test';
-import { buildUnsubscribeUrls, unsubscribeToken, verifyUnsubscribeToken } from '../lib/briefing/unsubscribe.ts';
+import { buildUnsubscribeUrls, hasUnsubscribeSecret, unsubscribeToken, verifyUnsubscribeToken } from '../lib/briefing/unsubscribe.ts';
 
 afterEach(() => {
   delete process.env.NEWSLETTER_UNSUBSCRIBE_SECRET;
@@ -1568,9 +1721,11 @@ test('token round-trips and is case/space insensitive on the email', () => {
 });
 
 test('falls back to AGENT_CRON_SECRET and returns null without any secret', () => {
+  assert.equal(hasUnsubscribeSecret(), false);
   assert.equal(unsubscribeToken('a@b.c'), null);
   assert.equal(buildUnsubscribeUrls('a@b.c'), null);
   process.env.AGENT_CRON_SECRET = 'cron';
+  assert.equal(hasUnsubscribeSecret(), true);
   const urls = buildUnsubscribeUrls('a@b.c')!;
   assert.match(urls.pageUrl, /\/newsletter\/sair\?email=a%40b\.c&token=/);
   assert.match(urls.apiUrl, /\/api\/newsletter\/unsubscribe\?email=a%40b\.c&token=/);
@@ -1594,6 +1749,10 @@ function secret() {
 
 export function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
+}
+
+export function hasUnsubscribeSecret() {
+  return Boolean(secret());
 }
 
 export function unsubscribeToken(email: string) {
@@ -1670,14 +1829,17 @@ export async function POST(request: Request) {
 
 - [ ] **Step 6: Page `app/newsletter/sair/page.tsx`**
 
-Server component. Reads `searchParams` (`email`, `token`, `state`; it is a Promise). Dark layout like `app/newsletter/obrigado/page.tsx` (same nav with `BrandMark`, same radial background). States:
+Server component. Reads `searchParams` (`email`, `token`, `state`; it is a Promise). Copy the shell of `app/newsletter/obrigado/page.tsx`: the `<main className="min-h-screen overflow-hidden bg-black text-white selection:bg-cyan-400/25">`, the radial background `div` (`bg-[radial-gradient(circle_at_18%_10%,rgba(34,211,238,0.16),transparent_30%),radial-gradient(circle_at_84%_30%,rgba(245,158,11,0.11),transparent_34%)]`) and the `<nav>` block at its lines 36–48 (BrandMark + "Thiagao Ai" on the left, a "Voltar" link to `/newsletter` on the right). Content card: `rounded-[34px] border border-white/10 bg-zinc-950/75 p-7`. States:
 - `state=done`: "Pronto, você saiu da lista." + link "Voltar para a newsletter" + "Mudou de ideia? Assine de novo quando quiser."
 - `state=invalid` or missing email/token: "Esse link de descadastro não é válido. Responda qualquer edição com SAIR que eu removo você."
 - otherwise: shows the email and a plain `<form method="post" action="/api/newsletter/unsubscribe">` with hidden `email` and `token` inputs and a button "Confirmar descadastro". (`form-action 'self'` in the CSP allows it; the API answers 303.)
 
 Metadata: `title: 'Sair da newsletter - Thiagao Ai Daily'`, `robots: { index: false, follow: false }`.
 
-- [ ] **Step 7: Lint, test, commit**
+- [ ] **Step 7: Type-check, lint, test, commit**
+
+Run: `npx tsc --noEmit -p tsconfig.json && npm run lint && npm test`
+Expected: clean; the two unsubscribe tests pass with the rest.
 
 ```bash
 git add lib/briefing/unsubscribe.ts app/api/newsletter/unsubscribe/route.ts app/newsletter/sair/page.tsx tests/unsubscribe.test.mts
@@ -1689,7 +1851,7 @@ git commit -m "Add signed one-click unsubscribe with a confirmation page"
 **Files:**
 - Create: `lib/briefing/edition.ts`
 - Rewrite: `lib/briefing/email-template.ts`
-- Modify: `lib/briefing/email.ts` (`sendBriefingEmail`; also fix the `/newslatter` default in `sendCustomNewsletterEmail` to `/newsletter`)
+- Modify: `lib/briefing/email.ts` (`sendBriefingEmail`, plus the two `/newslatter` defaults in `sendCustomNewsletterEmail`, see Step 7)
 - Modify: `lib/briefing/whatsapp.ts` (`renderBriefingWhatsApp`; import `./config.ts`)
 - Test: `tests/email-template.test.mts`, `tests/whatsapp.test.mts`
 
@@ -1777,7 +1939,16 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { renderBriefingWhatsApp } from '../lib/briefing/whatsapp.ts';
 import type { BriefingPost } from '../lib/briefing/types.ts';
-// copy the same `post` fixture as in tests/email-template.test.mts (keep the tests independent)
+
+const post: BriefingPost = {
+  id: '1', slug: 'daily-2026-10-05', status: 'published', title: 'GPT-6 em preview e Codestral aberto', dek: 'Dia de lançamentos.',
+  brief: 'texto legado', takeaway: 'Teste uma coisa hoje.', category: 'AI', tags: ['AI', 'Daily'], sources: [], relevanceScore: 90, readingMinutes: 4,
+  publishedAt: '2026-10-05T21:00:00Z', createdAt: '2026-10-05T21:00:00Z', subject: 'GPT-6 em preview', shareText: 'O dia em IA hoje',
+  items: [
+    { kind: 'lead', title: 'GPT-6 em preview', summary: 'A OpenAI liberou.', whyItMatters: 'Muda o teto.', category: 'AI', source: { title: 'Introducing GPT-6', url: 'https://openai.com/gpt6', publisher: 'OpenAI' } },
+    { kind: 'tool', title: 'Cursor 3', summary: 'Roda testes.', whyItMatters: 'Teste hoje.', category: 'DevTools', source: { title: 'Cursor 3', url: 'https://cursor.com/3', publisher: 'The Verge AI' } },
+  ],
+};
 
 test('whatsapp text lists items with the edition link', () => {
   const text = renderBriefingWhatsApp(post);
@@ -1787,11 +1958,16 @@ test('whatsapp text lists items with the edition link', () => {
 });
 ```
 
-- [ ] **Step 3: Run both to verify they fail**, then **Step 4: Implement `email-template.ts`**
+- [ ] **Step 3: Run both to verify they fail**
+
+Run: `node --experimental-strip-types --no-warnings --test tests/email-template.test.mts tests/whatsapp.test.mts`
+Expected: FAIL (`renderEditionEmail` is not exported / module not found).
+
+- [ ] **Step 4: Implement `email-template.ts`**
 
 Imports: `import { getSiteUrl } from './config.ts'; import { editionUrl, formatEditionDate, shareLinks } from './edition.ts';`.
 
-Export `escapeHtml`, `renderEditionEmail(post, { unsubscribeUrl }: { unsubscribeUrl: string | null })` and `renderEditionText(post, { unsubscribeUrl })`. Delete `renderBriefingEmail`/`renderBriefingText` (only `email.ts` used them).
+Re-export `escapeHtml` from the shared guard instead of keeping a second copy: `export { escapeHtml } from '../shared/request-guard.ts';` (that module has no imports, so it is safe for the test runner). Export `renderEditionEmail(post, { unsubscribeUrl }: { unsubscribeUrl: string | null })` and `renderEditionText(post, { unsubscribeUrl })`; keep `renderRichText`. Delete `renderBriefingEmail`/`renderBriefingText` (only `email.ts` used them).
 
 HTML (tables, inline styles, dark palette `#030405/#08090d`, cyan accents as today, max-width 680px):
 1. Preheader: `post.dek`.
@@ -1804,11 +1980,11 @@ HTML (tables, inline styles, dark palette `#030405/#08090d`, cyan accents as tod
 
 Every dynamic string goes through `escapeHtml` (including `shareText` inside share URLs, which are already URL-encoded, and the unsubscribe URL).
 
-Text version: header, date, headline, intro, `N. title` / summary / `Por que importa: …` / `Fonte: url`, take, "Ler no site: url", share hint, unsubscribe line (url or "Para sair, responda com SAIR").
+Text version: header, date, headline, intro, `N. title` / summary / `Por que importa: …` / `Fonte: url`, take, "Ler no site: url", share hint, unsubscribe line (url or "Para sair, responda com SAIR"). When `post.items.length === 0`, emit `post.brief` in place of the numbered list (legacy posts), exactly like the HTML version.
 
 - [ ] **Step 5: Update `sendBriefingEmail` in `lib/briefing/email.ts`**
 
-Imports: `renderEditionEmail`, `renderEditionText`, `escapeHtml` from `./email-template`; `buildUnsubscribeUrls`, `unsubscribeToken` from `./unsubscribe`.
+Imports: `renderEditionEmail`, `renderEditionText`, `escapeHtml` from `./email-template`; `buildUnsubscribeUrls`, `hasUnsubscribeSecret` from `./unsubscribe`.
 
 ```ts
 const UNSUB_PLACEHOLDER = '%%UNSUBSCRIBE_URL%%';
@@ -1833,7 +2009,7 @@ export async function sendBriefingEmail(post: BriefingPost, options: { campaign?
   const replyTo = getNewsletterReplyTo();
   const subject = post.subject?.trim() || post.title;
   const campaign = options.campaign ?? post.slug;
-  const hasTokens = Boolean(unsubscribeToken('probe@example.com'));
+  const hasTokens = hasUnsubscribeSecret();
   // Render once; the per-recipient unsubscribe link is substituted below.
   const html = renderEditionEmail(post, { unsubscribeUrl: hasTokens ? UNSUB_PLACEHOLDER : null });
   const text = renderEditionText(post, { unsubscribeUrl: hasTokens ? UNSUB_PLACEHOLDER : null });
@@ -1904,7 +2080,14 @@ Grupo Solocodando: {groupUrl or hint}
 
 Otherwise keep the current format but link `editionUrl(post)` instead of `/newslatter?tag=`.
 
-- [ ] **Step 7: Run tests, lint, type-check; commit**
+- [ ] **Step 7: Retire the `/newslatter` spelling in the custom senders**
+
+In `lib/briefing/email.ts` `sendCustomNewsletterEmail`, change the `ctaUrl` default and the `safeCtaUrl` fallback from `https://thiagao.io/newslatter` to `https://thiagao.io/newsletter`. In `lib/briefing/whatsapp.ts` `renderCustomWhatsApp`, replace `normalizeUrl('/newslatter')` with `normalizeUrl('/newsletter')`. (The old path still redirects, this is just noise removal while the files are open.)
+
+- [ ] **Step 8: Run tests, lint, type-check; commit**
+
+Run: `npx tsc --noEmit -p tsconfig.json && npm run lint && npm test`
+Expected: clean; email-template (2) and whatsapp (1) tests pass with the rest.
 
 ```bash
 git add lib/briefing/edition.ts lib/briefing/email-template.ts lib/briefing/email.ts lib/briefing/whatsapp.ts tests/email-template.test.mts tests/whatsapp.test.mts
@@ -1923,12 +2106,12 @@ git commit -m "Render the daily edition email with share and unsubscribe; send i
 
 - [ ] **Step 1: `app/components/SocialIcons.tsx`**
 
-Move the four icon components out of `app/briefing/page.tsx` unchanged and export them; update the imports in `app/briefing/page.tsx`.
+Move the four icon components out of `app/briefing/page.tsx` unchanged, together with the `IconProps` type they use (`app/briefing/page.tsx:40-42`), and export the components; update the imports in `app/briefing/page.tsx` (`import { FacebookIcon, InstagramIcon, LinkedinIcon, XIcon } from '../components/SocialIcons';`).
 
 - [ ] **Step 2: `app/newsletter/EditionItems.tsx`** (server component, no hooks)
 
 Props: `{ post: BriefingPost; compact?: boolean }`. Renders `<ol>` of `post.items`:
-- compact (used on `/newsletter` featured card): number, category pill, title as `<Link href={`/newsletter/${post.slug}#item-${n}`}>`, one-line `whyItMatters` in zinc-400.
+- compact (used on `/newsletter` featured card): number, category pill, title as `<Link href={`/newsletter/${post.slug}#item-${n}`}>`, one-line `whyItMatters` in zinc-400. `n = index + 1`; the full mode uses the same 1-based number for `id="item-N"` and for the displayed number.
 - full: `<li id="item-N" className="scroll-mt-28">` with number + pill (+ "Para testar hoje" label for `tool`), `<h2>` title, summary, "Por que importa" callout (`border-l-2 border-cyan-300/60 pl-4`), and `<a href={source.url} target="_blank" rel="noreferrer">Ler na fonte · {publisher}</a>`.
 - When `post.items.length === 0`, render `post.brief` split on blank lines as paragraphs (legacy).
 
@@ -1936,7 +2119,7 @@ Tailwind follows `app/briefing/page.tsx` (rounded-[26px] cards, `border-zinc-800
 
 - [ ] **Step 3: `app/newsletter/[slug]/ShareButtons.tsx`** (`'use client'`)
 
-Props: `{ links: { whatsapp: string; x: string; linkedin: string; url: string } }`. Buttons: WhatsApp, X, LinkedIn (anchors, `target="_blank" rel="noreferrer"`) and "Copiar link" (`navigator.clipboard.writeText(url)` inside try/catch, shows "Copiado" for 2 s via `useState` + `setTimeout`). Use `MessageCircle` from lucide for WhatsApp and `XIcon`/`LinkedinIcon` from `SocialIcons`.
+Props: `{ links: { whatsapp: string; x: string; linkedin: string; url: string } }`. Buttons: WhatsApp, X, LinkedIn (anchors, `target="_blank" rel="noreferrer"`) and "Copiar link" (`navigator.clipboard.writeText(url)` inside try/catch, shows "Copiado" for 2 s via `useState` + `setTimeout`; the clipboard API needs a secure context, which localhost and https both are). Use `MessageCircle` from lucide for WhatsApp and `import { XIcon, LinkedinIcon } from '../../components/SocialIcons';`. Button classes: `inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white transition-colors hover:border-cyan-300/40` (same as the share row in `app/newsletter/obrigado/page.tsx`).
 
 - [ ] **Step 4: `app/newsletter/[slug]/page.tsx`**
 
@@ -1964,10 +2147,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${post.title} - Thiagao Ai Daily`,
     description: post.dek,
     alternates: { canonical: `/newsletter/${post.slug}` },
-    openGraph: { type: 'article', title: post.title, description: post.dek, url: `/newsletter/${post.slug}`, publishedTime: post.publishedAt ?? undefined, images: ['/og/home.jpg'] },
+    openGraph: {
+      type: 'article',
+      title: post.title,
+      description: post.dek,
+      url: `/newsletter/${post.slug}`,
+      publishedTime: post.publishedAt ?? undefined,
+      images: ['/og/home.jpg'],
+    },
     twitter: { card: 'summary_large_image', title: post.title, description: post.dek, images: ['/og/home.jpg'] },
   };
 }
+
+const pill = 'inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-cyan-200';
+const navButton =
+  'inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-bold text-white transition-colors hover:border-cyan-300/40';
+const editionCard = 'rounded-[26px] border border-white/10 p-5 transition-colors hover:border-cyan-300/40';
 
 export default async function EditionPage({ params }: Props) {
   const { slug } = await params;
@@ -1975,30 +2170,107 @@ export default async function EditionPage({ params }: Props) {
   if (!post) notFound();
   const { previous, next } = await getAdjacentEditions(post);
   const links = shareLinks(post, 'page');
+
   return (
-    <main className="min-h-screen bg-black text-white">
-      {/* nav: BrandMark + "Thiagao Ai" (Link "/"), right: Link "/newsletter#briefings" "Todas as edições", anchor "#assinar" "Assinar" */}
-      {/* header: pill "Thiagao Ai Daily · {formatEditionDate(post.publishedAt)}", h1 post.title (font-display), p post.dek, meta "{post.readingMinutes} min · {post.items.length} notícias" */}
-      {/* <ShareButtons links={links} /> */}
-      {/* <EditionItems post={post} /> */}
-      {/* "Take do dia" card: post.takeaway */}
-      {/* second share row + "Encaminhe para alguém que acompanha IA." */}
-      {/* prev/next: Link to /newsletter/{previous.slug} (ArrowLeft + title) and /newsletter/{next.slug} (title + ArrowRight) when present */}
-      {/* <section id="assinar"> short pitch + <SubscribeForm source="edition-page" /> */}
+    <main className="min-h-screen overflow-hidden bg-black text-white selection:bg-cyan-400/25">
+      <div className="relative px-6 py-8">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(34,211,238,0.16),transparent_30%),radial-gradient(circle_at_84%_30%,rgba(245,158,11,0.11),transparent_34%)]" />
+        <div className="relative mx-auto max-w-4xl">
+          <nav className="flex items-center justify-between gap-4">
+            <Link href="/" className="flex items-center gap-3">
+              <BrandMark className="h-10 w-10 rounded-2xl" />
+              <span className="text-xl font-bold tracking-tight">Thiagao Ai</span>
+            </Link>
+            <div className="flex items-center gap-2">
+              <Link href="/newsletter#briefings" className={navButton}>
+                Todas as edições
+              </Link>
+              <a href="#assinar" className={navButton}>
+                Assinar
+              </a>
+            </div>
+          </nav>
+
+          <header className="mt-16">
+            <p className={pill}>Thiagao Ai Daily · {formatEditionDate(post.publishedAt)}</p>
+            <h1
+              className="mt-6 text-[40px] font-normal leading-[1.02] tracking-tight sm:text-[64px]"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              {post.title}
+            </h1>
+            <p className="mt-6 text-lg leading-relaxed text-zinc-300">{post.dek}</p>
+            <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">
+              {post.readingMinutes} min · {post.items.length} notícias
+            </p>
+            <div className="mt-6">
+              <ShareButtons links={links} />
+            </div>
+          </header>
+
+          <section className="mt-12">
+            <EditionItems post={post} />
+          </section>
+
+          <section className="mt-12 rounded-[30px] border border-cyan-300/20 bg-cyan-300/[0.06] p-6">
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200">Take do dia</p>
+            <p className="mt-3 text-lg leading-relaxed text-zinc-100">{post.takeaway}</p>
+          </section>
+
+          <section className="mt-10 rounded-[30px] border border-white/10 bg-zinc-950/70 p-6">
+            <p className="text-sm text-zinc-400">Gostou? Encaminhe para alguém que acompanha IA.</p>
+            <div className="mt-4">
+              <ShareButtons links={links} />
+            </div>
+          </section>
+
+          <nav className="mt-10 grid gap-3 sm:grid-cols-2" aria-label="Outras edições">
+            {previous ? (
+              <Link href={`/newsletter/${previous.slug}`} className={editionCard} aria-label={`Edição anterior: ${previous.title}`}>
+                <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">
+                  <ArrowLeft className="h-4 w-4" /> Edição anterior
+                </span>
+                <span className="mt-2 block text-lg font-semibold text-white">{previous.title}</span>
+              </Link>
+            ) : (
+              <span />
+            )}
+            {next ? (
+              <Link href={`/newsletter/${next.slug}`} className={`${editionCard} text-right`} aria-label={`Próxima edição: ${next.title}`}>
+                <span className="flex items-center justify-end gap-2 text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">
+                  Próxima edição <ArrowRight className="h-4 w-4" />
+                </span>
+                <span className="mt-2 block text-lg font-semibold text-white">{next.title}</span>
+              </Link>
+            ) : null}
+          </nav>
+
+          <section id="assinar" className="mt-16 scroll-mt-28">
+            <p className={pill}>Receba todo dia</p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight">Uma edição por dia, às 17h de Nova York.</h2>
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-400">
+              Cinco a sete notícias de IA explicadas sem hype, com fontes e um take prático.
+            </p>
+            <div className="mt-6">
+              <SubscribeForm source="edition-page" />
+            </div>
+          </section>
+        </div>
+      </div>
     </main>
   );
 }
 ```
 
-Fill the JSX following the classes used in `app/newsletter/obrigado/page.tsx` for nav/background and `app/briefing/page.tsx` for cards.
+Every import above is used, so `npm run lint` passes on the file as written.
 
 - [ ] **Step 5: Verify locally**
 
 Start the dev server (without `LOCAL_DEMO_DB`, so the bundled fallback posts are served): `npm run dev` in the background, then:
 
 ```bash
-curl -s http://localhost:3002/newsletter/agentic-ops-briefing | grep -c "Take do dia"   # expect 1
-curl -s -o /dev/null -w '%{http_code}\n' http://localhost:3002/newsletter/nope          # expect 404
+curl -s http://localhost:3002/newsletter/agentic-ops-briefing | grep -o "Take do dia" | wc -l   # expect ≥ 1 (the RSC payload repeats the text)
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost:3002/newsletter/nope                   # expect 404
 ```
 
 - [ ] **Step 6: Lint, type-check, commit**
@@ -2017,7 +2289,7 @@ git commit -m "Add the edition page with share buttons and prev/next navigation"
 
 - [ ] **Step 1: Featured block**
 
-Replace the `featured.brief` paragraph with `<EditionItems post={featured} compact />` followed by `<Link href={`/newsletter/${featured.slug}`}>Ler a edição completa →</Link>`. Add the date (`formatEditionDate(featured.publishedAt)`) next to the category pill. Keep the right-hand "Take principal" card.
+Add `import EditionItems from '../newsletter/EditionItems';` and `import { formatEditionDate } from '@/lib/briefing/edition';` to the imports at the top of `app/briefing/page.tsx`. Replace the `featured.brief` paragraph (currently `<p className="mt-6 max-w-3xl text-base leading-relaxed text-zinc-500">{featured.brief}</p>`) with `<EditionItems post={featured} compact />` followed by `<Link href={`/newsletter/${featured.slug}`} className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-cyan-200">Ler a edição completa <ArrowRight className="h-4 w-4" /></Link>`. Add the date (`formatEditionDate(featured.publishedAt)`) as another span next to the category pill. Keep the right-hand "Take principal" card.
 
 - [ ] **Step 2: Archive cards and "Dias anteriores"**
 
@@ -2050,6 +2322,10 @@ import type { MetadataRoute } from 'next';
 import { getPublishedBriefings } from '@/lib/briefing/posts';
 
 const siteUrl = 'https://thiagao.io';
+
+// The sitemap is otherwise frozen at build time (the Docker build has no Supabase env), so new editions
+// would never appear; revalidating hourly makes it pick them up.
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { posts } = await getPublishedBriefings({ limit: 60 });
@@ -2115,18 +2391,18 @@ async function runEdition(mode: 'preview' | 'send') {
 }
 ```
 
-(`router` already exists in the component if it uses `useRouter`; otherwise add it.)
+The component does not use the router today: add `import { useRouter } from 'next/navigation';` and `const router = useRouter();` next to the other state. `router.refresh()` re-fetches the server component data; the `drafts` list lives in `useState(initialDrafts)` so it will not change, which is fine because a forced edition is published, not drafted. The browser `fetch` has no timeout while the route can take a couple of minutes (feeds + writer); the helper text below says a proxy timeout in the panel does not mean the server-side run failed.
 
-- [ ] **Step 2: Add the section** above the drafts list: heading "Edição de hoje", helper text "A pré-visualização roda o coletor e o redator (uma chamada ao DeepSeek) sem gravar nada.", two buttons ("Pré-visualizar", "Gerar, publicar e enviar agora"), and a `<pre className="whitespace-pre-wrap …">` with `editionResult`. In each draft card show `draft.subject` (when present) and `${draft.items.length} notícias`.
+- [ ] **Step 2: Add the section** above the drafts list: heading "Edição de hoje", helper text "A pré-visualização roda o coletor e o redator (uma chamada ao DeepSeek) sem gravar nada. A geração pode levar alguns minutos; se o painel der timeout, confira em /newsletter antes de repetir.", two buttons ("Pré-visualizar edição de hoje", "Gerar, publicar e enviar agora"), and a `<pre className="whitespace-pre-wrap …">` with `editionResult`. In each draft card show `draft.subject` (when present) and `${draft.items.length} notícias`. While in these files, replace the two `/newslatter` leftovers: the `ctaUrl` default in this component (around line 35) and `href="/newslatter"` in `app/admin/newsletter/page.tsx` (around line 209) both become `/newsletter`.
 
 - [ ] **Step 3: Lint, commit**
 
 ```bash
-git add app/admin/newsletter/AdminNewsletterClient.tsx
+git add app/admin/newsletter/AdminNewsletterClient.tsx app/admin/newsletter/page.tsx
 git commit -m "Let the admin preview or trigger today's edition"
 ```
 
-### Task 14: Workflow keepalive, config status, docs
+### Task 14: Workflow keep-enabled step, config status, docs
 
 **Files:**
 - Modify: `.github/workflows/daily-briefing.yml`, `lib/briefing/config.ts`, `docs/newsletter-briefing.md`, `README.md` (Newsletter paragraph)
@@ -2188,13 +2464,15 @@ jobs:
             -H "Content-Type: application/json" \
             --data "{\"force\":$FORCE,\"dryRun\":$DRY_RUN}"
 
-      # GitHub disables cron workflows after 60 days without repository activity
-      # (this one was disabled that way on 2026-06-29). Re-enabling it on every run resets the clock.
+      # GitHub disables cron workflows after 60 days without repository activity (this one was
+      # disabled that way on 2026-06-29). Re-enabling on every run keeps it on. The third-party
+      # keepalive action is not used: its repository is blocked on GitHub (HTTP 403, April 2025).
+      # Manual fallback: `gh workflow enable daily-briefing.yml`.
       - name: Keep the schedule enabled
         if: always()
-        uses: gautamkrishnar/keepalive-workflow@v2
-        with:
-          use_api: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow enable daily-briefing.yml --repo "$GITHUB_REPOSITORY"
 ```
 
 - [ ] **Step 2: Config status**
@@ -2215,7 +2493,7 @@ git commit -m "Keep the daily cron alive and document the new edition pipeline"
 ### Task 15: End-to-end verification
 
 - [ ] **Step 1:** `npm run check` (lint + tests + build). Expected: all green. Stop any running `next dev` first.
-- [ ] **Step 2:** With no LLM key: `LOCAL_DEMO_DB=1 npm run dev` (background) then `curl -s -X POST localhost:3002/api/agent/daily-digest -H 'content-type: application/json' -d '{"dryRun":true}' | head -c 3000`. Expected: `"writer":"fallback"`, a draft with ≥ 3 items from distinct hosts, notes listing the window and any feed failures.
-- [ ] **Step 3:** `curl -s -X POST localhost:3002/api/agent/daily-digest -H 'content-type: application/json' -d '{}'` → creates and publishes `daily-<today>` in `.data/local-db.json` (email `skipped: true`, no Resend key); a second call returns `skipped: true` (because `hasSentCampaign` is false it would try to resend, and with no key returns `skipped` → confirm the response says `resent: true` with `email.skipped: true`). Then `curl -s http://localhost:3002/newsletter/daily-<today> | grep -c "Take do dia"` → `1`, and `curl -s http://localhost:3002/newsletter | grep -c "Ler a edição completa"` → `1`.
+- [ ] **Step 2:** With no LLM key: `LOCAL_DEMO_DB=1 npm run dev` (background) then `curl -s -X POST localhost:3002/api/agent/daily-digest -H 'content-type: application/json' -d '{"dryRun":true}' | head -c 3000`. Expected: `"writer":"fallback"`, a draft with ≥ 3 items from distinct hosts, notes listing the window and any feed failures. A note like `Perplexity returned 4xx` only means the key is absent or the endpoint changed (Perplexity documents both `/v1/sonar` and `/chat/completions`); it does not fail the run.
+- [ ] **Step 3:** `curl -s -X POST localhost:3002/api/agent/daily-digest -H 'content-type: application/json' -d '{}'` → creates and publishes `daily-<today>` in `.data/local-db.json`; the response has `email: { sent: false, skipped: true, … }` (no Resend key) and HTTP 200. A second identical call must return HTTP 200 with `resent: true`, `campaign: "daily-<today>"` and again `email.skipped: true`, and **no** top-level `skipped` (the edition exists, was never sent, so the route tries to send it again). Then `curl -s http://localhost:3002/newsletter/daily-<today> | grep -o "Take do dia" | wc -l` → ≥ 1, and `curl -s http://localhost:3002/newsletter | grep -o "Ler a edição completa" | wc -l` → ≥ 1.
 - [ ] **Step 4:** `.data/` is git-ignored (check `.gitignore`); leave the local row in place or delete it, either is fine.
 - [ ] **Step 5:** Push the branch and open a PR whose body carries the spec's section 14 as the "after merge" checklist.

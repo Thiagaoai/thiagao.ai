@@ -57,7 +57,8 @@ app/
 │   ├── home/LazyVideo.tsx       # Vídeos abaixo da dobra carregados sob demanda
 │   ├── hands-hero/              # Hero com as mãos (WebGL) portado de vikod3/handstouch
 │   └── BrandMark.tsx            # Logo e wordmark
-├── briefing/                    # Newsletter (servida em /newsletter; /briefing é alias)
+├── briefing/                    # Arquivo da newsletter (servido em /newsletter; /briefing é alias)
+├── newsletter/                  # Página de cada edição (/newsletter/[slug]), descadastro (/newsletter/sair)
 ├── farmz3d/                     # Loja Farmz3D
 ├── reviews-machine/             # Produto DockPlus: Reviews Machine + Missed-Call Text-Back
 ├── admin/                       # Painéis (newsletter, Farmz3D)
@@ -104,7 +105,7 @@ images: {
 
 ### Newsletter
 
-O formulário da home e da página de newsletter grava em `/api/newsletter/subscribe` (Supabase). Veja `docs/newsletter-briefing.md`.
+A newsletter é uma **edição diária** ("edição diária") gerada pelo agente às 17h de New York: coleta, deduplica, ranqueia, redige com um LLM (com fallback) e publica em `/newsletter/<slug>` antes de enviar por email. O formulário da home e da página de newsletter grava em `/api/newsletter/subscribe` (Supabase). Pipeline, variáveis, teste local, descadastro e cron em [`docs/newsletter-briefing.md`](docs/newsletter-briefing.md).
 
 ## 📱 Responsividade
 

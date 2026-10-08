@@ -1,4 +1,4 @@
-name: Daily ThigaoA.i Briefing
+name: Daily Thiagao Ai Edition
 
 on:
   workflow_dispatch:
@@ -8,11 +8,20 @@ on:
         required: false
         type: boolean
         default: false
+      force:
+        description: Create and send a new edition even if today's already went out (emails everyone again).
+        required: false
+        type: boolean
+        default: false
   schedule:
     # GitHub cron runs in UTC. This runs around 5 PM New York across DST.
-    # The agent endpoint is idempotent for the New York day, so delayed or
-    # duplicated schedule runs will not send duplicate emails.
+    # The agent endpoint is idempotent for the New York day (and resends an unsent
+    # edition), so the duplicated hour is safe.
     - cron: '0 21,22 * * *'
+
+permissions:
+  contents: read
+  actions: write
 
 jobs:
   publish-and-send:
@@ -28,24 +37,25 @@ jobs:
           elif [ "$HOUR" -ge 17 ] && [ "$HOUR" -le 23 ]; then
             SHOULD_RUN=true
           fi
-          echo "hour=$HOUR" >> "$GITHUB_OUTPUT"
           echo "should_run=$SHOULD_RUN" >> "$GITHUB_OUTPUT"
-          echo "New York hour: $HOUR"
-          echo "Should run: $SHOULD_RUN"
+          echo "New York hour: $HOUR / should run: $SHOULD_RUN"
 
-      - name: Skip outside the late-afternoon send window
-        if: steps.time.outputs.should_run != 'true'
-        run: echo "Outside the 5 PM New York send window. Skipping."
-
-      - name: Call briefing agent
+      - name: Call the edition agent
         if: steps.time.outputs.should_run == 'true'
         run: |
           DRY_RUN="${{ inputs.dry_run || false }}"
-          FORCE=false
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "$DRY_RUN" != "true" ]; then
-            FORCE=true
-          fi
-          curl --fail-with-body -X POST "${{ secrets.BRIEFING_AGENT_URL }}" \
+          FORCE="${{ inputs.force || false }}"
+          curl --fail-with-body --max-time 300 -X POST "${{ secrets.BRIEFING_AGENT_URL }}" \
             -H "Authorization: Bearer ${{ secrets.AGENT_CRON_SECRET }}" \
             -H "Content-Type: application/json" \
             --data "{\"force\":$FORCE,\"dryRun\":$DRY_RUN}"
+
+      # GitHub disables cron workflows after 60 days without repository activity (this one was
+      # disabled that way on 2026-06-29). Re-enabling on every run keeps it on. The third-party
+      # keepalive action is not used: its repository is blocked on GitHub (HTTP 403, April 2025).
+      # Manual fallback: `gh workflow enable daily-briefing.yml`.
+      - name: Keep the schedule enabled
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow enable daily-briefing.yml --repo "$GITHUB_REPOSITORY"

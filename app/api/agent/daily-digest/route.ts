@@ -1,125 +1,101 @@
+import { revalidatePath } from 'next/cache';
 import { NextResponse } from 'next/server';
-import { runDailyBriefingAgent } from '@/lib/briefing/agent';
+import { getNewYorkDateKey, runDailyBriefingAgent } from '@/lib/briefing/agent';
+import { isAdminRequestAuthorized } from '@/lib/briefing/admin-request';
+import { decideDailyAction } from '@/lib/briefing/daily-action';
 import { sendBriefingEmail } from '@/lib/briefing/email';
-import { hasSentCampaign, publishBriefingPost, saveAgentDrafts } from '@/lib/briefing/posts';
+import { findEditionsForDate, hasSentCampaign, publishBriefingPost, saveAgentDrafts } from '@/lib/briefing/posts';
+import type { BriefingPost } from '@/lib/briefing/types';
+import { safeEqual } from '@/lib/shared/request-guard';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+// No-op on the Dokploy container, but documents the budget: feeds + writer (≤ 2 × 90 s) + batched sends.
+export const maxDuration = 300;
 
-function isAuthorized(request: Request) {
+function isCronAuthorized(request: Request) {
   const secret = process.env.AGENT_CRON_SECRET;
   if (!secret && process.env.NODE_ENV !== 'production') return true;
   if (!secret) return false;
-
-  const bearer = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
-  const headerSecret = request.headers.get('x-agent-secret');
-
-  return bearer === secret || headerSecret === secret;
+  const bearer = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? '';
+  const header = request.headers.get('x-agent-secret') ?? '';
+  return safeEqual(bearer, secret) || safeEqual(header, secret);
 }
 
-function getNewYorkDateKey() {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/New_York',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(new Date());
+// 200 when the edition is out (sent, or send skipped for a benign reason); 502 when Resend itself failed, so the cron goes red.
+function statusFor(email: { sent: boolean; skipped?: boolean }) {
+  return email.sent || email.skipped ? 200 : 502;
+}
 
-  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
+// The newsletter page, the home cards and every edition page (prev/next links) show the new edition.
+function refreshPages() {
+  revalidatePath('/');
+  revalidatePath('/newsletter');
+  revalidatePath('/newsletter/[slug]', 'page');
+}
 
-  return `${value('year')}-${value('month')}-${value('day')}`;
+async function sendAndRespond(post: BriefingPost, extra: Record<string, unknown>) {
+  const email = await sendBriefingEmail(post, { campaign: post.slug });
+  const status = statusFor(email);
+  return NextResponse.json({ ok: status === 200, campaign: post.slug, post, email, ...extra }, { status });
 }
 
 export async function POST(request: Request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json(
-      {
-        ok: false,
-        message: 'Unauthorized.',
-      },
-      { status: 401 },
-    );
+  if (!isCronAuthorized(request) && !isAdminRequestAuthorized(request)) {
+    return NextResponse.json({ ok: false, message: 'Unauthorized.' }, { status: 401 });
   }
-
   try {
     const body = (await request.json().catch(() => ({}))) as { force?: boolean; dryRun?: boolean };
-    const campaign = `daily-${getNewYorkDateKey()}`;
+    const now = new Date();
+    const dateKey = getNewYorkDateKey(now);
 
     if (body.dryRun) {
-      const result = await runDailyBriefingAgent();
-
-      return NextResponse.json({
-        ok: true,
-        dryRun: true,
-        campaign,
-        draftsCreated: result.drafts.length,
-        preview: result.drafts.map((draft) => ({
-          title: draft.title,
-          dek: draft.dek,
-          category: draft.category,
-          relevanceScore: draft.relevanceScore,
-          sources: draft.sources.map((source) => ({
-            publisher: source.publisher,
-            title: source.title,
-          })),
-        })),
-        run: result.run,
-      });
+      const result = await runDailyBriefingAgent({ now });
+      return NextResponse.json({ ok: true, dryRun: true, campaign: `daily-${dateKey}`, writer: result.writer, draft: result.draft, run: result.run });
     }
 
-    const alreadySent = body.force ? false : await hasSentCampaign(campaign);
+    const editions = body.force ? [] : await findEditionsForDate(dateKey);
+    const sentSlugs = new Set<string>();
+    for (const edition of editions) if (await hasSentCampaign(edition.slug)) sentSlugs.add(edition.slug);
+    const action = decideDailyAction({
+      dateKey,
+      editions,
+      sentSlugs,
+      force: Boolean(body.force),
+      hhmm: new Intl.DateTimeFormat('en-GB', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+        .format(now)
+        .replace(':', ''),
+    });
 
-    if (alreadySent) {
-      return NextResponse.json({
-        ok: true,
-        skipped: true,
-        reason: 'Daily briefing was already sent today in America/New_York.',
-        campaign,
-      });
+    if (action.kind === 'skip') {
+      return NextResponse.json({ ok: true, skipped: true, reason: action.reason, campaign: action.slug });
+    }
+    if (action.kind === 'resend') {
+      const post = editions.find((edition) => edition.slug === action.slug)!;
+      return sendAndRespond(post, { resent: true });
+    }
+    if (action.kind === 'publish-and-send') {
+      const stranded = editions.find((edition) => edition.slug === action.slug)!;
+      const post = await publishBriefingPost(stranded.id);
+      refreshPages();
+      return sendAndRespond(post, { recovered: true });
     }
 
-    const result = await runDailyBriefingAgent();
-    const storage = await saveAgentDrafts(result.drafts, result.run);
-    const storedDrafts = 'drafts' in storage && Array.isArray(storage.drafts) ? storage.drafts : [];
-    const primaryDraft = storedDrafts[0] ?? null;
-
-    if (!primaryDraft) {
-      return NextResponse.json(
-        {
-          ok: false,
-          message: 'No briefing draft was created, so no email was sent.',
-          draftsCreated: result.drafts.length,
-          storage,
-          notes: result.run.notes,
-        },
-        { status: 500 },
-      );
+    const result = await runDailyBriefingAgent({ now, slug: action.slug });
+    if (!result.draft) {
+      return NextResponse.json({ ok: false, message: "No edition could be built from today's sources.", notes: result.run.notes }, { status: 500 });
     }
-
-    const post = await publishBriefingPost(primaryDraft.id);
-    const email = await sendBriefingEmail(post, { campaign });
-
-    return NextResponse.json(
-      {
-        ok: Boolean(email.sent),
-        campaign,
-        draftsCreated: result.drafts.length,
-        publishedPost: post,
-        email,
-        storage,
-        notes: result.run.notes,
-      },
-      { status: email.sent ? 200 : 500 },
-    );
+    const storage = await saveAgentDrafts([result.draft], result.run);
+    const stored = 'drafts' in storage ? storage.drafts?.[0] : undefined;
+    if (!stored) {
+      return NextResponse.json({ ok: false, message: 'Edition was not stored.', storage, notes: result.run.notes }, { status: 500 });
+    }
+    const post = await publishBriefingPost(stored.id);
+    refreshPages();
+    // Things the cron log should show first: a collector that failed, a memory lookup that was skipped
+    // (no-repeat guarantee weakened), or the template fallback instead of the LLM.
+    const warnings = result.run.notes.filter((note) => /failed|skipped|fell back/i.test(note));
+    return sendAndRespond(post, { writer: result.writer, warnings, notes: result.run.notes });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Agent failed.';
-
-    return NextResponse.json(
-      {
-        ok: false,
-        message,
-      },
-      { status: 500 },
-    );
+    return NextResponse.json({ ok: false, message: error instanceof Error ? error.message : 'Agent failed.' }, { status: 500 });
   }
 }

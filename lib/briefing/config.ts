@@ -1,6 +1,7 @@
 export const DEFAULT_NEWSLETTER_FROM = 'Thiagao Ai Briefing <dockplus@dockplusai.com>';
 export const DEFAULT_NEWSLETTER_REPLY_TO = 'dockplus@dockplusai.com';
-export const DEFAULT_SITE_URL = 'https://www.thiagao.io';
+// Matches the canonical emitted by app/layout.tsx (metadataBase), so email, share and unsubscribe links agree with the pages.
+export const DEFAULT_SITE_URL = 'https://thiagao.io';
 
 export function getNewsletterFrom() {
   return process.env.NEWSLETTER_FROM || DEFAULT_NEWSLETTER_FROM;
@@ -26,6 +27,8 @@ export function getBriefingConfigStatus() {
     langSmithTracing: process.env.LANGSMITH_TRACING === 'true',
     perplexityApiKey: Boolean(process.env.PERPLEXITY_API_KEY),
     xBearerToken: Boolean(process.env.X_BEARER_TOKEN || process.env.TWITTER_BEARER_TOKEN),
+    writerApiKey: Boolean(process.env.NEWSLETTER_WRITER_API_KEY || process.env.DEEPSEEK_API_KEY),
+    unsubscribeSecret: Boolean(process.env.NEWSLETTER_UNSUBSCRIBE_SECRET || process.env.AGENT_CRON_SECRET),
   };
 
   return {
@@ -38,6 +41,8 @@ export function getBriefingConfigStatus() {
       tracing: checks.langSmithApiKey && checks.langSmithTracing,
       freshResearch: checks.perplexityApiKey,
       socialSignals: checks.xBearerToken,
+      writer: checks.writerApiKey,
+      unsubscribe: checks.unsubscribeSecret,
     },
     sender: {
       from: getNewsletterFrom(),

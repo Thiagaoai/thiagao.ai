@@ -206,7 +206,7 @@ export default async function AdminNewsletterPage() {
             <Link href="/admin/farmz3d" className="rounded-full border border-cyan-300/30 px-5 py-3 text-sm font-bold text-cyan-100 transition-colors hover:bg-cyan-300/10">
               Farmz3D + DockPlus
             </Link>
-            <Link href="/newslatter"className="rounded-full border border-white/10 px-5 py-3 text-sm font-bold text-zinc-300 transition-colors hover:text-white">
+            <Link href="/newsletter" className="rounded-full border border-white/10 px-5 py-3 text-sm font-bold text-zinc-300 transition-colors hover:text-white">
               Ver newsletter
             </Link>
             <Link href="/briefing" className="rounded-full bg-white px-5 py-3 text-sm font-black text-black transition-colors hover:bg-cyan-100">
