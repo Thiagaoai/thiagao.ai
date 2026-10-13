@@ -1,0 +1,80 @@
+[
+ {
+  "id": "A1",
+  "tipo": "av",
+  "inicio": 0.0,
+  "duracao": 15.0
+ },
+ {
+  "id": "S01",
+  "tipo": "cena",
+  "inicio": 15.0,
+  "duracao": 27.89
+ },
+ {
+  "id": "S02",
+  "tipo": "cena",
+  "inicio": 42.89,
+  "duracao": 28.91
+ },
+ {
+  "id": "S03",
+  "tipo": "cena",
+  "inicio": 71.8,
+  "duracao": 34.44
+ },
+ {
+  "id": "S04",
+  "tipo": "cena",
+  "inicio": 106.24,
+  "duracao": 21.96
+ },
+ {
+  "id": "S05",
+  "tipo": "cena",
+  "inicio": 128.2,
+  "duracao": 21.8
+ },
+ {
+  "id": "A2",
+  "tipo": "av",
+  "inicio": 150.0,
+  "duracao": 10.0
+ },
+ {
+  "id": "S06",
+  "tipo": "demo",
+  "inicio": 160.0,
+  "duracao": 32.0
+ },
+ {
+  "id": "S07",
+  "tipo": "cena",
+  "inicio": 192.0,
+  "duracao": 27.15
+ },
+ {
+  "id": "S08",
+  "tipo": "cena",
+  "inicio": 219.15,
+  "duracao": 19.89
+ },
+ {
+  "id": "S09",
+  "tipo": "cena",
+  "inicio": 239.04,
+  "duracao": 27.23
+ },
+ {
+  "id": "S10",
+  "tipo": "cena",
+  "inicio": 266.27,
+  "duracao": 13.73
+ },
+ {
+  "id": "A3",
+  "tipo": "av",
+  "inicio": 280.0,
+  "duracao": 20.0
+ }
+]

@@ -1,0 +1,359 @@
+1
+00:00:00,000 --> 00:00:03,499
+Este projeto passou de 180 mil estrelas no GitHub.
+
+2
+00:00:03,499 --> 00:00:06,999
+Ele faz uma coisa que antes só especialista fazia:
+
+3
+00:00:06,999 --> 00:00:10,988
+abre um aplicativo por dentro e mostra como ele funciona.
+
+4
+00:00:10,988 --> 00:00:12,318
+Sem o código-fonte.
+
+5
+00:00:12,318 --> 00:00:14,838
+E hoje eu te mostro isso na prática.
+
+6
+00:00:15,800 --> 00:00:18,225
+Pensa num aplicativo que você admira.
+
+7
+00:00:18,225 --> 00:00:21,044
+Você vê o botão, vê a tela, vê o resultado.
+
+8
+00:00:21,044 --> 00:00:24,846
+Mas o que faz aquilo funcionar fica escondido, por dentro.
+
+9
+00:00:24,846 --> 00:00:25,895
+E aí você chuta.
+
+10
+00:00:25,895 --> 00:00:29,172
+Passa semanas tentando adivinhar como o outro fez.
+
+11
+00:00:29,172 --> 00:00:31,729
+Engenharia reversa é o contrário disso:
+
+12
+00:00:31,729 --> 00:00:35,072
+é abrir a caixa e entender a lógica, peça por peça.
+
+13
+00:00:35,072 --> 00:00:40,251
+Só que isso sempre foi trabalho de especialista, com ferramenta cara e difícil.
+
+14
+00:00:43,688 --> 00:00:44,672
+O REA muda isso.
+
+15
+00:00:44,672 --> 00:00:47,625
+O nome vem do inglês, Reverse Engineer Anything:
+
+16
+00:00:47,625 --> 00:00:49,902
+engenharia reversa de qualquer coisa.
+
+17
+00:00:49,902 --> 00:00:52,732
+Ele é uma ponte, o que o pessoal chama de MCP,
+
+18
+00:00:52,732 --> 00:00:57,653
+que liga o seu agente de inteligência artificial às ferramentas profissionais de
+
+19
+00:00:57,653 --> 00:00:58,145
+análise.
+
+20
+00:00:58,145 --> 00:01:00,299
+Você pergunta em português simples.
+
+21
+00:01:00,299 --> 00:01:01,468
+O agente investiga.
+
+22
+00:01:01,468 --> 00:01:05,405
+E volta com as evidências, e com o que ele não conseguiu provar.
+
+23
+00:01:05,405 --> 00:01:07,250
+A análise roda na sua máquina.
+
+24
+00:01:07,250 --> 00:01:09,158
+E é gratuito, de código aberto.
+
+25
+00:01:12,595 --> 00:01:14,905
+Olha o que ele consegue examinar.
+
+26
+00:01:14,905 --> 00:01:18,965
+Aplicativos de computador feitos em JavaScript e Electron,
+
+27
+00:01:18,965 --> 00:01:21,834
+que é como muito app famoso é feito hoje.
+
+28
+00:01:21,834 --> 00:01:22,254
+Sites.
+
+29
+00:01:22,254 --> 00:01:23,514
+Programas em .NET.
+
+30
+00:01:23,514 --> 00:01:24,914
+Aplicativos Android.
+
+31
+00:01:24,914 --> 00:01:30,374
+E os binários nativos, que é o programa já traduzido pra linguagem da máquina.
+
+32
+00:01:30,374 --> 00:01:35,273
+Pra esse último nível, ele usa ferramentas como Hopper, Ghidra ou IDA.
+
+33
+00:01:35,273 --> 00:01:38,633
+Mas pra começar, você não precisa de nada disso.
+
+34
+00:01:38,633 --> 00:01:41,083
+Pra site, basta o navegador Chrome.
+
+35
+00:01:41,083 --> 00:01:43,602
+E app em JavaScript funciona direto.
+
+36
+00:01:47,040 --> 00:01:48,198
+E funciona mesmo?
+
+37
+00:01:48,198 --> 00:01:51,125
+O próprio projeto publicou casos completos.
+
+38
+00:01:51,125 --> 00:01:55,279
+No Notion, o agente achou a função de copiar e colar na tela,
+
+39
+00:01:55,279 --> 00:02:00,863
+seguiu o caminho dela por dentro do aplicativo, até a parte principal do programa.
+
+40
+00:02:00,863 --> 00:02:05,561
+E mostrou o formato que o Notion usa pra copiar texto com formatação.
+
+41
+00:02:08,998 --> 00:02:12,784
+E num jogo antigo de quebrar blocos, o DX-Ball,
+
+42
+00:02:12,784 --> 00:02:19,227
+ele seguiu um som até a conta que decide se o som sai na esquerda ou na direita.
+
+43
+00:02:19,227 --> 00:02:23,738
+A reconstrução passou em 3.205 testes contra o original.
+
+44
+00:02:23,738 --> 00:02:26,557
+E reproduziu os 63 bytes da função.
+
+45
+00:02:26,557 --> 00:02:27,362
+Um por um.
+
+46
+00:02:30,000 --> 00:02:31,567
+Agora a parte que importa.
+
+47
+00:02:31,567 --> 00:02:33,013
+Eu não vou só te contar.
+
+48
+00:02:33,013 --> 00:02:36,206
+Eu pedi pro meu agente investigar o meu próprio site.
+
+49
+00:02:36,206 --> 00:02:37,471
+Olha o que ele achou.
+
+50
+00:02:40,800 --> 00:02:43,679
+Esse é o meu site, numa cópia rodando na máquina.
+
+51
+00:02:43,679 --> 00:02:44,795
+Eu pedi pro agente:
+
+52
+00:02:44,795 --> 00:02:49,083
+entenda como funciona o formulário da newsletter, e mostre as evidências.
+
+53
+00:02:49,083 --> 00:02:53,313
+Ele abriu a página, examinou os dezoito arquivos que rodam no navegador,
+
+54
+00:02:53,313 --> 00:02:56,485
+e achou a linha exata que manda o e-mail pro servidor.
+
+55
+00:02:56,485 --> 00:03:00,363
+Voltou com quatro coisas provadas, cada uma com a linha do código.
+
+56
+00:03:00,363 --> 00:03:02,243
+E disse o que não conseguiu ver:
+
+57
+00:03:02,243 --> 00:03:04,240
+o que o servidor faz com o e-mail.
+
+58
+00:03:04,240 --> 00:03:06,531
+Isso é o que eu gosto nessa ferramenta.
+
+59
+00:03:06,531 --> 00:03:07,471
+Ela não inventa.
+
+60
+00:03:12,800 --> 00:03:14,907
+Pra instalar, é um comando só.
+
+61
+00:03:14,907 --> 00:03:17,435
+Está na tela e no comentário fixado.
+
+62
+00:03:17,435 --> 00:03:21,157
+Você roda, ele mostra o que vai mudar, e você aprova.
+
+63
+00:03:21,157 --> 00:03:25,721
+Funciona com Claude Code, Codex, Cursor, Gemini e outros agentes.
+
+64
+00:03:25,721 --> 00:03:30,988
+Precisa do Node, que é o programa que roda esse comando, numa versão atual.
+
+65
+00:03:30,988 --> 00:03:33,305
+A versão certa está na descrição.
+
+66
+00:03:33,305 --> 00:03:35,553
+Depois, é só reiniciar o agente.
+
+67
+00:03:39,953 --> 00:03:41,935
+E o pedido é simples assim:
+
+68
+00:03:41,935 --> 00:03:47,514
+entenda como funciona esta função neste aplicativo, me mostre as evidências,
+
+69
+00:03:47,514 --> 00:03:50,378
+e construa uma parecida no meu projeto.
+
+70
+00:03:50,378 --> 00:03:50,892
+Repara:
+
+71
+00:03:50,892 --> 00:03:52,507
+você não copia a tela.
+
+72
+00:03:52,507 --> 00:03:55,443
+Você entende a lógica, e constrói a sua.
+
+73
+00:03:59,843 --> 00:04:01,066
+Agora, os limites.
+
+74
+00:04:01,066 --> 00:04:05,823
+Pra ir no nível mais profundo, você precisa das ferramentas separadas,
+
+75
+00:04:05,823 --> 00:04:07,182
+e algumas são pagas.
+
+76
+00:04:07,182 --> 00:04:10,851
+O seu agente usa um modelo de inteligência artificial,
+
+77
+00:04:10,851 --> 00:04:13,841
+e esse serviço tem a política de dados dele.
+
+78
+00:04:13,841 --> 00:04:15,200
+E o mais importante:
+
+79
+00:04:15,200 --> 00:04:19,413
+use em software seu, ou que você tem autorização pra examinar.
+
+80
+00:04:19,413 --> 00:04:21,383
+É a regra do próprio projeto.
+
+81
+00:04:21,383 --> 00:04:22,674
+E é a minha também.
+
+82
+00:04:27,074 --> 00:04:27,786
+Resumindo:
+
+83
+00:04:27,786 --> 00:04:33,552
+você viu uma função, pediu pro agente, entendeu como funciona, e construiu a sua.
+
+84
+00:04:33,552 --> 00:04:36,400
+O comando e o prompt estão na descrição.
+
+85
+00:04:40,000 --> 00:04:44,982
+Se esse vídeo te ajudou, se inscreve no canal e deixa o seu like.
+
+86
+00:04:44,982 --> 00:04:47,741
+Isso me ajuda a trazer a parte dois,
+
+87
+00:04:47,741 --> 00:04:51,956
+com um aplicativo de verdade destrinchado aqui na tela.
+
+88
+00:04:51,956 --> 00:04:53,795
+E me segue no Instagram:
+
+89
+00:04:53,795 --> 00:04:55,865
+@solocodando, e @thiagaoai.
+
+90
+00:04:55,865 --> 00:04:57,398
+Até o próximo vídeo.

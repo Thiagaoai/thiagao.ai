@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Cenas REA</title>
+<style>
+  :root { --bg:#0a0f1e; --bg2:#111a33; --fg:#f2f5ff; --dim:#9aa6c7; --cyan:#22d3ee; --lime:#a3e635;
+          --amber:#fbbf24; --rose:#fb7185; --card:#16213f; --line:#2a3a66; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; width:1920px; height:1080px; overflow:hidden; background:var(--bg); color:var(--fg);
+              font-family:"DejaVu Sans", "Liberation Sans", sans-serif; }
+  .scene { position:absolute; inset:0; display:none; overflow:hidden;
+           background:radial-gradient(1200px 700px at 75% 20%, #1b2a5c 0%, transparent 60%),
+                      radial-gradient(900px 600px at 10% 90%, #0f3b4a 0%, transparent 60%), var(--bg); }
+  .scene.on { display:block; }
+  .a { position:absolute; opacity:0; will-change:transform,opacity; }
+  .kicker { font-size:30px; letter-spacing:6px; text-transform:uppercase; color:var(--cyan); font-weight:bold; }
+  .h1 { font-size:84px; font-weight:bold; line-height:1.08; }
+  .h2 { font-size:56px; font-weight:bold; line-height:1.15; }
+  .p  { font-size:38px; line-height:1.35; color:var(--dim); }
+  .card { background:var(--card); border:2px solid var(--line); border-radius:28px; padding:34px 40px;
+          box-shadow:0 30px 80px rgba(0,0,0,.45); }
+  .chip { display:inline-block; padding:14px 26px; border-radius:999px; background:#0e1730; border:2px solid var(--line);
+          font-size:32px; margin:0 14px 14px 0; }
+  .mono { font-family:"DejaVu Sans Mono", monospace; }
+  .ok { color:var(--lime); } .warn { color:var(--amber); } .cy { color:var(--cyan); } .rose { color:var(--rose); }
+  .big { font-size:150px; font-weight:bold; line-height:1; }
+  .footer { position:absolute; left:80px; bottom:46px; font-size:24px; color:#6f7ba3; opacity:1; }
+  .brand { position:absolute; right:80px; bottom:46px; font-size:26px; color:#6f7ba3; font-weight:bold; opacity:1; }
+</style>
+</head>
+<body>
+
+<!-- Robô reutilizável -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <g id="robo">
+      <rect x="70" y="20" width="12" height="40" rx="6" fill="#9aa6c7"/>
+      <circle cx="76" cy="16" r="14" fill="#22d3ee"/>
+      <rect x="10" y="56" width="132" height="110" rx="34" fill="#dfe6ff"/>
+      <rect x="28" y="78" width="96" height="62" rx="22" fill="#0a0f1e"/>
+      <circle cx="56" cy="109" r="12" fill="#22d3ee"/><circle cx="96" cy="109" r="12" fill="#22d3ee"/>
+      <rect x="22" y="172" width="108" height="120" rx="30" fill="#c9d3f5"/>
+      <rect x="52" y="200" width="48" height="30" rx="10" fill="#22d3ee" opacity=".8"/>
+      <rect x="-14" y="182" width="30" height="90" rx="15" fill="#c9d3f5"/>
+      <rect x="136" y="182" width="30" height="90" rx="15" fill="#c9d3f5"/>
+    </g>
+  </defs>
+</svg>
+
+<!-- S01 — O problema -->
+<section class="scene" id="S01">
+  <div class="a" data-in="0.2" style="left:120px;top:110px"><div class="kicker">O problema</div></div>
+  <div class="a" data-in="0.6" style="left:120px;top:170px;width:900px"><div class="h1">Você só vê a tela.</div></div>
+  <!-- celular -->
+  <div class="a" data-in="1.2" data-from="up" style="left:1180px;top:150px;width:420px;height:780px;border-radius:60px;background:#0e1730;border:6px solid #2a3a66;padding:40px">
+    <div style="height:60px;border-radius:16px;background:#1d2b55;margin-bottom:28px"></div>
+    <div style="height:240px;border-radius:24px;background:linear-gradient(135deg,#22d3ee,#6366f1);margin-bottom:28px"></div>
+    <div style="height:34px;border-radius:12px;background:#1d2b55;margin-bottom:18px;width:80%"></div>
+    <div style="height:34px;border-radius:12px;background:#1d2b55;margin-bottom:40px;width:60%"></div>
+    <div style="height:90px;border-radius:45px;background:var(--lime);color:#0a0f1e;font-size:34px;font-weight:bold;display:flex;align-items:center;justify-content:center">Comprar</div>
+  </div>
+  <div class="a" data-in="4" style="left:120px;top:330px;width:900px"><div class="p">Botão, cor, resultado.<br>O que faz funcionar fica <span class="warn">escondido por dentro</span>.</div></div>
+  <div class="a" data-in="7.5" style="left:1490px;top:120px"><div class="big warn">?</div></div>
+  <div class="a" data-in="8.3" style="left:1100px;top:560px"><div class="big warn" style="font-size:110px">?</div></div>
+  <div class="a" data-in="9" style="left:120px;top:520px;width:900px"><div class="card"><div class="h2">“Semanas tentando<br>adivinhar como o<br>outro fez.”</div></div></div>
+  <!-- virada: engenharia reversa -->
+  <div class="a" data-in="14" data-out="99" style="left:120px;top:830px;width:960px"><div class="p"><span class="cy" style="font-weight:bold">Engenharia reversa</span> = abrir a caixa e entender a lógica, peça por peça.</div></div>
+  <div class="a" data-in="19.5" style="left:1650px;top:640px"><svg width="170" height="300" viewBox="-20 0 190 300"><use href="#robo"/></svg></div>
+  <div class="a" data-in="20.5" style="left:120px;top:950px;width:960px"><div class="p" style="font-size:32px;color:var(--fg)">Sempre foi trabalho de especialista.</div></div>
+  <div class="brand">@solocodando</div>
+</section>
+
+<!-- S02 — O que é o REA -->
+<section class="scene" id="S02">
+  <div class="a" data-in="0.2" style="left:120px;top:110px"><div class="kicker">Conheça</div></div>
+  <div class="a" data-in="0.5" style="left:120px;top:170px"><div class="h1" style="font-size:150px">REA</div></div>
+  <div class="a" data-in="1.6" style="left:120px;top:350px"><div class="p">Reverse Engineer Anything<br><span class="fg" style="color:var(--fg)">= engenharia reversa de qualquer coisa</span></div></div>
+  <!-- diagrama -->
+  <div class="a" data-in="6" style="left:120px;top:500px"><div class="card" style="width:440px;text-align:center;padding:26px 30px">
+    <svg width="120" height="210" viewBox="-20 0 190 300"><use href="#robo"/></svg><div class="h2" style="font-size:38px">Seu agente<br>de IA</div></div></div>
+  <div class="a" data-in="7.5" style="left:600px;top:640px"><div class="h2 cy">⟷</div></div>
+  <div class="a" data-in="7.5" style="left:700px;top:540px"><div class="card" style="width:420px;text-align:center;border-color:var(--cyan)">
+    <div class="h2 cy" style="font-size:60px">REA</div><div class="p" style="font-size:30px">a ponte (MCP)</div></div></div>
+  <div class="a" data-in="9" style="left:1150px;top:640px"><div class="h2 cy">⟷</div></div>
+  <div class="a" data-in="9" style="left:1250px;top:500px"><div class="card" style="width:540px">
+    <div class="h2" style="font-size:40px">Ferramentas<br>profissionais de análise</div></div></div>
+  <div class="a" data-in="12" style="left:1250px;top:740px;width:560px"><div class="p" style="font-size:32px">Você pergunta em português.<br>Ele investiga.</div></div>
+  <div class="a" data-in="15" style="left:1050px;top:150px"><div class="card" style="width:740px">
+    <div class="p" style="color:var(--fg)"><span class="ok">✔</span> evidências<br><span class="warn">?</span> o que não conseguiu provar</div></div></div>
+  <div class="a" data-in="20.5" style="left:120px;top:960px"><span class="chip">💻 roda na sua máquina</span></div>
+  <div class="a" data-in="23" style="left:600px;top:960px"><span class="chip ok">grátis · código aberto (MIT)</span></div>
+  <div class="brand">@solocodando</div>
+</section>
+
+<!-- S03 — O que ele examina -->
+<section class="scene" id="S03">
+  <div class="a" data-in="0.2" style="left:120px;top:100px"><div class="kicker">O que ele examina</div></div>
+  <div class="a" data-in="2"  data-from="left" style="left:120px;top:200px"><div class="card" style="width:820px"><div class="h2" style="font-size:44px">💻 Apps JavaScript / Electron</div><div class="p" style="font-size:28px">apps de computador</div></div></div>
+  <div class="a" data-in="6.5" data-from="left" style="left:120px;top:370px"><div class="card" style="width:820px"><div class="h2" style="font-size:44px">🌐 Sites</div></div></div>
+  <div class="a" data-in="7.5" data-from="left" style="left:120px;top:500px"><div class="card" style="width:820px"><div class="h2" style="font-size:44px">🪟 Programas .NET</div></div></div>
+  <div class="a" data-in="9" data-from="left" style="left:120px;top:630px"><div class="card" style="width:820px"><div class="h2" style="font-size:44px">🤖 Apps Android</div></div></div>
+  <div class="a" data-in="10.5" data-from="left" style="left:120px;top:760px"><div class="card" style="width:820px;border-color:var(--amber)"><div class="h2" style="font-size:44px">⚙️ Binários nativos</div><div class="p" style="font-size:28px">o programa já na linguagem da máquina</div></div></div>
+  <div class="a" data-in="15" style="left:1040px;top:200px;width:760px"><div class="card" style="border-color:var(--amber)"><div class="p" style="color:var(--fg)">Nível profundo usa<br><b>Hopper · Ghidra · IDA</b></div></div></div>
+  <div class="a" data-in="20" style="left:1040px;top:470px;width:760px"><div class="card" style="border-color:var(--lime)"><div class="h2 ok" style="font-size:46px">Pra começar:</div>
+    <div class="p" style="color:var(--fg)">🌐 Site → só o navegador Chrome<br>💻 App JavaScript → direto</div></div></div>
+  <div class="a" data-in="3" style="left:1580px;top:720px"><svg width="170" height="300" viewBox="-20 0 190 300"><use href="#robo"/></svg></div>
+  <div class="a" data-in="3.4" style="left:1450px;top:740px;font-size:120px">🔍</div>
+</section>
+
+<!-- S04 — Caso Notion -->
+<section class="scene" id="S04">
+  <div class="a" data-in="0.2" style="left:120px;top:100px"><div class="kicker">Funciona mesmo?</div></div>
+  <div class="a" data-in="2.5" style="left:120px;top:160px"><div class="h1">Caso 1: Notion</div></div>
+  <div class="a" data-in="4.5" style="left:120px;top:300px"><div class="p">Função investigada: <b style="color:var(--fg)">copiar e colar</b></div></div>
+  <div class="a" data-in="6"  data-from="up" style="left:120px;top:470px"><div class="card" style="width:460px;text-align:center"><div class="h2" style="font-size:44px">1. Na tela</div><div class="p" style="font-size:28px">onde a função começa</div></div></div>
+  <div class="a" data-in="8"  style="left:610px;top:530px"><div class="h2 cy">→</div></div>
+  <div class="a" data-in="8"  data-from="up" style="left:720px;top:470px"><div class="card" style="width:460px;text-align:center"><div class="h2" style="font-size:44px">2. Por dentro</div><div class="p" style="font-size:28px">a ponte interna do app</div></div></div>
+  <div class="a" data-in="10" style="left:1210px;top:530px"><div class="h2 cy">→</div></div>
+  <div class="a" data-in="10" data-from="up" style="left:1320px;top:470px"><div class="card" style="width:480px;text-align:center;border-color:var(--cyan)"><div class="h2" style="font-size:44px">3. O programa</div><div class="p" style="font-size:28px">a parte principal</div></div></div>
+  <div class="a" data-in="13.5" style="left:120px;top:760px;width:1700px"><div class="card" style="border-color:var(--lime)"><div class="p" style="color:var(--fg)"><span class="ok">✔</span> E mostrou o formato que o Notion usa pra copiar texto com formatação.</div></div></div>
+  <div class="footer">Caso publicado pelo projeto · rea.tools/showcase/notion</div>
+  <div class="brand">@solocodando</div>
+</section>
+
+<!-- S05 — Caso DX-Ball -->
+<section class="scene" id="S05">
+  <div class="a" data-in="0.2" style="left:120px;top:100px"><div class="kicker">Caso 2</div></div>
+  <div class="a" data-in="0.6" style="left:120px;top:160px"><div class="h1">DX-Ball</div></div>
+  <div class="a" data-in="1.4" style="left:120px;top:270px"><div class="p">jogo antigo de quebrar blocos</div></div>
+  <!-- blocos retrô -->
+  <div class="a" data-in="1" style="left:1100px;top:150px;width:700px">
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:12px">
+      <div style="height:44px;background:#fb7185"></div><div style="height:44px;background:#fbbf24"></div><div style="height:44px;background:#a3e635"></div><div style="height:44px;background:#22d3ee"></div><div style="height:44px;background:#818cf8"></div><div style="height:44px;background:#fb7185"></div><div style="height:44px;background:#fbbf24"></div>
+      <div style="height:44px;background:#a3e635"></div><div style="height:44px;background:#22d3ee"></div><div style="height:44px;background:#818cf8"></div><div style="height:44px;background:#fb7185"></div><div style="height:44px;background:#fbbf24"></div><div style="height:44px;background:#a3e635"></div><div style="height:44px;background:#22d3ee"></div>
+    </div>
+    <div style="margin:150px auto 0;width:40px;height:40px;border-radius:50%;background:#fff"></div>
+    <div style="margin:120px auto 0;width:200px;height:26px;border-radius:13px;background:#dfe6ff"></div>
+  </div>
+  <div class="a" data-in="4" style="left:120px;top:400px;width:900px"><div class="p" style="color:var(--fg)">🔊 Seguiu um som até a conta que decide:<br><b>esquerda ou direita?</b></div></div>
+  <div class="a" data-in="8.5" style="left:120px;top:620px"><div class="card" style="width:780px;border-color:var(--lime)">
+    <div class="big ok" data-count="3205" data-cin="8.7" data-cdur="2.2" style="font-size:120px">0</div><div class="p" style="color:var(--fg)">testes contra o original ✔</div></div></div>
+  <div class="a" data-in="12.5" style="left:1000px;top:620px"><div class="card" style="width:800px;border-color:var(--cyan)">
+    <div class="big cy" style="font-size:120px"><span data-count="63" data-cin="12.7" data-cdur="1.6">0</span>/63</div><div class="p" style="color:var(--fg)">bytes da função reproduzidos</div></div></div>
+  <div class="a" data-in="16.5" style="left:1000px;top:930px"><div class="h2" style="font-size:44px">Um por um.</div></div>
+  <div class="footer">Caso publicado pelo projeto · rea.tools/showcase/dx-ball</div>
+</section>
+
+<!-- S07 — Instalação -->
+<section class="scene" id="S07">
+  <div class="a" data-in="0.2" style="left:120px;top:100px"><div class="kicker">Instalação</div></div>
+  <div class="a" data-in="0.5" style="left:120px;top:160px"><div class="h1">Um comando só</div></div>
+  <div class="a" data-in="1.2" style="left:120px;top:320px;width:1680px"><div class="card mono" style="font-size:64px;background:#05080f;border-color:var(--cyan)">
+    <span class="ok">$</span> <span data-type="npx rea-agents setup" data-tin="1.6" data-tdur="1.8"></span></div></div>
+  <div class="a" data-in="4.5" style="left:120px;top:540px"><div class="chip">1. roda</div></div>
+  <div class="a" data-in="5.5" style="left:330px;top:540px"><div class="chip">2. vê o que muda</div></div>
+  <div class="a" data-in="6.6" style="left:700px;top:540px"><div class="chip ok">3. aprova</div></div>
+  <div class="a" data-in="8"  style="left:120px;top:680px;width:1700px"><div class="p" style="color:var(--fg)">Funciona com:</div></div>
+  <div class="a" data-in="8.4" style="left:120px;top:750px;width:1700px">
+    <span class="chip">Claude Code</span><span class="chip">Codex</span><span class="chip">Cursor</span><span class="chip">Gemini CLI</span><span class="chip">e outros agentes</span></div>
+  <div class="a" data-in="13" style="left:120px;top:900px"><div class="p">Precisa do <b style="color:var(--fg)">Node.js</b> 22.19+ · 24.11+ · 26+ &nbsp;→ depois, reinicie o agente</div></div>
+  <div class="footer" style="bottom:20px">Comando no comentário fixado e na descrição</div>
+</section>
+
+<!-- S08 — O pedido -->
+<section class="scene" id="S08">
+  <div class="a" data-in="0.2" style="left:120px;top:100px"><div class="kicker">O pedido</div></div>
+  <div class="a" data-in="0.6" style="left:120px;top:190px;width:1680px"><div class="card" style="border-color:var(--cyan);font-size:56px;line-height:1.35">
+    <span data-type="“Entenda como funciona esta função neste aplicativo, me mostre as evidências, e construa uma parecida no meu projeto.”" data-tin="1" data-tdur="7.5"></span></div></div>
+  <div class="a" data-in="10" style="left:120px;top:660px"><div class="h2"><span class="rose">✗</span> Copiar a tela</div></div>
+  <div class="a" data-in="11.5" style="left:120px;top:770px"><div class="h2"><span class="ok">✔</span> Entender a lógica e construir a sua</div></div>
+  <div class="a" data-in="12" style="left:1600px;top:640px"><svg width="170" height="300" viewBox="-20 0 190 300"><use href="#robo"/></svg></div>
+  <div class="brand">@solocodando</div>
+</section>
+
+<!-- S09 — Limites -->
+<section class="scene" id="S09">
+  <div class="a" data-in="0.2" style="left:120px;top:100px"><div class="kicker">Sem fantasia</div></div>
+  <div class="a" data-in="0.5" style="left:120px;top:160px"><div class="h1">Os limites</div></div>
+  <div class="a" data-in="2"  data-from="up" style="left:120px;top:360px"><div class="card" style="width:530px;height:420px;border-color:var(--amber)">
+    <div class="h2" style="font-size:44px">1. Nível profundo</div><div class="p" style="font-size:32px">precisa de ferramentas separadas — algumas pagas</div></div></div>
+  <div class="a" data-in="7.5" data-from="up" style="left:695px;top:360px"><div class="card" style="width:530px;height:420px;border-color:var(--amber)">
+    <div class="h2" style="font-size:44px">2. Seus dados</div><div class="p" style="font-size:32px">o modelo de IA do seu agente tem a política de dados dele</div></div></div>
+  <div class="a" data-in="13" data-from="up" style="left:1270px;top:360px"><div class="card" style="width:530px;height:420px;border-color:var(--rose)">
+    <div class="h2" style="font-size:44px">3. Autorização</div><div class="p" style="font-size:32px">só em software seu, ou que você tem permissão pra examinar</div></div></div>
+  <div class="a" data-in="18.5" style="left:120px;top:860px"><div class="p" style="color:var(--fg)">É a regra do projeto. E é a minha também.</div></div>
+  <div class="brand">@solocodando</div>
+</section>
+
+<!-- S10 — Resumo -->
+<section class="scene" id="S10">
+  <div class="a" data-in="0.2" style="left:120px;top:110px"><div class="kicker">Resumindo</div></div>
+  <div class="a" data-in="0.8" style="left:120px;top:220px"><div class="h2"><span class="ok">✔</span> Viu uma função</div></div>
+  <div class="a" data-in="1.8" style="left:120px;top:330px"><div class="h2"><span class="ok">✔</span> Pediu pro agente</div></div>
+  <div class="a" data-in="2.8" style="left:120px;top:440px"><div class="h2"><span class="ok">✔</span> Entendeu como funciona</div></div>
+  <div class="a" data-in="3.8" style="left:120px;top:550px"><div class="h2"><span class="ok">✔</span> Construiu a sua</div></div>
+  <div class="a" data-in="6" style="left:120px;top:730px;width:1680px"><div class="card mono" style="font-size:44px;border-color:var(--cyan)">npx rea-agents setup <span class="dim" style="color:var(--dim);font-family:'DejaVu Sans'">· comando e prompt na descrição</span></div></div>
+  <div class="a" data-in="1" style="left:1560px;top:200px"><svg width="200" height="350" viewBox="-20 0 190 300"><use href="#robo"/></svg></div>
+</section>
+
+<!-- Slots de avatar (só para a prévia; trocar pelos clipes do HeyGen) -->
+<section class="scene" id="AV" style="background:#05070d">
+  <div class="a" data-in="0" style="left:0;top:0;width:1920px;height:1080px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+    <div class="kicker">Avatar HeyGen — substituir</div>
+    <div class="h1" id="avlabel" style="margin-top:30px">A1</div>
+    <div class="p" id="avtime" style="margin-top:20px"></div>
+  </div>
+</section>
+
+<script>
+const ease = x => 1 - Math.pow(1 - Math.min(Math.max(x, 0), 1), 3);
+window.show = (id, t, extra) => {
+  document.querySelectorAll('.scene').forEach(s => s.classList.toggle('on', s.id === id));
+  const sc = document.getElementById(id);
+  if (extra) { for (const [k, v] of Object.entries(extra)) { const el = document.getElementById(k); if (el) el.textContent = v; } }
+  sc.querySelectorAll('.a').forEach(el => {
+    const tin = parseFloat(el.dataset.in || 0), tout = parseFloat(el.dataset.out || 1e9);
+    const k = ease((t - tin) / 0.6);
+    const ko = t > tout ? 1 - ease((t - tout) / 0.4) : 1;
+    const dir = el.dataset.from || 'fade';
+    const off = (1 - k) * 60;
+    el.style.opacity = (k * ko).toFixed(3);
+    el.style.transform = dir === 'up' ? `translateY(${off}px)` : dir === 'left' ? `translateX(${-off}px)` : `translateY(${off * 0.4}px)`;
+  });
+  sc.querySelectorAll('[data-type]').forEach(el => {
+    const s = el.dataset.type, a = parseFloat(el.dataset.tin), d = parseFloat(el.dataset.tdur);
+    const n = Math.round(s.length * Math.min(Math.max((t - a) / d, 0), 1));
+    el.textContent = s.slice(0, n);
+  });
+  sc.querySelectorAll('[data-count]').forEach(el => {
+    const to = parseFloat(el.dataset.count), a = parseFloat(el.dataset.cin), d = parseFloat(el.dataset.cdur);
+    el.textContent = Math.round(to * ease((t - a) / d)).toLocaleString('pt-BR');
+  });
+};
+</script>
+</body>
+</html>
