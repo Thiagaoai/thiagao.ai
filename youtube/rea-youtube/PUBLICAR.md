@@ -142,7 +142,7 @@ O comando e o prompt do vídeo, pra copiar 👇
 2) Entenda como funciona esta função neste aplicativo, me mostre as evidências, e construa uma parecida no meu projeto.
 
 Use só em software seu ou que você tem autorização pra examinar.
-Qual app você quer que eu destrinche na parte dois?
+Qual aplicativo de código aberto você quer que eu destrinche na parte dois? O mais pedido, eu faço.
 ```
 
 ---
