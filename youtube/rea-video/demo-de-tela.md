@@ -32,3 +32,30 @@ O formulário grava e-mails reais. Na gravação:
 - não enviar o formulário com e-mail de ninguém (se precisar enviar, usar um e-mail de teste seu);
 - não abrir o painel `/admin/newsletter` nem nada com a lista de inscritos;
 - não mostrar `.env`, chaves de API ou logs do servidor.
+
+## Resultado da sessão (13/10/2026) — gravado
+
+Rodado pelo agente (Claude Code na nuvem) com REA 6.4.0, contra uma cópia local do site
+(`npm run dev` → http://localhost:3002/briefing), porque a rede do ambiente bloqueia `thiagao.ai`.
+
+1. `rea list-browser-targets http://127.0.0.1:9222` → 1 página: "Thiagao Ai Briefing - AI Operator
+   Newsletter".
+2. `rea analyze-web-bundle … --observation-ms 3000` → completo: 18 scripts, 0 falhas; Next.js
+   (high), React (medium); endpoints via `fetch`: `/api/newsletter/subscribe` (`_1dzphkd._.js:467`),
+   `/api/newsletter/track` (`:360`), `/api/chat-thiagao` (`:698`). Limitação declarada pelo REA:
+   comportamento do servidor pode ficar desconhecido. Evidência completa:
+   `demo/evidencia-analyze-web-bundle.json`.
+3. Trecho conferido no mesmo arquivo (sha256 `0dfb6096…`, igual ao analisado), linhas 463–486.
+
+**Provado:** e-mail com `trim()` + minúsculas (463); POST JSON para `/api/newsletter/subscribe`
+(467); envia `email`, `source`, `company` (campo escondido "Empresa") e `startedAt` (hora em que a
+página abriu, 458); sucesso → `/newsletter/obrigado` (486).
+**Inferência (marcada como tal no vídeo):** o campo escondido é armadilha contra robôs.
+**Sem resposta:** o que o servidor faz com o e-mail.
+
+Arquivos: `demo/demo-rea.mp4` (vídeo final, 23,7 s) e `demo/replay.html` (a reprodução da sessão
+que foi gravada em 1920×1080 com o Chromium). O texto da tela é a saída real, só recortada; as
+linhas de código omitidas estão indicadas.
+
+Observação: o bundle é o de desenvolvimento (`next dev`). Em produção o código sai minificado e
+os nomes das variáveis mudam; os endpoints e o comportamento são os mesmos.

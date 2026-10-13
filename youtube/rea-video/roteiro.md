@@ -14,11 +14,10 @@
 
 ## Pendências antes de gravar
 
-- [ ] **Conferir as 110 mil estrelas no contador do GitHub** (topo da página de
-      https://github.com/morluto/rea), não na seção do README. Se não bater, trocar o gancho
-      pelo vice (abaixo), que não depende de número.
-- [ ] **Gravar a demo real** (beat 4:45) seguindo `demo-de-tela.md` e escrever a fala a partir da
-      saída real.
+- [x] **Estrelas conferidas em 13/10:** o contador da página marca 189,3 mil (o README ainda diz
+      170 mil). Gancho atualizado para "passou de 180 mil" — conservador e verdadeiro.
+- [x] **Demo gravada** (beat 4:45): `demo/demo-rea.mp4` (23,7 s, 1920×1080). Fala escrita a partir
+      da saída real — ver `demo-de-tela.md`.
 - [ ] **Relintar o título** no `title.py` (alternativa abaixo).
 - [ ] **Confirmar o funil do CTA:** comentário fixado com comando + prompt + link do guia. Se a
       ideia for "comenta → DM" igual ao Instagram, confirmar antes se o ManyChat funciona com
@@ -34,8 +33,8 @@
 
 ## Hooks finalistas (hookscore.py — 8 candidatos)
 
-1. Vencedor (41 — The Statistic): "Este repositório passou de 110 mil estrelas no GitHub. Ele faz
-   engenharia reversa de qualquer app com um agente de IA." — **depende da conferência acima**
+1. Vencedor (41 — The Statistic): "Este repositório passou de 180 mil estrelas no GitHub. Ele faz
+   engenharia reversa de qualquer app com um agente de IA." (conferido: 189,3 mil em 13/10)
 2. Vice (39 — The Clock): "Nos próximos 4 minutos, você instala a ferramenta que destrincha
    qualquer app e reconstrói a função no seu projeto."
 
@@ -44,8 +43,8 @@ Aviso: a ferramenta foi calibrada em inglês; ADDRESS/CURIOSITY travam baixo em 
 ## ROTEIRO
 
 **[0:00 — AVATAR] Hook**
-[ON SCREEN: avatar em tela cheia, camisa social preta; overlay "110 mil ⭐" em texto nativo]
-FALA: Este repositório passou de 110 mil estrelas no GitHub. Ele faz engenharia reversa de
+[ON SCREEN: avatar em tela cheia, camisa social preta; overlay "180 mil ⭐" em texto nativo]
+FALA: Este repositório passou de 180 mil estrelas no GitHub. Ele faz engenharia reversa de
 qualquer app com um agente de IA. Na prática: você vê uma função num app, pede pro agente
 destrinchar, e ele te explica como funciona por dentro. Com prova. Sem o código-fonte.
 
@@ -108,15 +107,16 @@ Precisa do Node atualizado, a versão exata está na descrição. Depois do setu
 Pronto. Aqui em casa o REA já está rodando, ligado nos meus agentes. Foi esse mesmo comando, sem
 atalho.
 
-**[4:45 — TELA REAL] Demo — eu pedindo, o agente investigando** ← NOVO
-[ON SCREEN: gravação de tela real (ver `demo-de-tela.md`): o prompt colado no Claude Code → o
-agente chamando as ferramentas do REA (acelerado, selo "acelerado 3x") → a resposta com as
-evidências, em velocidade normal, com zoom no trecho da prova]
-FALA: Olha só, na prática. Esse é o meu site. Eu peço pro agente: entenda como funciona o
-formulário de inscrição da newsletter, e mostre as evidências. [AJUSTAR À SAÍDA REAL: o que ele
-fez, em 1–2 frases, só o que aparece na tela.] [AJUSTAR À SAÍDA REAL: o que ele provou e o que
-ficou sem resposta.] Repara: é um site meu. É assim que você usa, no seu, ou onde tem
-autorização.
+**[4:45 — TELA REAL] Demo — o agente investigando o meu site**
+[ON SCREEN: `demo/demo-rea.mp4` — o pedido em português → `rea list-browser-targets` → `rea
+analyze-web-bundle` com o endpoint destacado → o trecho do código → a resposta "Provado / Sem
+resposta". Segurar o último quadro até o fim da fala; zoom em "Provado" e em "Sem resposta"]
+FALA: Olha só, na prática. Esse é o meu site, numa cópia rodando na máquina. Eu peço pro agente:
+entenda como funciona o formulário da newsletter, e mostre as evidências. Ele abre a página,
+examina os dezoito arquivos que rodam no navegador, e acha o ponto exato: a linha que manda o
+e-mail pro servidor. Volta com quatro coisas provadas, cada uma com a linha do código. E fala o
+que não conseguiu ver: o que o servidor faz com o e-mail. Repara: é um site meu. É assim que você
+usa, no seu, ou onde tem autorização.
 
 **[5:20 — GRÁFICO] Como pedir (o prompt)**
 [ON SCREEN: cartão grande com o prompt em overlay, digitado letra a letra; depois o fluxo
@@ -166,8 +166,8 @@ Quer a parte dois? Comenta REA.
 
 ## Fontes (fact-check em 2026-10-12, fonte primária)
 
-- Repo oficial: https://github.com/morluto/rea (README + FAQ). **Estrelas: conferir no contador
-  da página, não na seção do README.**
+- Repo oficial: https://github.com/morluto/rea (README + FAQ). Estrelas: 189,3 mil no contador da página
+  em 13/10/2026 (o README diz 170 mil).
 - Site oficial com os 3 showcases (DX-Ball, Notion, TH04): https://rea.tools
 - Instalação: `npx rea-agents setup`; Node.js 22.19+ / 24.11+ / 26+; licença MIT
 - Disclaimer de uso autorizado: DISCLAIMER.md do repo
@@ -189,7 +189,8 @@ Quer a parte dois? Comenta REA.
 ## O que mudou nesta versão (13/10)
 
 1. Cabeçalho: voz corrigida para o clone HeyGen; formato 16:9 registrado como decidido.
-2. Novo beat 4:45 com demo de tela real no site thiagao.ai (fala a ajustar pela saída real).
+2. Novo beat 4:45 com demo de tela real no site thiagao.ai, gravada e com a fala final.
+6. Gancho: 110 mil → 180 mil estrelas (contador conferido: 189,3 mil).
 3. "Compilado" traduzido; TH04 descrito como jogo de PC-98 (não "da época do DOS").
 4. CTA aponta para o comentário fixado (funil) + "comenta REA"; tirada a promessa condicional.
-5. Pendências: conferir estrelas no contador do GitHub; relintar o título.
+5. Pendência: relintar o título.

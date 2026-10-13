@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Demo REA — sessão real</title>
+<style>
+  :root { --bg:#0d1117; --bar:#161b22; --fg:#e6edf3; --dim:#8b949e; --green:#3fb950; --blue:#58a6ff;
+          --yellow:#d29922; --purple:#bc8cff; --red:#f85149; }
+  html,body { margin:0; width:1920px; height:1080px; background:var(--bg); overflow:hidden; }
+  .win { position:absolute; inset:0; display:flex; flex-direction:column;
+         font:26px/1.45 "DejaVu Sans Mono", "Liberation Mono", monospace; color:var(--fg); }
+  .bar { height:56px; background:var(--bar); display:flex; align-items:center; gap:14px; padding:0 24px;
+         font-size:20px; color:var(--dim); border-bottom:1px solid #30363d; }
+  .dot { width:16px; height:16px; border-radius:50%; }
+  .bar .t { margin-left:16px; }
+  #term { flex:1; padding:28px 40px; white-space:pre-wrap; overflow:hidden; }
+  .you { color:var(--blue); font-weight:bold; }
+  .cmd { color:var(--green); }
+  .dim { color:var(--dim); }
+  .key { color:var(--purple); }
+  .hl  { color:var(--yellow); font-weight:bold; }
+  .ok  { color:var(--green); font-weight:bold; }
+  .no  { color:var(--red); font-weight:bold; }
+  .cursor { display:inline-block; width:14px; background:var(--fg); animation:b 1s steps(1) infinite; }
+  @keyframes b { 50% { opacity:0; } }
+</style>
+</head>
+<body>
+<div class="win">
+  <div class="bar">
+    <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span>
+    <span class="dot" style="background:#28c840"></span>
+    <span class="t">agente de IA + REA 6.4.0 · cópia local do thiagao.ai · sessão real de 13/10/2026</span>
+  </div>
+  <div id="term"></div>
+</div>
+<script>
+// Todo o texto abaixo é a saída real da sessão (comandos e resultados do REA), só recortada.
+const S = [
+  ['type', '<span class="you">você ›</span> ', 'Entenda como funciona o formulário de inscrição da newsletter em http://localhost:3002/briefing. Use as ferramentas do REA. Mostre as evidências do que você provou e diga o que ficou sem resposta.\n\n', 22],
+  ['pause', 900],
+  ['type', '<span class="cmd">$ </span>', 'rea list-browser-targets http://127.0.0.1:9222\n', 28],
+  ['lines', [
+    '<span class="key">targets[1]</span>{type,title,url}:',
+    '  page,Thiagao Ai Briefing - AI Operator Newsletter,"http://localhost:3002/briefing"',
+    '<span class="key">confidence:</span> observed', ''], 120],
+  ['pause', 600],
+  ['type', '<span class="cmd">$ </span>', 'rea analyze-web-bundle http://127.0.0.1:9222 D2AD0C76… --observation-ms 3000\n', 28],
+  ['pause', 1200],
+  ['lines', [
+    '<span class="key">completeness:</span> complete · parsed_scripts: 18 · parse_failures: 0',
+    '<span class="key">inferences:</span> Next.js (high) · React (medium)',
+    '<span class="key">endpoints</span> (call:fetch):',
+    '  <span class="hl">/api/newsletter/subscribe</span>   _1dzphkd._.js:467',
+    '  /api/newsletter/track       _1dzphkd._.js:360',
+    '  /api/chat-thiagao           _1dzphkd._.js:698',
+    '<span class="key">limitations:</span>',
+    '  <span class="dim">- String-built routes and endpoints, encrypted configuration,</span>',
+    '  <span class="dim">  and server-side behavior may remain unknown.</span>', ''], 160],
+  ['pause', 800],
+  ['type', '<span class="cmd">$ </span>', "sed -n '463,486p' _1dzphkd._.js   <span class=\"dim\"># sha256 0dfb6096… (o mesmo que o REA analisou)</span>\n", 22],
+  ['lines', [
+    "463  const submittedEmail = email.trim().toLowerCase();",
+    "467  const response = await fetch(<span class=\"hl\">'/api/newsletter/subscribe'</span>, {",
+    "468      method: 'POST',",
+    "472      body: JSON.stringify({",
+    "473          email: submittedEmail,",
+    "474          source,",
+    "475          company,",
+    "476          startedAt",
+    "486  router.push(`/newsletter/obrigado?email=${encodeURIComponent(submittedEmail)}`);",
+    '<span class="dim">     (linhas intermediárias omitidas)</span>', ''], 140],
+  ['pause', 900],
+  ['lines', [
+    '<span class="ok">● Provado, com evidência</span>',
+    '  1. O e-mail é limpo antes de sair: tira espaços e passa pra minúsculas.   <span class="dim">linha 463</span>',
+    '  2. Vai por POST, em JSON, para /api/newsletter/subscribe.                 <span class="dim">linha 467</span>',
+    '  3. Junto vão: a origem, um campo escondido "Empresa" e a hora que a',
+    '     página abriu. <span class="dim">(provável armadilha contra robôs — inferência)</span>',
+    '  4. Deu certo: leva pra página /newsletter/obrigado.                       <span class="dim">linha 486</span>',
+    '',
+    '<span class="no">○ Sem resposta</span>',
+    '  - O que o servidor faz com o e-mail. O REA lê o que roda no navegador;',
+    '    o lado do servidor não aparece nesta análise.', ''], 260],
+  ['pause', 2500],
+];
+
+const term = document.getElementById('term');
+const cur = '<span class="cursor">&nbsp;</span>';
+let html = '';
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const render = () => { term.innerHTML = html + cur; term.scrollTop = term.scrollHeight; };
+
+async function run() {
+  render();
+  await sleep(800);
+  for (const step of S) {
+    if (step[0] === 'pause') { await sleep(step[1]); continue; }
+    if (step[0] === 'type') {
+      html += step[1];
+      // Digita só o texto visível; tags HTML entram inteiras.
+      const parts = step[2].split(/(<[^>]+>[^<]*<\/span>)/);
+      for (const p of parts) {
+        if (p.startsWith('<')) { html += p; render(); continue; }
+        for (const ch of p) { html += ch === '\n' ? '\n' : ch; render(); await sleep(step[3]); }
+      }
+      continue;
+    }
+    if (step[0] === 'lines') {
+      for (const l of step[1]) { html += l + '\n'; render(); await sleep(step[2]); }
+    }
+  }
+  window.done = true;
+}
+run();
+</script>
+</body>
+</html>
