@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Overlay</title>
+<style>
+  html,body { margin:0; width:1920px; height:1080px; background:transparent; overflow:hidden;
+              font-family:"DejaVu Sans", "Liberation Sans", sans-serif; color:#fff; }
+  .wrap { position:absolute; inset:0; }
+  /* Título grande: faixa inferior com degradê */
+  .big { position:absolute; left:0; right:0; bottom:0; height:420px;
+         background:linear-gradient(to top, rgba(3,6,14,.92), rgba(3,6,14,0)); }
+  .big .t { position:absolute; left:110px; bottom:150px; font-size:118px; font-weight:bold; letter-spacing:-2px;
+            text-shadow:0 6px 30px rgba(0,0,0,.6); }
+  .big .s { position:absolute; left:114px; bottom:92px; font-size:42px; color:#7dd3fc; }
+  .big .bar { position:absolute; left:110px; bottom:272px; width:90px; height:8px; background:#22d3ee; border-radius:4px; }
+  /* Etiqueta: canto inferior esquerdo */
+  .tag { position:absolute; left:110px; bottom:120px; display:flex; align-items:stretch;
+         background:rgba(4,8,18,.78); border-radius:14px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.45); }
+  .tag i { width:10px; background:#22d3ee; }
+  .tag span { padding:22px 34px; font-size:48px; font-weight:bold; }
+  /* Comando */
+  .cmd { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); padding:38px 60px;
+         background:rgba(3,6,12,.88); border:3px solid #22d3ee; border-radius:22px;
+         font:bold 78px "DejaVu Sans Mono", monospace; box-shadow:0 30px 90px rgba(0,0,0,.6); white-space:nowrap; }
+  .cmd b { color:#a3e635; }
+  .cmd small { display:block; margin-top:18px; font:34px "DejaVu Sans", sans-serif; color:#9fb3d9; text-align:center; }
+  /* Prompt */
+  .prompt { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:1500px; padding:46px 60px;
+            background:rgba(3,6,12,.86); border-left:10px solid #22d3ee; border-radius:18px;
+            font-size:56px; line-height:1.35; box-shadow:0 30px 90px rgba(0,0,0,.6); }
+  /* Fonte do caso */
+  .src { position:absolute; right:80px; bottom:44px; font-size:26px; color:rgba(220,230,255,.75);
+         text-shadow:0 2px 8px rgba(0,0,0,.8); }
+</style>
+</head>
+<body>
+<div class="wrap" id="w"></div>
+<script>
+window.paint = (o) => {
+  const w = document.getElementById('w');
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  if (o.style === 'big') w.innerHTML = `<div class="big"><div class="bar"></div><div class="t">${esc(o.text)}</div>${o.sub ? `<div class="s">${esc(o.sub)}</div>` : ''}</div>`;
+  else if (o.style === 'tag') w.innerHTML = `<div class="tag"><i></i><span>${esc(o.text)}</span></div>`;
+  else if (o.style === 'cmd') w.innerHTML = `<div class="cmd"><b>$</b> ${esc(o.text)}${o.sub ? `<small>${esc(o.sub)}</small>` : ''}</div>`;
+  else if (o.style === 'prompt') w.innerHTML = `<div class="prompt">${esc(o.text)}</div>`;
+  else if (o.style === 'src') w.innerHTML = `<div class="src">${esc(o.text)}</div>`;
+};
+</script>
+</body>
+</html>
